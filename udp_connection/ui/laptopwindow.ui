@@ -468,7 +468,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QGroupBox" name="groupBoxTargetDeviceData_2">
+    <widget class="QGroupBox" name="groupBoxConnectCheckSend">
      <property name="geometry">
       <rect>
        <x>470</x>
@@ -510,7 +510,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QGroupBox" name="groupBoxTargetDeviceData_3">
+    <widget class="QGroupBox" name="groupBoxConnectCheckReceive">
      <property name="geometry">
       <rect>
        <x>470</x>
