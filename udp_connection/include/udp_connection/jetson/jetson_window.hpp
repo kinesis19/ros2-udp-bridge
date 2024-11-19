@@ -17,10 +17,15 @@ public:
   ~JetsonWindow();
   QNode* qnode;
 
+private slots:
+  void onConnectToTargetDeviceClicked();
+  void onSendButtonClicked();
+
 private:
   Ui::JetsonWindowDesign* ui;
 
   void closeEvent(QCloseEvent* event);
+  void updateConnectionStatus(bool connected);  // 연결 상태 업데이트 메서드
   QString getLocalIPAddress();
 };
 
