@@ -468,6 +468,74 @@
       </property>
      </widget>
     </widget>
+    <widget class="QGroupBox" name="groupBoxTargetDeviceData_2">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>30</y>
+       <width>200</width>
+       <height>150</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Connect Check - Send</string>
+     </property>
+     <widget class="QLineEdit" name="lineEditConnectCheckSendData">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>e.g., Hello, World!</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnConnectCheckSend">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Send</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxTargetDeviceData_3">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>190</y>
+       <width>200</width>
+       <height>100</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Connect Check - Receive</string>
+     </property>
+     <widget class="QLabel" name="labelConnectCheckReceiveData">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>180</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>&quot;Received Data&quot;</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <action name="action_Quit">
