@@ -2,6 +2,8 @@
 #define udp_connection_JETSON_WINDOW_H
 
 #include <QMainWindow>
+#include <QNetworkInterface>
+#include <QString>
 #include "QIcon"
 #include "../qnode.hpp"
 #include "ui_jetsonwindow.h"
@@ -17,7 +19,9 @@ public:
 
 private:
   Ui::JetsonWindowDesign* ui;
+
   void closeEvent(QCloseEvent* event);
+  QString getLocalIPAddress();
 };
 
 #endif  // udp_connection_JETSON_WINDOW_H
