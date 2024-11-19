@@ -7,7 +7,8 @@ LaptopWindow::LaptopWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::La
   QIcon icon("://ros-icon.png");
   this->setWindowIcon(icon);
 
-  qnode = new QNode();
+  // qnode = new QNode();
+  qnode = new QNode("laptop_qnode");
 
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }

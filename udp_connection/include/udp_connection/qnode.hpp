@@ -10,7 +10,7 @@ class QNode : public QThread
 {
   Q_OBJECT
 public:
-  QNode();
+  QNode(const std::string& nodeName);
   ~QNode();
 
 protected:
