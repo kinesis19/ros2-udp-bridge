@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindowDesign</class>
- <widget class="QMainWindow" name="MainWindowDesign">
+ <class>LaptopWindowDesign</class>
+ <widget class="QMainWindow" name="LaptopWindowDesign">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>QRosApp</string>
+   <string>Viewer_Laptop</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/images.qrc">
@@ -29,7 +29,7 @@
     <string>Ctrl+Q</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::ShortcutContext::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="action_Preferences">
@@ -55,7 +55,7 @@
   <connection>
    <sender>action_Quit</sender>
    <signal>triggered()</signal>
-   <receiver>MainWindowDesign</receiver>
+   <receiver>LaptopWindowDesign</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

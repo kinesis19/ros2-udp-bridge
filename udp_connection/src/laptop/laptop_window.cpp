@@ -1,6 +1,6 @@
-#include "../include/udp_connection/main_window.hpp"
+#include "../include/udp_connection/laptop/laptop_window.hpp"
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindowDesign)
+LaptopWindow::LaptopWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign)
 {
   ui->setupUi(this);
 
@@ -12,12 +12,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void LaptopWindow::closeEvent(QCloseEvent* event)
 {
   QMainWindow::closeEvent(event);
 }
 
-MainWindow::~MainWindow()
+LaptopWindow::~LaptopWindow()
 {
   delete ui;
 }
