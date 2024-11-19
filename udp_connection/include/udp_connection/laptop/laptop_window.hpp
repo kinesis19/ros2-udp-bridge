@@ -18,11 +18,16 @@ public:
 
   QNode* qnode;
 
+private slots:
+  void onConnectToTargetDeviceClicked();
+  void onSendButtonClicked();
+
 private:
   Ui::LaptopWindowDesign* ui;
 
   void closeEvent(QCloseEvent* event);
-  QString getLocalIPAddress();
+  void updateConnectionStatus(bool connected);  // 연결 상태 업데이트 메서드
+  QString getLocalIPAddress(); // 현재 디바이스의 IP 주소 가져오는 메서드
 };
 
 #endif  // udp_connection_LAPTOP_WINDOW_H

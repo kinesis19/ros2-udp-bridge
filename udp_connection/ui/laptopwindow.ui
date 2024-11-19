@@ -454,7 +454,7 @@
        <string>Connect</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_10">
+     <widget class="QLabel" name="labelTargetDeviceCondition">
       <property name="geometry">
        <rect>
         <x>10</x>
