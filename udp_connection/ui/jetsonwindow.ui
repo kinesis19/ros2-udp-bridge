@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>400</height>
+    <width>800</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,196 @@
   <property name="locale">
    <locale language="English" country="Australia"/>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBoxConnection">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>320</y>
+      <width>750</width>
+      <height>350</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Connection</string>
+    </property>
+    <widget class="QGroupBox" name="groupBoxNowDeviceData">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>200</width>
+       <height>220</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Now Device Data</string>
+     </property>
+     <widget class="QLabel" name="labelNowDeviceIPAddress">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>180</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>IP Address: 123.456.7.8</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelNowDeviceWifiCondition">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>180</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wifi Condition: Unknown</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxTargetDeviceData">
+     <property name="geometry">
+      <rect>
+       <x>240</x>
+       <y>30</y>
+       <width>200</width>
+       <height>220</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Target Device Data</string>
+     </property>
+     <widget class="QLabel" name="labelTargetDeviceWifiCondition">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>180</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wifi Condition: Unknown</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEditTargetDeviceIPAddress">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>e.g., 127.0.0.1</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnConnectToTargetDevice">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>170</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Connect</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>180</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Condition: Connected</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxConnectCheckSend">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>30</y>
+       <width>200</width>
+       <height>150</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Connect Check - Send</string>
+     </property>
+     <widget class="QLineEdit" name="lineEditConnectCheckSendData">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>e.g., Hello, World!</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnConnectCheckSend">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Send</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxConnectCheckReceive">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>190</y>
+       <width>200</width>
+       <height>100</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Connect Check - Receive</string>
+     </property>
+     <widget class="QLabel" name="labelConnectCheckReceiveData">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>180</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>&quot;Received Data&quot;</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
   <action name="action_Quit">
    <property name="text">
     <string>&amp;Quit</string>
