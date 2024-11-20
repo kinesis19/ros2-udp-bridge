@@ -10,6 +10,17 @@
 #include "../include/udp_connection/laptop/dxl_right_node.hpp"
 #include "../include/udp_connection/laptop/master_node.hpp"
 
+
+template <typename T>
+void cleanupThread(T*& thread) {
+  if (thread) {
+    thread->quit();
+    thread->wait();
+    delete thread;
+    thread = nullptr;
+  }
+}
+
 int main(int argc, char* argv[])
 {
   QApplication a(argc, argv);
@@ -17,7 +28,7 @@ int main(int argc, char* argv[])
   // ROS2 초기화
   rclcpp::init(argc, argv);
 
-  // 실행 인자를 통해 디바이스를 구분해서 GUI를 실행.
+  // 실행 인자를 통해 디바이스를 구분해서 GUI를 실행
   if (argc < 2) {
     qFatal("Usage: %s [laptop|jetson]", argv[0]);
   }
@@ -33,7 +44,7 @@ int main(int argc, char* argv[])
   DxlRightNode* dxl_right_node_ = nullptr;
   MasterNode* master_node_ = nullptr;
 
-  // Window 객체를 Heap으로 관리하도록 아키텍처를 설계.
+  // Window 객체를 Heap으로 관리하도록 아키텍처를 설계
   if (deviceType == "laptop") {
     window = new LaptopWindow();
     vision_node_ = new VisionNode();
@@ -63,48 +74,22 @@ int main(int argc, char* argv[])
 
   int ret = a.exec();
 
-  // Cleanup (Thread 메모리 누수 방지 및 Clean quit)
-  if (communication_node_) {
-    communication_node_->quit();
-    communication_node_->wait();
-    delete communication_node_;
-  }
-
-  if (vision_node_) {
-    vision_node_->quit();
-    vision_node_->wait();
-    delete vision_node_;
-  }
-
-  if(psd_manager_node_) {
-    psd_manager_node_->quit();
-    psd_manager_node_->wait();
-    delete psd_manager_node_;
-  }
+  /* Cleanup (Thread 메모리 누수 방지 및 Clean quit)
+  * Template로 처리해서 간결하게 구현함
+  */ 
+  cleanupThread(communication_node_);
+  cleanupThread(vision_node_);
+  cleanupThread(psd_manager_node_);
+  cleanupThread(dxl_left_node_);
+  cleanupThread(dxl_right_node_);
+  cleanupThread(master_node_);
 
 
-  if(dxl_left_node_) {
-    dxl_left_node_->quit();
-    dxl_left_node_->wait();
-    delete dxl_left_node_;
-  }
-
-  if(dxl_right_node_) {
-    dxl_right_node_->quit();
-    dxl_right_node_->wait();
-    delete dxl_right_node_;
-  }
-
-
-  if(master_node_) {
-    master_node_->quit();
-    master_node_->wait();
-    delete master_node_;
-  }
-
-  // ROS 2 종료
+  // ROS2 종료
   rclcpp::shutdown();
 
   delete window;
   return ret;
 }
+
+
