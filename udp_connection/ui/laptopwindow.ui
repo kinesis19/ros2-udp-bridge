@@ -537,6 +537,211 @@
      </widget>
     </widget>
    </widget>
+   <widget class="QTabWidget" name="tabWidgetConditionOfNodes">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>770</y>
+      <width>750</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="tab_1">
+     <attribute name="title">
+      <string>Nodes of Laptop</string>
+     </attribute>
+     <widget class="QLabel" name="labelTextMasterNode">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Master N:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelTextVision">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Vision N:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelConditionMasterNode">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>20</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelConditionVisionNode">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>50</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelConditionImuNode">
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>50</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelTextPsdManager">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>20</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PsdManager N:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelConditionPsdManagerNode">
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>20</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelTextImu">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>50</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Imu N:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelTextDxlRight">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>50</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>DxlRight N:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelTextDxlLeft">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>20</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>DxlLeft N:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelConditionDxlRightNode">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>50</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelConditionDxlLeftNode">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>20</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Nodes of Jetson</string>
+     </attribute>
+     <widget class="QLabel" name="labelConditionMasterNode_2">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>20</y>
+        <width>100</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Unknwon</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelTextMasterNode_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>120</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Relay N:</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
   </widget>
   <action name="action_Quit">
    <property name="text">
