@@ -714,7 +714,7 @@
      <attribute name="title">
       <string>Nodes of Jetson</string>
      </attribute>
-     <widget class="QLabel" name="labelConditionMasterNode_2">
+     <widget class="QLabel" name="labelConditionRelayNode">
       <property name="geometry">
        <rect>
         <x>140</x>
@@ -727,7 +727,7 @@
        <string>Unknwon</string>
       </property>
      </widget>
-     <widget class="QLabel" name="labelTextMasterNode_2">
+     <widget class="QLabel" name="labelTextRelayNode">
       <property name="geometry">
        <rect>
         <x>10</x>
