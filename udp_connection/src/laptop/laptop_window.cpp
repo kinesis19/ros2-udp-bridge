@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/laptop_window.hpp"
 
-LaptopWindow::LaptopWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign)
+LaptopWindow::LaptopWindow(std::shared_ptr<RelayNode> relayNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, std::shared_ptr<MasterNode> masterNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), relayNode_(relayNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), masterNode_(masterNode)
 {
   ui->setupUi(this);
 
