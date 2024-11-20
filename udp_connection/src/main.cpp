@@ -3,7 +3,7 @@
 
 #include "../include/udp_connection/laptop/laptop_window.hpp"
 #include "../include/udp_connection/jetson/jetson_window.hpp"
-#include "../include/udp_connection/jetson/communication_node.hpp"
+#include "../include/udp_connection/jetson/relay_node.hpp"
 #include "../include/udp_connection/laptop/vision_node.hpp"
 #include "../include/udp_connection/laptop/psd_manager_node.hpp"
 #include "../include/udp_connection/laptop/dxl_left_node.hpp"
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
   QString deviceType = argv[1]; 
 
   QMainWindow* window = nullptr;
-  CommunicationNode* communication_node_ = nullptr;
+  RelayNode* relay_node_ = nullptr;
   VisionNode* vision_node_ = nullptr;
   PsdManagerNode* psd_manager_node_ = nullptr;
   DxlLeftNode* dxl_left_node_ = nullptr;
@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
 
   } else if (deviceType == "jetson") {
     window = new JetsonWindow();
-    communication_node_ = new CommunicationNode();
-    communication_node_->start(); // QThread 실행
+    relay_node_ = new RelayNode();
+    relay_node_->start(); // QThread 실행
   } else {
     qFatal("Invalid device type! Use 'laptop' or 'jetson'.");
   }
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
   /* Cleanup (Thread 메모리 누수 방지 및 Clean quit)
   * Template로 처리해서 간결하게 구현함
   */ 
-  cleanupThread(communication_node_);
+  cleanupThread(relay_node_);
   cleanupThread(vision_node_);
   cleanupThread(psd_manager_node_);
   cleanupThread(dxl_left_node_);
