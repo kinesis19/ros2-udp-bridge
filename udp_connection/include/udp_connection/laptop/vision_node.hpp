@@ -20,7 +20,7 @@ public:
     bool isInitialized() const; // 초기화 상태 확인 메서드
 
 signals:
-    void imageReceived(const QPixmap &pixmapOriginal, const QPixmap &pixmapDetected, const QPixmap &pixmapYellowMask, const QPixmap &pixmapWhiteMask);  // QPixmap 시그널 정의
+    void imageReceived(const QPixmap &pixmapOriginal, const QPixmap &pixmapDetected, const QPixmap &pixmapYellowMask, const QPixmap &pixmapWhiteMask);
 
 protected:
     void run() override;

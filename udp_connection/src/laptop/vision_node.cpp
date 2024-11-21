@@ -220,14 +220,6 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         pub_white_mask_->publish(*white_mask_msg);
         pub_line_->publish(*line_msg);
 
-        cv::imshow("Original Image", resized_frame);
-        cv::imshow("Preprocessed", preprocessed);
-        cv::imshow("Yellow Mask", yellow_mask);
-        cv::imshow("White Mask", white_mask_combined);
-        cv::imshow("Detected Lines", line_display);
-        // cv::waitKey(1);
-
-
         // QImage로 변환 후 QPixmap을 생성하여 원본 이미지를 전송
         QImage qImageResizedFrame(resized_frame.data, resized_frame.cols, resized_frame.rows, resized_frame.step, QImage::Format_RGB888);
         QImage qImageDetectedFrame(line_display.data, line_display.cols, line_display.rows, line_display.step, QImage::Format_RGB888);
