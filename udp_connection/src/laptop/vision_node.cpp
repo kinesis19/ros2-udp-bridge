@@ -5,6 +5,8 @@ VisionNode::VisionNode()
     node = rclcpp::Node::make_shared("vision_node");
 
     RCLCPP_INFO(node->get_logger(), "vision_node 초기화 완료");
+
+    initialized_ = true;
 }
 
 VisionNode::~VisionNode()
@@ -23,4 +25,9 @@ void VisionNode::run()
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
+}
+
+bool VisionNode::isInitialized() const
+{
+    return initialized_; // 초기화 상태 반환
 }

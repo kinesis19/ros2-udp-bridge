@@ -5,6 +5,8 @@ PsdManagerNode::PsdManagerNode()
     node = rclcpp::Node::make_shared("psd_manager_node");
 
     RCLCPP_INFO(node->get_logger(), "psd_manager_node 초기화 완료");
+
+    initialized_ = true;
 }
 
 PsdManagerNode::~PsdManagerNode()
@@ -23,4 +25,9 @@ void PsdManagerNode::run()
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
+}
+
+bool PsdManagerNode::isInitialized() const
+{
+    return initialized_; // 초기화 상태 반환
 }

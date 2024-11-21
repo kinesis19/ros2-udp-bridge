@@ -5,6 +5,8 @@ DxlRightNode::DxlRightNode()
     node = rclcpp::Node::make_shared("dxl_right_node");
 
     RCLCPP_INFO(node->get_logger(), "dxl_right_node 초기화 완료");
+
+    initialized_ = true;
 }
 
 DxlRightNode::~DxlRightNode()
@@ -23,4 +25,9 @@ void DxlRightNode::run()
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
+}
+
+bool DxlRightNode::isInitialized() const
+{
+    return initialized_; // 초기화 상태 반환
 }
