@@ -1,16 +1,23 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
   <name>udp_connection</name>
   <version>0.1.0</version>
-  <description>
-
-     description
-
-  </description>
+  <description>Final Project package</description>
   <maintainer email="author@mail.com">author</maintainer>
   <author>author</author>
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+
+  <!-- ROS2 Core Dependencies -->
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>OpenCV</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+
+  <!-- ROS2 Testing Dependencies -->
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
   
