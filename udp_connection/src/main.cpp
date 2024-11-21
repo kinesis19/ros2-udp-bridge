@@ -82,8 +82,11 @@ int main(int argc, char* argv[])
     window = new LaptopWindow(master_node, vision_node, psd_manager_node, imu_node, dxl_left_node, dxl_right_node, relay_node);
   } else if (deviceType == "jetson") {
     // window = new JetsonWindow();
-    // relay_node_ = new RelayNode();
-    // relay_node_->start(); // QThread 실행
+    // relay_node = new RelayNode();
+    // relay_node->start(); // QThread 실행
+    relay_node = std::make_shared<RelayNode>();
+    relay_node->start();
+    window = new JetsonWindow(relay_node);
   } else {
     qFatal("Invalid device type! Use 'laptop' or 'jetson'.");
   }
