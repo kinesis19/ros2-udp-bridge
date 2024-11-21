@@ -1,6 +1,6 @@
 #include "../include/udp_connection/jetson/jetson_window.hpp"
 
-JetsonWindow::JetsonWindow(std::shared_ptr<RelayNode> relayNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::JetsonWindowDesign), relayNode_(relayNode)
+JetsonWindow::JetsonWindow(std::shared_ptr<RelayNode> relayNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::JetsonWindowDesign), relayNode_(relayNode), isReceiveAddress_(false)
 {
   ui->setupUi(this);
 
@@ -61,18 +61,32 @@ void JetsonWindow::updateConnectionStatus(bool connected) {
   }
 }
 
+// Connect 버튼 클릭 시 실행되는 메서드
 void JetsonWindow::onConnectToTargetDeviceClicked() {
   QString ipAddress = ui->lineEditTargetDeviceIPAddress->text();
   if (!ipAddress.isEmpty()) {
-    qnode->setReceiverIPAddress(ipAddress.toStdString());
+    // Ping 명령어로 IP 주소 연결 상태 확인
+    qnode->checkIPAddressReachability(ipAddress); // Ping 실행
 
-    // PING 메시지 전송
-    qnode->sendUDPMessage("Connected Message");
+    connect(qnode, &QNode::pingResult, this, [this, ipAddress](bool reachable) {
+      if (reachable) {
+        isReceiveAddress_ = true;
+        updateConnectionStatus(true); // 연결 성공
 
-    updateConnectionStatus(false);
+        // Ping 성공 후 Receiver IP 설정 및 메시지 전송
+        qnode->setReceiverIPAddress(ipAddress.toStdString());
+        qnode->sendUDPMessage("Connected Message");
+        
+      } else {
+        isReceiveAddress_ = false;
+        updateConnectionStatus(false); // 연결 실패
+        qnode->sendUDPMessage("Disconnected Message");
+      }
+    });
+
   } else {
-    qnode->sendUDPMessage("Disconnected Message");
     updateConnectionStatus(false);
+    qnode->sendUDPMessage("No IP address provided!");
   }
 }
 

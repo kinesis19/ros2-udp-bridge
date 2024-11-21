@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/laptop_window.hpp"
 
-LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, std::shared_ptr<RelayNode> relayNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), masterNode_(masterNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), imuNode_(imuNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), relayNode_(relayNode)
+LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, std::shared_ptr<RelayNode> relayNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), masterNode_(masterNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), imuNode_(imuNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), relayNode_(relayNode), isReceiveAddress_(false)
 {
   ui->setupUi(this);
 
@@ -70,25 +70,40 @@ void LaptopWindow::updateConnectionStatus(bool connected) {
   }
 }
 
+// Connect 버튼 클릭 시 실행되는 메서드
 void LaptopWindow::onConnectToTargetDeviceClicked() {
   QString ipAddress = ui->lineEditTargetDeviceIPAddress->text();
   if (!ipAddress.isEmpty()) {
-    qnode->setReceiverIPAddress(ipAddress.toStdString());
+    // Ping 명령어로 IP 주소 연결 상태 확인
+    qnode->checkIPAddressReachability(ipAddress); // Ping 실행
 
-    // PING 메시지 전송
-    qnode->sendUDPMessage("Connected Message");
+    connect(qnode, &QNode::pingResult, this, [this, ipAddress](bool reachable) {
+      if (reachable) {
+        isReceiveAddress_ = true;
+        updateConnectionStatus(true); // 연결 성공
 
-    updateConnectionStatus(false);
+        // Ping 성공 후 Receiver IP 설정 및 메시지 전송
+        qnode->setReceiverIPAddress(ipAddress.toStdString());
+        qnode->sendUDPMessage("Connected Message");
+        
+      } else {
+        isReceiveAddress_ = false;
+        updateConnectionStatus(false); // 연결 실패
+        qnode->sendUDPMessage("Disconnected Message");
+      }
+    });
+
   } else {
-    qnode->sendUDPMessage("Disconnected Message");
     updateConnectionStatus(false);
+    qnode->sendUDPMessage("No IP address provided!");
   }
 }
 
 
+
 void LaptopWindow::onSendButtonClicked() {
   QString message = ui->lineEditConnectCheckSendData->text();
-  if (!message.isEmpty()) {
+  if (!message.isEmpty() && isReceiveAddress_) {
     qnode->sendUDPMessage(message.toStdString());
   }
 }

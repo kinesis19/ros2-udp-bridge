@@ -26,6 +26,8 @@ private:
   Ui::JetsonWindowDesign* ui;
 
   std::shared_ptr<RelayNode> relayNode_;
+  
+  bool isReceiveAddress_;
 
   void closeEvent(QCloseEvent* event);
   void updateConnectionStatus(bool connected);  // 연결 상태 업데이트 메서드

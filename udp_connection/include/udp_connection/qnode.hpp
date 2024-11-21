@@ -6,6 +6,7 @@
 #endif
 #include <QThread>
 #include <QUdpSocket>
+#include <QProcess>
 #include <QString>
 
 class QNode : public QThread
@@ -17,6 +18,9 @@ public:
 
   void setReceiverIPAddress(const std::string& ipAddress);
   void sendUDPMessage(const std::string& message);
+
+
+  void checkIPAddressReachability(const QString& ipAddress);
 
 protected:
   void run();
@@ -32,6 +36,7 @@ private:
 Q_SIGNALS:
   void rosShutDown();
   void messageReceived(const QString& msg);
+  void pingResult(bool reachable);
 };
 
 #endif /* udp_connection_QNODE_HPP_ */

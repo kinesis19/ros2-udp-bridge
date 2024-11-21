@@ -46,6 +46,8 @@ private:
   std::shared_ptr<DxlRightNode> dxlRightNode_;
   std::shared_ptr<RelayNode> relayNode_;
 
+  bool isReceiveAddress_;
+
   void closeEvent(QCloseEvent* event);
   void updateConnectionStatus(bool connected);  // 연결 상태 업데이트 메서드
   QString getLocalIPAddress(); // 현재 디바이스의 IP 주소 가져오는 메서드
