@@ -39,12 +39,7 @@ int main(int argc, char* argv[])
   QString deviceType = argv[1]; 
 
   QMainWindow* window = nullptr;
-  // RelayNode* relay_node_ = nullptr;
-  // VisionNode* vision_node_ = nullptr;
-  // PsdManagerNode* psd_manager_node_ = nullptr;
-  // DxlLeftNode* dxl_left_node_ = nullptr;
-  // DxlRightNode* dxl_right_node_ = nullptr;
-  // MasterNode* master_node_ = nullptr;
+  
   std::shared_ptr<MasterNode> master_node = nullptr;
   std::shared_ptr<VisionNode> vision_node = nullptr;
   std::shared_ptr<PsdManagerNode> psd_manager_node = nullptr;
@@ -55,12 +50,6 @@ int main(int argc, char* argv[])
 
   // Window 객체를 Heap으로 관리하도록 아키텍처를 설계
   if (deviceType == "laptop") {
-    // window = new LaptopWindow();
-    // vision_node_ = new VisionNode();
-    // psd_manager_node_ = new PsdManagerNode();
-    // dxl_left_node_ = new DxlLeftNode();
-    // dxl_right_node_ = new DxlRightNode();
-    // master_node_ = new MasterNode();
     master_node = std::make_shared<MasterNode>();
     vision_node = std::make_shared<VisionNode>();
     psd_manager_node = std::make_shared<PsdManagerNode>();
@@ -78,12 +67,8 @@ int main(int argc, char* argv[])
     dxl_right_node->start();
     relay_node->start();
 
-    // window = std::make_shared<LaptopWindow>(relay_node, vision_node, psd_manager_node, dxl_left_node, dxl_right_node, master_node);
     window = new LaptopWindow(master_node, vision_node, psd_manager_node, imu_node, dxl_left_node, dxl_right_node, relay_node);
   } else if (deviceType == "jetson") {
-    // window = new JetsonWindow();
-    // relay_node = new RelayNode();
-    // relay_node->start(); // QThread 실행
     relay_node = std::make_shared<RelayNode>();
     relay_node->start();
     window = new JetsonWindow(relay_node);
@@ -97,17 +82,6 @@ int main(int argc, char* argv[])
   }
 
   int ret = a.exec();
-
-  /* Cleanup (Thread 메모리 누수 방지 및 Clean quit)
-  * Template로 처리해서 간결하게 구현함
-  */ 
-  // cleanupThread(relay_node_);
-  // cleanupThread(vision_node_);
-  // cleanupThread(psd_manager_node_);
-  // cleanupThread(dxl_left_node_);
-  // cleanupThread(dxl_right_node_);
-  // cleanupThread(master_node_);
-
 
   // ROS2 종료
   rclcpp::shutdown();
