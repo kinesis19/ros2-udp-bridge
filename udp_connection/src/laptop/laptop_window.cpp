@@ -27,6 +27,14 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
     }
   });
 
+  // ========== [VisionNode의 시그널과 LaptopWindow의 슬롯 연결] ==========
+  connect(visionNode_.get(), &VisionNode::imageReceived, this, [this](const QPixmap &pixmapOriginal, const QPixmap &pixmapDetected, const QPixmap &pixmapYellowMask, const QPixmap &pixmapWhiteMask) {
+    ui->labelImageOriginal->setPixmap(pixmapOriginal.scaled(ui->labelImageOriginal->size(), Qt::KeepAspectRatio));
+    ui->labelImageProcessed->setPixmap(pixmapDetected.scaled(ui->labelImageProcessed->size(), Qt::KeepAspectRatio));
+    ui->labelImageYelloLine->setPixmap(pixmapYellowMask.scaled(ui->labelImageYelloLine->size(), Qt::KeepAspectRatio));
+    ui->labelImageWhiteLine->setPixmap(pixmapWhiteMask.scaled(ui->labelImageWhiteLine->size(), Qt::KeepAspectRatio));
+  });
+
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
 

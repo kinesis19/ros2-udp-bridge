@@ -7,6 +7,8 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <QDebug>
+#include <QImage>
+#include <QPixmap>
 #include "QIcon"
 #include "../qnode.hpp"
 #include "ui_laptopwindow.h"
