@@ -1,6 +1,6 @@
 #include "../include/udp_connection/jetson/jetson_window.hpp"
 
-JetsonWindow::JetsonWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::JetsonWindowDesign), isReceiveAddress_(false)
+JetsonWindow::JetsonWindow(std::shared_ptr<StmSerialNode> stmSerialNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::JetsonWindowDesign), stmSerialNode_(stmSerialNode), isReceiveAddress_(false)
 {
   ui->setupUi(this);
 

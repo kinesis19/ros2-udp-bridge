@@ -7,13 +7,14 @@
 #include "QIcon"
 #include "../qnode.hpp"
 #include "ui_jetsonwindow.h"
+#include "../include/udp_connection/jetson/stm_serial_node.hpp"
 
 class JetsonWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  JetsonWindow(QWidget* parent = nullptr);
+  JetsonWindow(std::shared_ptr<StmSerialNode> stmSerialNode, QWidget* parent = nullptr);
   ~JetsonWindow();
   QNode* qnode;
 
@@ -23,6 +24,8 @@ private slots:
 
 private:
   Ui::JetsonWindowDesign* ui;
+
+  std::shared_ptr<StmSerialNode> stmSerialNode_;
   
   bool isReceiveAddress_;
 
