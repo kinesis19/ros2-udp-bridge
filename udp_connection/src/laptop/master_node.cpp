@@ -8,9 +8,16 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false)
 
     initialized_ = true;
 
-    // ========== [Line Detect 서브스크라이브] ==========
+    // ========== [Line Detect 서브스크라이버] ==========
     sub_yellow_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/yellow_line_detected", 10, std::bind(&MasterNode::detectYellowLine, this, std::placeholders::_1));
     sub_white_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/white_line_detected", 10, std::bind(&MasterNode::detectWhiteLine, this, std::placeholders::_1));
+
+    // ========== [Dynamixel 퍼블리셔 생성] ==========
+    pub_dxl_linear_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_linear_vel", 10);
+    pub_dxl_angular_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_linear_vel", 10);
+
+
+    ctlDxlLeft();
 }
 
 MasterNode::~MasterNode()
@@ -55,4 +62,32 @@ void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
     } else {
         isDetectWhiteLine = false;
     }
+}
+
+// ========== [Dxl Control 메서드] ==========
+void MasterNode::ctlDxlLeft() {
+    auto msg_linear_ = std_msgs::msg::Int32();
+    auto msg_angular_ = std_msgs::msg::Int32();
+
+    msg_linear_.data = 0;
+    msg_angular_.data = 10;
+
+    pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
+    pub_dxl_angular_vel_->publish(msg_angular_);
+    RCLCPP_INFO(node->get_logger(), "Published to /stm32/dxl_linear_vel: %d", msg_linear_.data);
+}
+
+
+void MasterNode::ctlDxlRight() {
+
+    auto msg_linear_ = std_msgs::msg::Int32();
+    auto msg_angular_ = std_msgs::msg::Int32();
+
+    msg_linear_.data = 0;
+    msg_angular_.data = -10;
+
+    pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
+    pub_dxl_angular_vel_->publish(msg_angular_);
+    RCLCPP_INFO(node->get_logger(), "Published to /stm32/dxl_linear_vel: %d", msg_linear_.data);
+
 }
