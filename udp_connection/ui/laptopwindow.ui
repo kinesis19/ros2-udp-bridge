@@ -330,24 +330,37 @@
        <string>Angular vel:</string>
       </property>
      </widget>
-     <widget class="QLCDNumber" name="lcdNumberPSDDataLeft_2">
+     <widget class="QSpinBox" name="spinBoxLinearVel">
       <property name="geometry">
        <rect>
         <x>130</x>
         <y>50</y>
-        <width>50</width>
-        <height>23</height>
+        <width>44</width>
+        <height>26</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLCDNumber" name="lcdNumberPSDDataLeft_3">
+     <widget class="QSpinBox" name="spinBoxAngularVel">
       <property name="geometry">
        <rect>
         <x>130</x>
         <y>90</y>
-        <width>50</width>
-        <height>23</height>
+        <width>44</width>
+        <height>26</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnDeployDxl">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>140</y>
+        <width>180</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Deploy</string>
       </property>
      </widget>
     </widget>
@@ -718,6 +731,19 @@
       <string>Nodes of Jetson</string>
      </attribute>
     </widget>
+   </widget>
+   <widget class="QPushButton" name="btnRobotStart">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>780</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Robot Start</string>
+    </property>
    </widget>
   </widget>
   <action name="action_Quit">
