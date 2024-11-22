@@ -25,11 +25,11 @@ private:
     serial::Serial serial_;  // 시리얼 포트 객체
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_adc1_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_adc2_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_adc3_;
-    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr linear_vel_sub_;
-    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr angular_vel_sub_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc1_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc2_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc3_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_dxl_linear_vel_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_dxl_angular_vel_;
     int32_t linear_vel_ = 0;
     int32_t angular_vel_ = 0;
     rclcpp::TimerBase::SharedPtr read_timer_;

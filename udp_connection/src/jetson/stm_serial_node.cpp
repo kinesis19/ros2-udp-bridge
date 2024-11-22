@@ -28,13 +28,13 @@ StmSerialNode::StmSerialNode() {
 
     // 구독자 및 퍼블리셔 생성
     sub_ = node->create_subscription<std_msgs::msg::String>("serial_node/input", 10, std::bind(&StmSerialNode::writeCallback, this, std::placeholders::_1));
-    pub_ = node->create_publisher<std_msgs::msg::String>("serial_node/output", 10);
-    pub_adc1_ = node->create_publisher<std_msgs::msg::Int32>("adc_value_right", 10);
-    pub_adc2_ = node->create_publisher<std_msgs::msg::Int32>("adc_value_front", 10);
-    pub_adc3_ = node->create_publisher<std_msgs::msg::Int32>("adc_value_left", 10);
+    pub_ = node->create_publisher<std_msgs::msg::String>("/stm32/serial_node/output", 10);
+    pub_stm32_psd_adc1_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/psd_adc_value_right", 10);
+    pub_stm32_psd_adc2_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/psd_adc_value_front", 10);
+    pub_stm32_psd_adc3_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/psd_adc_value_left", 10);
 
-    linear_vel_sub_ = node->create_subscription<std_msgs::msg::Int32>("linear_vel", 10, std::bind(&StmSerialNode::linearVelCallback, this, std::placeholders::_1));
-    angular_vel_sub_ = node->create_subscription<std_msgs::msg::Int32>("angular_vel", 10, std::bind(&StmSerialNode::angularVelCallback, this, std::placeholders::_1));
+    sub_stm32_dxl_linear_vel_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/dxl_linear_vel", 10, std::bind(&StmSerialNode::linearVelCallback, this, std::placeholders::_1));
+    sub_stm32_dxl_angular_vel_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/dxl_angular_vel", 10, std::bind(&StmSerialNode::angularVelCallback, this, std::placeholders::_1));
 
     // 타이머 설정
     read_timer_ = node->create_wall_timer(std::chrono::milliseconds(100), std::bind(&StmSerialNode::readCallback, this));
@@ -117,9 +117,9 @@ void StmSerialNode::readCallback() {
                 msg2.data = adc_value_2;
                 msg3.data = adc_value_3;
 
-                pub_adc1_->publish(msg1);
-                pub_adc2_->publish(msg2);
-                pub_adc3_->publish(msg3);
+                pub_stm32_psd_adc1_->publish(msg1);
+                pub_stm32_psd_adc2_->publish(msg2);
+                pub_stm32_psd_adc3_->publish(msg3);
             }
         }
     } catch (serial::IOException &e) {
