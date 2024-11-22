@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QImage>
 #include <QPixmap>
+#include <QLCDNumber>
 #include "QIcon"
 #include "../qnode.hpp"
 #include "ui_laptopwindow.h"

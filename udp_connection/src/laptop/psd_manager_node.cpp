@@ -40,12 +40,15 @@ bool PsdManagerNode::isInitialized() const
 // ========== [STM32 PSD Value Callback Method] ==========
 void PsdManagerNode::psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg) {
     RCLCPP_INFO(node->get_logger(), "PSD Right: %d", msg->data);
+    emit stmPsdRightReceived(msg->data);
 }
 
 void PsdManagerNode::psdFrontCallback(const std_msgs::msg::Int32::SharedPtr msg) {
     RCLCPP_INFO(node->get_logger(), "PSD Front: %d", msg->data);
+    emit stmPsdFrontReceived(msg->data);
 }
 
 void PsdManagerNode::psdLeftCallback(const std_msgs::msg::Int32::SharedPtr msg) {
     RCLCPP_INFO(node->get_logger(), "PSD Left: %d", msg->data);
+    emit stmPsdLeftReceived(msg->data);
 }

@@ -2,6 +2,7 @@
 #define UDP_CONNECTION_PSD_MANAGER_NODE_HPP
 
 #include <QThread>
+#include <cstdint>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/int32.hpp>
@@ -15,6 +16,11 @@ public:
     ~PsdManagerNode();
     bool isInitialized() const; // 초기화 상태 확인 메서드
 
+signals:
+    void stmPsdRightReceived(const int &psdRight);
+    void stmPsdFrontReceived(const int &psdFront);
+    void stmPsdLeftReceived(const int &psdLeft);
+
 protected:
     void run() override;
 
@@ -27,7 +33,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_psd_adc_left_;
 
     bool initialized_; // 초기화 상태 확인 변수
-    
+
     // ========== [STM32 PSD Value Callback Method] ==========
     void psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg);
     void psdFrontCallback(const std_msgs::msg::Int32::SharedPtr msg);
