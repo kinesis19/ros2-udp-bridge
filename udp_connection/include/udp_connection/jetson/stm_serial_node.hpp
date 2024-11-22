@@ -25,9 +25,9 @@ private:
     serial::Serial serial_;  // 시리얼 포트 객체
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc1_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc2_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc3_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc_right_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc_front_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_stm32_psd_adc_left_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_dxl_linear_vel_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_dxl_angular_vel_;
     int32_t linear_vel_ = 0;
