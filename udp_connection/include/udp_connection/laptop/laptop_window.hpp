@@ -13,7 +13,6 @@
 #include "../qnode.hpp"
 #include "ui_laptopwindow.h"
 
-#include "../include/udp_connection/jetson/relay_node.hpp"
 #include "../include/udp_connection/laptop/vision_node.hpp"
 #include "../include/udp_connection/laptop/psd_manager_node.hpp"
 #include "../include/udp_connection/laptop/imu_node.hpp"
@@ -26,7 +25,7 @@ class LaptopWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, std::shared_ptr<RelayNode> relayNode, QWidget* parent = nullptr);
+  LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, QWidget* parent = nullptr);
   ~LaptopWindow();
 
   QNode* qnode;
@@ -44,7 +43,6 @@ private:
   std::shared_ptr<ImuNode> imuNode_;
   std::shared_ptr<DxlLeftNode> dxlLeftNode_;
   std::shared_ptr<DxlRightNode> dxlRightNode_;
-  std::shared_ptr<RelayNode> relayNode_;
 
   bool isReceiveAddress_;
 

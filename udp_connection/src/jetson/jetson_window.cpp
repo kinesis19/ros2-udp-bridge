@@ -1,6 +1,6 @@
 #include "../include/udp_connection/jetson/jetson_window.hpp"
 
-JetsonWindow::JetsonWindow(std::shared_ptr<RelayNode> relayNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::JetsonWindowDesign), relayNode_(relayNode), isReceiveAddress_(false)
+JetsonWindow::JetsonWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::JetsonWindowDesign), isReceiveAddress_(false)
 {
   ui->setupUi(this);
 

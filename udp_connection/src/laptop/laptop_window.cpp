@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/laptop_window.hpp"
 
-LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, std::shared_ptr<RelayNode> relayNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), masterNode_(masterNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), imuNode_(imuNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), relayNode_(relayNode), isReceiveAddress_(false)
+LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), masterNode_(masterNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), imuNode_(imuNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), isReceiveAddress_(false)
 {
   ui->setupUi(this);
 

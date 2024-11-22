@@ -7,14 +7,13 @@
 #include "QIcon"
 #include "../qnode.hpp"
 #include "ui_jetsonwindow.h"
-#include "../include/udp_connection/jetson/relay_node.hpp"
 
 class JetsonWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  JetsonWindow(std::shared_ptr<RelayNode> relayNode, QWidget* parent = nullptr);
+  JetsonWindow(QWidget* parent = nullptr);
   ~JetsonWindow();
   QNode* qnode;
 
@@ -24,8 +23,6 @@ private slots:
 
 private:
   Ui::JetsonWindowDesign* ui;
-
-  std::shared_ptr<RelayNode> relayNode_;
   
   bool isReceiveAddress_;
 
