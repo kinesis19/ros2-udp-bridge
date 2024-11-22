@@ -267,8 +267,11 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
      </widget>
-     <widget class="QLCDNumber" name="lcdNumberPSDDataMiddle">
+     <widget class="QLCDNumber" name="lcdNumberPSDDataFront">
       <property name="geometry">
        <rect>
         <x>130</x>
