@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 class MasterNode : public QThread
 {
@@ -13,12 +14,26 @@ public:
     ~MasterNode();
     bool isInitialized() const; // 초기화 상태 확인 메서드
 
+// signals:
+
 protected:
     void run() override;
 
 private:
     rclcpp::Node::SharedPtr node;
+
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_yellow_detected_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_white_detected_;
+
     bool initialized_; // 초기화 상태 확인 변수
+
+    // 선 감지 확인 변수
+    bool isDetectYellowLine;
+    bool isDetectWhiteLine;
+
+    void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
+    void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
+
 };
 
 #endif // UDP_CONNECTION_MASTER_NODE_HPP

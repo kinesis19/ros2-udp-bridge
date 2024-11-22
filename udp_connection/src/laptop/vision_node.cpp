@@ -216,8 +216,9 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         }
 
         if (yellow_line_detected || white_line_detected) {
-            RCLCPP_INFO(node->get_logger(), "Lines detected - Yellow: %d (count: %d), White: %d (count: %d)", yellow_line_detected, yellow_line_count, white_line_detected, white_line_count);
+            // RCLCPP_INFO(node->get_logger(), "Lines detected - Yellow: %d (count: %d), White: %d (count: %d)", yellow_line_detected, yellow_line_count, white_line_detected, white_line_count);
         }
+        
 
         // ROI 영역 표시
         for (int i = 0; i < 4; i++) {
@@ -248,6 +249,9 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         pub_yellow_mask_->publish(*yellow_mask_msg);
         pub_white_mask_->publish(*white_mask_msg);
         pub_line_->publish(*line_msg);
+
+        // 배열 상태 출력
+        printDetectionArray();
 
         // QImage로 변환 후 QPixmap을 생성하여 원본 이미지를 전송
         QImage qImageResizedFrame(resized_frame.data, resized_frame.cols, resized_frame.rows, resized_frame.step, QImage::Format_RGB888);
@@ -280,4 +284,34 @@ bool VisionNode::isLineValid(std::array<bool, 10> &detection_array, bool current
     }
     // 임계값 이상이면 유효한 선으로 판단
     return detection_count >= DETECTION_THRESHOLD;
+}
+
+// ========== [배열 상태를 출력하는 함수] ==========
+void VisionNode::printDetectionArray()
+{
+    std::ostringstream oss;
+
+    // yellow_detection_array 출력
+    oss << "Yellow Detection Array: [";
+    for (size_t i = 0; i < yellow_detection_array.size(); ++i) {
+        oss << yellow_detection_array[i];
+        if (i < yellow_detection_array.size() - 1) {
+            oss << ", ";
+        }
+    }
+    oss << "]";
+    RCLCPP_INFO(node->get_logger(), "%s", oss.str().c_str());
+
+    // white_detection_array 출력
+    oss.str("");  // 스트림 비우기
+    oss.clear();  // 플래그 초기화
+    oss << "White Detection Array: [";
+    for (size_t i = 0; i < white_detection_array.size(); ++i) {
+        oss << white_detection_array[i];
+        if (i < white_detection_array.size() - 1) {
+            oss << ", ";
+        }
+    }
+    oss << "]";
+    RCLCPP_INFO(node->get_logger(), "%s", oss.str().c_str());
 }

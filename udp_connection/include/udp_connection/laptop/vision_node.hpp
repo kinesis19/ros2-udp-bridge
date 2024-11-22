@@ -54,6 +54,7 @@ private:
 
     void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg);
     bool isLineValid(std::array<bool, 10>& detection_array, bool current_detection);
+    void printDetectionArray();
 };
 
 #endif // UDP_CONNECTION_VISION_HPP
