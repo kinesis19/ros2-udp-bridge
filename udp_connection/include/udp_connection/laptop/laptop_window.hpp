@@ -34,6 +34,8 @@ public:
 private slots:
   void onConnectToTargetDeviceClicked();
   void onSendButtonClicked();
+  void onStopButtonClicked();
+  void onDeployButtonClicked();
 
 private:
   Ui::LaptopWindowDesign* ui;

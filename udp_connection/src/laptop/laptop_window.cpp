@@ -15,6 +15,8 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
 
   connect(ui->btnConnectToTargetDevice, &QPushButton::clicked, this, &LaptopWindow::onConnectToTargetDeviceClicked);
   connect(ui->btnConnectCheckSend, &QPushButton::clicked, this, &LaptopWindow::onSendButtonClicked);
+  connect(ui->btnRobotStart, &QPushButton::clicked, this, &LaptopWindow::onStopButtonClicked);
+  connect(ui->btnDeployDxl, &QPushButton::clicked, this, &LaptopWindow::onDeployButtonClicked);
 
   // ========== [Node 초기화 상태 확인] ==========
   checkAllNodeInitializeCondition();
@@ -195,4 +197,17 @@ void LaptopWindow::checkDxlRightNodeInitializeCondition() {
   }
 }
 
-// ========== [Update GUI Psd Manager] ==========
+void LaptopWindow::onStopButtonClicked() {
+  if (ui->btnRobotStart->text() == "Robot Stop") {
+    ui->btnRobotStart->setText("Robot Start");
+  } else {
+    ui->btnRobotStart->setText("Robot Stop");
+  }
+  masterNode_->stopDxl();
+}
+
+void LaptopWindow::onDeployButtonClicked() {
+  int linear_vel_ = ui->spinBoxLinearVel->value();
+  int angular_vel_ = ui->spinBoxAngularVel->value();
+  masterNode_->updateDxlData(linear_vel_, angular_vel_);
+}
