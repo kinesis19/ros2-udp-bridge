@@ -3,6 +3,9 @@
 
 #include <QThread>
 #include <rclcpp/rclcpp.hpp>
+#include <serial/serial.h>
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/int32.hpp>
 
 class StmSerialNode : public QThread
 {
@@ -18,7 +21,27 @@ protected:
 
 private:
     rclcpp::Node::SharedPtr node;
+
+    serial::Serial serial_;  // 시리얼 포트 객체
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_adc1_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_adc2_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_adc3_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr linear_vel_sub_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr angular_vel_sub_;
+    int32_t linear_vel_ = 0;
+    int32_t angular_vel_ = 0;
+    rclcpp::TimerBase::SharedPtr read_timer_;
+
+
     bool initialized_; // 초기화 상태 확인 변수
+
+    void writeCallback(const std_msgs::msg::String::SharedPtr msg);
+    void linearVelCallback(const std_msgs::msg::Int32::SharedPtr msg);
+    void angularVelCallback(const std_msgs::msg::Int32::SharedPtr msg);
+    void sendVelocityData();
+    void readCallback();
 };
 
 #endif // UDP_CONNECTION_STM_SERIAL_HPP
