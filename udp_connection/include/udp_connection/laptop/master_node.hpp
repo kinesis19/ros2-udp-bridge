@@ -5,6 +5,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32.hpp>
+#include <std_msgs/msg/float32.hpp>
 
 class MasterNode : public QThread
 {
@@ -33,12 +34,20 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_dxl_linear_vel_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_dxl_angular_vel_;
 
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_yellow_line_x_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_white_line_x_;
+
+
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
 
     // 선 감지 확인 변수
     bool isDetectYellowLine;
     bool isDetectWhiteLine;
+
+    // 감지된 선의 x 좌표 변수
+    float yellow_line_x_;
+    float white_line_x_;
 
     // linear, angular 변수(UI -> msg)
     int linear_vel_;
@@ -47,6 +56,8 @@ private:
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
+    void getYellowLineX(const std_msgs::msg::Float32::SharedPtr msg);
+    void getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg);
 
     // ========== [Dxl Control 메서드] ==========
     void ctlDxlFront();

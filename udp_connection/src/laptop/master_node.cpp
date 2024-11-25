@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/master_node.hpp"
 
-MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0)
+MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0)
 {
     node = rclcpp::Node::make_shared("master_node");
 
@@ -11,10 +11,14 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     // ========== [Line Detect 서브스크라이버] ==========
     sub_yellow_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/yellow_line_detected", 10, std::bind(&MasterNode::detectYellowLine, this, std::placeholders::_1));
     sub_white_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/white_line_detected", 10, std::bind(&MasterNode::detectWhiteLine, this, std::placeholders::_1));
+    sub_yellow_line_x_ = node->create_subscription<std_msgs::msg::Float32>("/vision/yellow_line_x", 10, std::bind(&MasterNode::getYellowLineX, this, std::placeholders::_1));
+    sub_white_line_x_ = node->create_subscription<std_msgs::msg::Float32>("/vision/white_line_x", 10, std::bind(&MasterNode::getWhiteLineX, this, std::placeholders::_1));
 
     // ========== [Dynamixel 퍼블리셔 생성] ==========
     pub_dxl_linear_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_linear_vel", 10);
     pub_dxl_angular_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_angular_vel", 10);
+
+
 }
 
 MasterNode::~MasterNode()
@@ -36,7 +40,9 @@ void MasterNode::run()
             ctlDxlRight();
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
             ctlDxlLeft();
-        } else if (!isDetectYellowLine && !isDetectWhiteLine) {
+        } 
+        
+        else if (!isDetectYellowLine && !isDetectWhiteLine) {
             // ctlDxlBack();
         }
 
@@ -72,6 +78,20 @@ void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
         isDetectWhiteLine = false;
     }
 }
+
+void MasterNode::getYellowLineX(const std_msgs::msg::Float32::SharedPtr msg) {
+    yellow_line_x_ = msg->data;
+    RCLCPP_INFO(node->get_logger(), "value: %.2f", yellow_line_x_);
+}
+
+void MasterNode::getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg) {
+    white_line_x_ = msg->data;
+    RCLCPP_INFO(node->get_logger(), "value: %.2f", white_line_x_);
+}
+
+
+
+
 
 // ========== [Dxl Control 메서드] ==========
 void MasterNode::ctlDxlFront() {

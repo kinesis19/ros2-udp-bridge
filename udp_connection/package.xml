@@ -16,6 +16,7 @@
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
+  <depend>geometry_msgs</depend>
 
   <!-- ROS2 Testing Dependencies -->
   <test_depend>ament_lint_auto</test_depend>

@@ -222,19 +222,19 @@ void LaptopWindow::onDeployButtonClicked() {
 
 // ========== [로봇 원격 제어 메서드] ==========
 void LaptopWindow::onMoveFrontButtonClicked() {
-  masterNode_->runDxl(3, 0);
+  masterNode_->runDxl(5, 0);
 }
 
 void LaptopWindow::onMoveBackButtonClicked() {
-  masterNode_->runDxl(-3, 0);
+  masterNode_->runDxl(-5, 0);
 }
 
 void LaptopWindow::onMoveLeftButtonClicked() {
-  masterNode_->runDxl(0, 3);
+  masterNode_->runDxl(2, 5);
 }
 
 void LaptopWindow::onMoveRightButtonClicked() {
-  masterNode_->runDxl(0, -3);
+  masterNode_->runDxl(2, -5);
 }
 
 void LaptopWindow::onMoveStopButtonClicked() {

@@ -7,6 +7,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
+#include <std_msgs/msg/float32.hpp>
 #include <vector>
 #include <array>  // std::array를 위해 추가
 #include <QImage>
@@ -37,6 +38,8 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_line_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_yellow_detected_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_white_detected_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yellow_pos_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_pos_;
 
     bool initialized_; // 초기화 상태 확인 변수
     bool yellow_line_detected;
@@ -52,8 +55,11 @@ private:
     bool yellow_line_valid;
     bool white_line_valid;
 
+    float yellow_line_x;
+    float white_line_x;
+
     void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg);
-    bool isLineValid(std::array<bool, 10>& detection_array, bool current_detection);
+    bool isLineValid(std::array<bool, 10> &detection_array, bool current_detection);
 };
 
 #endif // UDP_CONNECTION_VISION_HPP
