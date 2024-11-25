@@ -376,6 +376,71 @@
       </property>
      </widget>
     </widget>
+    <widget class="QPushButton" name="btnMoveFront">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>40</y>
+       <width>89</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Front</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnMoveBack">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>140</y>
+       <width>89</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Back</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnMoveLeft">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>90</y>
+       <width>89</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnMoveRight">
+     <property name="geometry">
+      <rect>
+       <x>640</x>
+       <y>90</y>
+       <width>89</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnMoveStop">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>90</y>
+       <width>89</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Stop</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBoxConnection">
     <property name="geometry">
