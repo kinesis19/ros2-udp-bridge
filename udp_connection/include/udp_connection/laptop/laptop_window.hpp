@@ -37,6 +37,12 @@ private slots:
   void onStopButtonClicked();
   void onDeployButtonClicked();
 
+  void onMoveFrontButtonClicked();
+  void onMoveBackButtonClicked();
+  void onMoveLeftButtonClicked();
+  void onMoveRightButtonClicked();
+  void onMoveStopButtonClicked();
+
 private:
   Ui::LaptopWindowDesign* ui;
 

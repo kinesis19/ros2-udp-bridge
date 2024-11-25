@@ -158,3 +158,15 @@ void MasterNode::updateDxlData(int linearVel, int angularVel) {
     linear_vel_ = linearVel;
     angular_vel_ = angularVel;
 }
+
+void MasterNode::runDxl(int linearVel, int angularVel) {
+
+    auto msg_linear_ = std_msgs::msg::Int32();
+    auto msg_angular_ = std_msgs::msg::Int32();
+
+    msg_linear_.data = linearVel;
+    msg_angular_.data = angularVel;
+
+    pub_dxl_linear_vel_->publish(msg_linear_);
+    pub_dxl_angular_vel_->publish(msg_angular_);
+}

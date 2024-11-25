@@ -53,6 +53,13 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
     ui->lcdNumberPSDDataLeft->display(psdLeft);
   });
 
+  // ========== [로봇 원격 제어 버튼 슬롯 연결] ==========
+  connect(ui->btnMoveFront, &QPushButton::clicked, this, &LaptopWindow::onMoveFrontButtonClicked);
+  connect(ui->btnMoveBack, &QPushButton::clicked, this, &LaptopWindow::onMoveBackButtonClicked);
+  connect(ui->btnMoveLeft, &QPushButton::clicked, this, &LaptopWindow::onMoveLeftButtonClicked);
+  connect(ui->btnMoveRight, &QPushButton::clicked, this, &LaptopWindow::onMoveRightButtonClicked);
+  connect(ui->btnMoveStop, &QPushButton::clicked, this, &LaptopWindow::onMoveStopButtonClicked);
+
   
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
@@ -210,4 +217,26 @@ void LaptopWindow::onDeployButtonClicked() {
   int linear_vel_ = ui->spinBoxLinearVel->value();
   int angular_vel_ = ui->spinBoxAngularVel->value();
   masterNode_->updateDxlData(linear_vel_, angular_vel_);
+}
+
+
+// ========== [로봇 원격 제어 메서드] ==========
+void LaptopWindow::onMoveFrontButtonClicked() {
+  masterNode_->runDxl(3, 0);
+}
+
+void LaptopWindow::onMoveBackButtonClicked() {
+  masterNode_->runDxl(-3, 0);
+}
+
+void LaptopWindow::onMoveLeftButtonClicked() {
+  masterNode_->runDxl(0, 3);
+}
+
+void LaptopWindow::onMoveRightButtonClicked() {
+  masterNode_->runDxl(0, -3);
+}
+
+void LaptopWindow::onMoveStopButtonClicked() {
+  masterNode_->runDxl(0, 0);
 }

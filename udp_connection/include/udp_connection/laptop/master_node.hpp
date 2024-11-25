@@ -16,6 +16,7 @@ public:
     bool isInitialized() const; // 초기화 상태 확인 메서드
     void stopDxl();
     void updateDxlData(int linearVel, int angularVel); // Dxl 데이터를 UI로 입력 받아 제어하기
+    void runDxl(int linearVel, int angularVel); // Dxl 원격 제어(버튼)
 
 private slots:
     // void onStopButtonClicked();
