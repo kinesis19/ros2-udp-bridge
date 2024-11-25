@@ -339,6 +339,12 @@
         <height>26</height>
        </rect>
       </property>
+      <property name="minimum">
+       <number>-20</number>
+      </property>
+      <property name="maximum">
+       <number>20</number>
+      </property>
      </widget>
      <widget class="QSpinBox" name="spinBoxAngularVel">
       <property name="geometry">
@@ -348,6 +354,12 @@
         <width>44</width>
         <height>26</height>
        </rect>
+      </property>
+      <property name="minimum">
+       <number>-20</number>
+      </property>
+      <property name="maximum">
+       <number>20</number>
       </property>
      </widget>
      <widget class="QPushButton" name="btnDeployDxl">
