@@ -41,6 +41,8 @@ private:
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
 
+    int stage_number_; // 현재 스테이지 나타내는 변수
+
     // 선 감지 확인 변수
     bool isDetectYellowLine;
     bool isDetectWhiteLine;
@@ -60,11 +62,13 @@ private:
     void getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg);
 
     // ========== [Dxl Control 메서드] ==========
-    void ctlDxlFront();
-    void ctlDxlLeft();
-    void ctlDxlRight();
-    void ctlDxlBack();
+    void ctlDxlFront(int linearVel, int angularVel);
+    void ctlDxlLeft(int linearVel, int angularVel);
+    void ctlDxlRight(int linearVel, int angularVel);
+    void ctlDxlBack(int linearVel, int angularVel);
 
+    // ========== [스테이지별 이동 처리 메서드] ==========
+    void runRobotStage1(); // 스테이지1 일때의 이동처리 로직
 
 };
 

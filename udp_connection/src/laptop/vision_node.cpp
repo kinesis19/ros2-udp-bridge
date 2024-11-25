@@ -63,10 +63,10 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Point2f src_vertices[4];
         cv::Point2f dst_vertices[4];
 
-        src_vertices[0] = cv::Point2f(width * 0.2f, height * 0.85f);
-        src_vertices[1] = cv::Point2f(width * 0.8f, height * 0.85f);
-        src_vertices[2] = cv::Point2f(width * 0.85f, height * 1.0f);
-        src_vertices[3] = cv::Point2f(width * 0.15f, height * 1.0f);
+        src_vertices[0] = cv::Point2f(width * 0.15f, height * 0.9f);
+        src_vertices[1] = cv::Point2f(width * 0.85f, height * 0.9f);
+        src_vertices[2] = cv::Point2f(width * 0.9f, height * 1.0f);
+        src_vertices[3] = cv::Point2f(width * 0.1f, height * 1.0f);
 
         dst_vertices[0] = cv::Point2f(0, 0);
         dst_vertices[1] = cv::Point2f(width, 0);
@@ -88,7 +88,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         std::vector<cv::Mat> lab_channels;
         cv::split(lab, lab_channels);
 
-        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(1.5, cv::Size(8, 8));
         clahe->apply(lab_channels[0], lab_channels[0]);
 
         cv::merge(lab_channels, lab);
