@@ -30,7 +30,6 @@ void MasterNode::run()
     rclcpp::WallRate loop_rate(20);
     while (rclcpp::ok())
     {
-        // ctlDxlLeft();
         if (isDetectYellowLine && isDetectWhiteLine) {
             ctlDxlFront();
         } else if (isDetectYellowLine && !isDetectWhiteLine) {
@@ -38,7 +37,7 @@ void MasterNode::run()
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
             ctlDxlLeft();
         } else if (!isDetectYellowLine && !isDetectWhiteLine) {
-            ctlDxlBack();
+            // ctlDxlBack();
         }
 
         rclcpp::spin_some(node);
@@ -80,9 +79,9 @@ void MasterNode::ctlDxlFront() {
         auto msg_linear_ = std_msgs::msg::Int32();
         auto msg_angular_ = std_msgs::msg::Int32();
 
-        // msg_linear_.data = -15;
+        // msg_linear_.data = 10;
         // msg_angular_.data = 0;
-        msg_linear_.data = -linear_vel_;
+        msg_linear_.data = linear_vel_;
         msg_angular_.data = 0;
 
         pub_dxl_linear_vel_->publish(msg_linear_);
@@ -96,10 +95,10 @@ void MasterNode::ctlDxlLeft() {
         auto msg_linear_ = std_msgs::msg::Int32();
         auto msg_angular_ = std_msgs::msg::Int32();
 
-        // msg_linear_.data = -10;
-        // msg_angular_.data = 30;
-        msg_linear_.data = -linear_vel_;
-        msg_angular_.data = -angular_vel_;
+        // msg_linear_.data = 2;
+        // msg_angular_.data = 5;
+        msg_linear_.data = linear_vel_;
+        msg_angular_.data = angular_vel_;
 
         pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
         pub_dxl_angular_vel_->publish(msg_angular_);
@@ -113,10 +112,10 @@ void MasterNode::ctlDxlRight() {
         auto msg_linear_ = std_msgs::msg::Int32();
         auto msg_angular_ = std_msgs::msg::Int32();
 
-        // msg_linear_.data = -10;
-        // msg_angular_.data = -30;
-        msg_linear_.data = -linear_vel_;
-        msg_angular_.data = angular_vel_;
+        // msg_linear_.data = 2;
+        // msg_angular_.data = -5;
+        msg_linear_.data = linear_vel_;
+        msg_angular_.data = -angular_vel_;
 
 
         pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
@@ -130,9 +129,9 @@ void MasterNode::ctlDxlBack() {
         auto msg_linear_ = std_msgs::msg::Int32();
         auto msg_angular_ = std_msgs::msg::Int32();
 
-        // msg_linear_.data = 15;
+        // msg_linear_.data = -10;
         // msg_angular_.data = 0;
-        msg_linear_.data = linear_vel_;
+        msg_linear_.data = -linear_vel_;
         msg_angular_.data = 0;
 
         pub_dxl_linear_vel_->publish(msg_linear_);
