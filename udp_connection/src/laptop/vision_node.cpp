@@ -63,8 +63,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Point2f src_vertices[4];
         cv::Point2f dst_vertices[4];
 
-        src_vertices[0] = cv::Point2f(width * 0.15f, height * 0.9f);
-        src_vertices[1] = cv::Point2f(width * 0.85f, height * 0.9f);
+        src_vertices[0] = cv::Point2f(width * 0.15f, height * 0.87f);
+        src_vertices[1] = cv::Point2f(width * 0.85f, height * 0.87f);
         src_vertices[2] = cv::Point2f(width * 0.9f, height * 1.0f);
         src_vertices[3] = cv::Point2f(width * 0.1f, height * 1.0f);
 
@@ -100,8 +100,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Mat yellow_mask_combined;
 
         cv::Mat yellow_mask_hsv;
-        cv::Scalar lower_yellow_hsv(25, 140, 140);
-        cv::Scalar upper_yellow_hsv(35, 255, 255);
+        cv::Scalar lower_yellow_hsv(15, 130, 130);
+        cv::Scalar upper_yellow_hsv(30, 255, 255);
         cv::inRange(hsv, lower_yellow_hsv, upper_yellow_hsv, yellow_mask_hsv);
 
         cv::Mat yellow_mask_lab;

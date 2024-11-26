@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/master_node.hpp"
 
-MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0)
+MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0), psd_adc_left_(0), psd_adc_front_(0), psd_adc_right_(0)
 {
     node = rclcpp::Node::make_shared("master_node");
 
@@ -20,6 +20,11 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
 
     // ========== [IMU 서브스크라이버] ==========
     sub_imu_yaw_ = node->create_subscription<std_msgs::msg::Float32>("/imu/yaw", 10, std::bind(&MasterNode::getImuYaw, this, std::placeholders::_1));
+
+    // ========== [STM32의 PSD(ADC) Value 서브스크라이브] ==========
+    sub_stm32_psd_adc_right_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/psd_adc_value_right", 10, std::bind(&MasterNode::psdRightCallback, this, std::placeholders::_1));
+    sub_stm32_psd_adc_front_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/psd_adc_value_front", 10, std::bind(&MasterNode::psdFrontCallback, this, std::placeholders::_1));
+    sub_stm32_psd_adc_left_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/psd_adc_value_left", 10, std::bind(&MasterNode::psdLeftCallback, this, std::placeholders::_1));
 
     stage_number_ = 1; // 최초 시작: 스테이지1
 }
@@ -45,6 +50,8 @@ void MasterNode::run()
         
         if (stage_number_ == 1) {
             runRobotStage1();
+        } else if (stage_number_ == 2) {
+            runRobotStage2();
         }
         
         // if (isDetectYellowLine && isDetectWhiteLine) {
@@ -72,22 +79,35 @@ bool MasterNode::isInitialized() const
 // ========== [스테이지별 이동 처리 메서드] ==========
 void MasterNode::runRobotStage1() {
     if (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) { // 직진 주행
-        ctlDxlFront(5, 3);
+        ctlDxlFront(7, 0);
     } else if (((0.15 >= yellow_line_x_) && (yellow_line_x_ >= -0.5))) { // 우회전 
         // 우회전 예외처리 추가해도 됨(가속)
         ctlDxlRight(7, 3);
     } else if (((0.95 >= white_line_x_) && (white_line_x_ >= 0.35))) { // 좌회전
         // 우회전 예외처리 추가해도 됨(가속)
         ctlDxlLeft(7, 3);
+    } else {
+        ctlDxlFront(7, 0);
+    }
+
+    // Stage2 감지
+    if (psd_adc_left_ >= 2600 && (!isDetectYellowLine && isDetectWhiteLine)) {
+        stage_number_ = 2;
     }
 }
+
+void MasterNode::runRobotStage2() {
+    stopDxl();
+    RCLCPP_INFO(node->get_logger(), "스테이지2");
+}
+
 
 // ========== [Line Detect 서브스크라이브] ==========
 void MasterNode::detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg) {
     isDetectYellowLine = msg->data;
     if (isDetectYellowLine) {
         isDetectYellowLine = true;
-        RCLCPP_INFO(node->get_logger(), "노란색 라인 감지");
+        // RCLCPP_INFO(node->get_logger(), "노란색 라인 감지");
         // ctlDxlRight();
     } else {
         isDetectYellowLine = false;
@@ -98,7 +118,7 @@ void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
     isDetectWhiteLine = msg->data;
     if (isDetectWhiteLine) {
         isDetectWhiteLine = true;
-        RCLCPP_INFO(node->get_logger(), "흰색 라인 감지");
+        // RCLCPP_INFO(node->get_logger(), "흰색 라인 감지");
         // ctlDxlLeft();
     } else {
         isDetectWhiteLine = false;
@@ -138,7 +158,7 @@ void MasterNode::ctlDxlFront(int linearVel, int angularVel) {
 
         pub_dxl_linear_vel_->publish(msg_linear_);
         pub_dxl_angular_vel_->publish(msg_angular_);
-        RCLCPP_INFO(node->get_logger(), "직진 이동");
+        // RCLCPP_INFO(node->get_logger(), "직진 이동");
     }
 }
 
@@ -154,7 +174,7 @@ void MasterNode::ctlDxlLeft(int linearVel, int angularVel) {
 
         pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
         pub_dxl_angular_vel_->publish(msg_angular_);
-        RCLCPP_INFO(node->get_logger(), "왼쪽으로 이동");
+        // RCLCPP_INFO(node->get_logger(), "왼쪽으로 이동");
     }
 }
 
@@ -172,7 +192,7 @@ void MasterNode::ctlDxlRight(int linearVel, int angularVel) {
 
         pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
         pub_dxl_angular_vel_->publish(msg_angular_);
-        RCLCPP_INFO(node->get_logger(), "오른쪽으로 이동");
+        // RCLCPP_INFO(node->get_logger(), "오른쪽으로 이동");
     }
 }
 
@@ -221,4 +241,20 @@ void MasterNode::runDxl(int linearVel, int angularVel) {
 
     pub_dxl_linear_vel_->publish(msg_linear_);
     pub_dxl_angular_vel_->publish(msg_angular_);
+}
+
+// ========== [STM32 PSD Value Callback Method] ==========
+void MasterNode::psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg) {
+    // RCLCPP_INFO(node->get_logger(), "PSD Right: %d", msg->data);
+    psd_adc_right_ = msg->data;
+}
+
+void MasterNode::psdFrontCallback(const std_msgs::msg::Int32::SharedPtr msg) {
+    // RCLCPP_INFO(node->get_logger(), "PSD Front: %d", msg->data);
+    psd_adc_front_ = msg->data;
+}
+
+void MasterNode::psdLeftCallback(const std_msgs::msg::Int32::SharedPtr msg) {
+    // RCLCPP_INFO(node->get_logger(), "PSD Left: %d", msg->data);
+    psd_adc_left_ = msg->data;
 }

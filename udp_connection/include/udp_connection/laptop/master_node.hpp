@@ -39,6 +39,14 @@ private:
 
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_imu_yaw_;
 
+
+    // ========== [Psd-Adc-Value 서브스크라이브] ==========
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_psd_adc_right_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_psd_adc_front_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_psd_adc_left_;
+
+
+
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
 
@@ -59,11 +67,24 @@ private:
     // IMU의 yaw 데이터 변수
     float imu_yaw_;
 
+    // PSD 값 저장 변수
+    int psd_adc_left_;
+    int psd_adc_front_;
+    int psd_adc_right_;
+
+    // ========== [Stage2 감지 플래그 변수] ==========
+    
+
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
     void getYellowLineX(const std_msgs::msg::Float32::SharedPtr msg);
     void getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg);
+
+    // ========== [STM32 PSD Value Callback Method] ==========
+    void psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg);
+    void psdFrontCallback(const std_msgs::msg::Int32::SharedPtr msg);
+    void psdLeftCallback(const std_msgs::msg::Int32::SharedPtr msg);
 
     // ========== [IMU 메서드] ==========
     void getImuYaw(const std_msgs::msg::Float32::SharedPtr msg);
@@ -76,6 +97,7 @@ private:
 
     // ========== [스테이지별 이동 처리 메서드] ==========
     void runRobotStage1(); // 스테이지1 일때의 이동처리 로직
+    void runRobotStage2();
 
 };
 
