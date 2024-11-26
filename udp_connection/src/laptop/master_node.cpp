@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/master_node.hpp"
 
-MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0)
+MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0)
 {
     node = rclcpp::Node::make_shared("master_node");
 
@@ -18,8 +18,10 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     pub_dxl_linear_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_linear_vel", 10);
     pub_dxl_angular_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_angular_vel", 10);
 
+    // ========== [IMU 서브스크라이버] ==========
+    sub_imu_yaw_ = node->create_subscription<std_msgs::msg::Float32>("/imu/yaw", 10, std::bind(&MasterNode::getImuYaw, this, std::placeholders::_1));
+
     stage_number_ = 1; // 최초 시작: 스테이지1
-    isStage1TurnLeft = false;
 }
 
 MasterNode::~MasterNode()
@@ -39,7 +41,7 @@ void MasterNode::run()
         * 각 line별 detected랑 position X값 사용해서 주행 로직 구현하기
         * 노란색 처리 우선(빛 반사 적음)
         */
-        RCLCPP_INFO(node->get_logger(), "Yellow Pos: %.2f | White Pos: %.2f", yellow_line_x_, white_line_x_);
+        // RCLCPP_INFO(node->get_logger(), "Yellow Pos: %.2f | White Pos: %.2f", yellow_line_x_, white_line_x_);
         
         if (stage_number_ == 1) {
             runRobotStage1();
@@ -111,6 +113,12 @@ void MasterNode::getYellowLineX(const std_msgs::msg::Float32::SharedPtr msg) {
 void MasterNode::getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg) {
     white_line_x_ = msg->data;
     // RCLCPP_INFO(node->get_logger(), "value: %.2f", white_line_x_);
+}
+
+// ========== [IMU 서브스크라이브] ==========
+void MasterNode::getImuYaw(const std_msgs::msg::Float32::SharedPtr msg) {
+    imu_yaw_ = msg->data;
+    RCLCPP_INFO(node->get_logger(), "IMU value: %.2f", imu_yaw_);
 }
 
 
