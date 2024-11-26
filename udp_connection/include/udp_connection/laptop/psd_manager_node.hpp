@@ -17,9 +17,9 @@ public:
     bool isInitialized() const; // 초기화 상태 확인 메서드
 
 signals:
-    void stmPsdRightReceived(const int &psdRight);
-    void stmPsdFrontReceived(const int &psdFront);
-    void stmPsdLeftReceived(const int &psdLeft);
+    // void stmPsdRightReceived(const int &psdRight);
+    // void stmPsdFrontReceived(const int &psdFront);
+    // void stmPsdLeftReceived(const int &psdLeft);
 
 protected:
     void run() override;

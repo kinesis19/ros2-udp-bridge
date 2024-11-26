@@ -6,6 +6,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/float32_multi_array.hpp>
 
 class MasterNode : public QThread
 {
@@ -19,6 +20,12 @@ public:
     void updateDxlData(int linearVel, int angularVel); // Dxl 데이터를 UI로 입력 받아 제어하기
     void runDxl(int linearVel, int angularVel); // Dxl 원격 제어(버튼)
 
+
+signals:
+    void stmPsdRightReceived(const int &psdRight);
+    void stmPsdFrontReceived(const int &psdFront);
+    void stmPsdLeftReceived(const int &psdLeft);
+    
 private slots:
     // void onStopButtonClicked();
 
@@ -45,6 +52,9 @@ private:
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_psd_adc_front_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_stm32_psd_adc_left_;
 
+    // ========== [흰색 선의 점들(x, y) 서브스크라이브] ==========
+    // 점1: index0, index1(x, y)
+    rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr sub_white_line_points_;
 
 
     bool initialized_; // 초기화 상태 확인 변수
@@ -72,6 +82,9 @@ private:
     int psd_adc_front_;
     int psd_adc_right_;
 
+    // 흰 선의 좌표 저장 벡터 변수
+    std::vector<float> white_line_points_;
+
     // ========== [Stage2 감지 플래그 변수] ==========
     
 
@@ -80,6 +93,8 @@ private:
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
     void getYellowLineX(const std_msgs::msg::Float32::SharedPtr msg);
     void getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg);
+
+    void getWhiteLinePoints(const std_msgs::msg::Float32MultiArray::SharedPtr msg);
 
     // ========== [STM32 PSD Value Callback Method] ==========
     void psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg);

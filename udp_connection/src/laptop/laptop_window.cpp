@@ -38,17 +38,17 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
   });
 
   // ========== [PsdManagerNode의 시그널과 LaptopWindow의 슬롯 연결] ==========
-  connect(psdManagerNode_.get(), &PsdManagerNode::stmPsdRightReceived, this, [this](const int &psdRight) {
+  connect(masterNode_.get(), &MasterNode::stmPsdRightReceived, this, [this](const int &psdRight) {
     ui->lcdNumberPSDDataRight->setDigitCount(4); // 표시할 자리수 설정
     ui->lcdNumberPSDDataRight->display(psdRight); // 값 출력
   });
 
-  connect(psdManagerNode_.get(), &PsdManagerNode::stmPsdFrontReceived, this, [this](const int &psdFront) {
+  connect(masterNode_.get(), &MasterNode::stmPsdFrontReceived, this, [this](const int &psdFront) {
     ui->lcdNumberPSDDataFront->setDigitCount(4);
     ui->lcdNumberPSDDataFront->display(psdFront);
   });
 
-  connect(psdManagerNode_.get(), &PsdManagerNode::stmPsdLeftReceived, this, [this](const int &psdLeft) {
+  connect(masterNode_.get(), &MasterNode::stmPsdLeftReceived, this, [this](const int &psdLeft) {
     ui->lcdNumberPSDDataLeft->setDigitCount(4);
     ui->lcdNumberPSDDataLeft->display(psdLeft);
   });
@@ -240,7 +240,7 @@ void LaptopWindow::onMoveRightButtonClicked() {
 }
 
 void LaptopWindow::onMoveStopButtonClicked() {
-  masterNode_->runDxl(0, 0);
+  // masterNode_->runDxl(0, 0);
 }
 
 
