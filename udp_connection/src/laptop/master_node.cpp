@@ -30,7 +30,7 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     sub_white_line_points_ = node->create_subscription<std_msgs::msg::Float32MultiArray>("/vision/white_line_points", 10, std::bind(&MasterNode::getWhiteLinePoints, this, std::placeholders::_1));
 
 
-    stage_number_ = 0; // 최초 시작: 스테이지1
+    stage_number_ = 1; // 최초 시작: 스테이지1
 }
 
 MasterNode::~MasterNode()
@@ -51,25 +51,21 @@ void MasterNode::run()
         * 노란색 처리 우선(빛 반사 적음)
         */
         // RCLCPP_INFO(node->get_logger(), "Linear: %d | Angular: %d", linear_vel_, angular_vel_);
-        RCLCPP_INFO(node->get_logger(), "run() - Before Stage Execution - Linear: %d | Angular: %d", linear_vel_, angular_vel_);
         if (stage_number_ == 1) {
             runRobotStage1();
         } else if (stage_number_ == 2) {
             runRobotStage2();
         }
-        RCLCPP_INFO(node->get_logger(), "run() - After Stage Execution - Linear: %d | Angular: %d", linear_vel_, angular_vel_);
         
-        // if (isDetectYellowLine && isDetectWhiteLine) {
-        //     ctlDxlFront();
-        // } else if (isDetectYellowLine && !isDetectWhiteLine) {
-        //     ctlDxlRight();
-        // } else if (!isDetectYellowLine && isDetectWhiteLine) {
-        //     ctlDxlLeft();
-        // } 
-        
-        // else if (!isDetectYellowLine && !isDetectWhiteLine) {
-        //     // ctlDxlBack();
-        // }
+        // 현재 상태를 유지하며 지속적으로 퍼블리시
+        auto msg_linear_ = std_msgs::msg::Int32();
+        auto msg_angular_ = std_msgs::msg::Int32();
+
+        msg_linear_.data = linear_vel_;
+        msg_angular_.data = angular_vel_;
+
+        pub_dxl_linear_vel_->publish(msg_linear_);
+        pub_dxl_angular_vel_->publish(msg_angular_);
 
         rclcpp::spin_some(node);
         loop_rate.sleep();
@@ -102,7 +98,7 @@ void MasterNode::runRobotStage1() {
 }
 
 void MasterNode::runRobotStage2() {
-    // stopDxl();
+    stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지2");
     // if (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) { // 직진 주행
     //     ctlDxlFront(7, 0);
@@ -172,72 +168,70 @@ void MasterNode::getImuYaw(const std_msgs::msg::Float32::SharedPtr msg) {
 // ========== [Dxl Control 메서드] ==========
 void MasterNode::ctlDxlFront(int linearVel, int angularVel) {
     if (isRobotRun_) {
-        auto msg_linear_ = std_msgs::msg::Int32();
-        auto msg_angular_ = std_msgs::msg::Int32();
+        linear_vel_ = linearVel;  // 상태 갱신
+        angular_vel_ = angularVel;
 
-        // msg_linear_.data = 10;
+        // auto msg_linear_ = std_msgs::msg::Int32();
+        // auto msg_angular_ = std_msgs::msg::Int32();
+
+        // msg_linear_.data = linearVel;
         // msg_angular_.data = 0;
-        // msg_linear_.data = linear_vel_ + linearVel;
-        msg_linear_.data = linearVel;
-        msg_angular_.data = 0;
 
-        pub_dxl_linear_vel_->publish(msg_linear_);
-        pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "직진 이동");
+        // pub_dxl_linear_vel_->publish(msg_linear_);
+        // pub_dxl_angular_vel_->publish(msg_angular_);
+        RCLCPP_INFO(node->get_logger(), "직진 이동");
     }
 }
 
 void MasterNode::ctlDxlLeft(int linearVel, int angularVel) {
     if (isRobotRun_) {
-        auto msg_linear_ = std_msgs::msg::Int32();
-        auto msg_angular_ = std_msgs::msg::Int32();
+        linear_vel_ = linearVel;  // 상태 갱신
+        angular_vel_ = angularVel;
 
-        // msg_linear_.data = 2;
-        // msg_angular_.data = 5;
-        // msg_linear_.data = linear_vel_ + linearVel;
-        // msg_angular_.data = angular_vel_ + angularVel;
-        msg_linear_.data = linearVel;
-        msg_angular_.data = angularVel;
+        // auto msg_linear_ = std_msgs::msg::Int32();
+        // auto msg_angular_ = std_msgs::msg::Int32();
 
-        pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
-        pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "왼쪽으로 이동");
+        // msg_linear_.data = linearVel;
+        // msg_angular_.data = angularVel;
+
+        // pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
+        // pub_dxl_angular_vel_->publish(msg_angular_);
+        RCLCPP_INFO(node->get_logger(), "왼쪽으로 이동");
     }
 }
 
 
 void MasterNode::ctlDxlRight(int linearVel, int angularVel) {
     if (isRobotRun_) {
-        auto msg_linear_ = std_msgs::msg::Int32();
-        auto msg_angular_ = std_msgs::msg::Int32();
+        linear_vel_ = linearVel;  // 상태 갱신
+        angular_vel_ = -angularVel;
 
-        // msg_linear_.data = 2;
-        // msg_angular_.data = -5;
-        // msg_linear_.data = linear_vel_ + linearVel;
-        // msg_angular_.data = -angular_vel_ + (-angularVel);
-        msg_linear_.data = linearVel;
-        msg_angular_.data = -angularVel;
+        // auto msg_linear_ = std_msgs::msg::Int32();
+        // auto msg_angular_ = std_msgs::msg::Int32();
+
+        // msg_linear_.data = linearVel;
+        // msg_angular_.data = -angularVel;
 
 
-        pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
-        pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "오른쪽으로 이동");
+        // pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
+        // pub_dxl_angular_vel_->publish(msg_angular_);
+        RCLCPP_INFO(node->get_logger(), "오른쪽으로 이동");
     }
 }
 
 void MasterNode::ctlDxlBack(int linearVel, int angularVel) {
     if (isRobotRun_) {
-        auto msg_linear_ = std_msgs::msg::Int32();
-        auto msg_angular_ = std_msgs::msg::Int32();
+        // linear_vel_ = linearVel;  // 상태 갱신
+        // angular_vel_ = angularVel;
 
-        // msg_linear_.data = -10;
+        // auto msg_linear_ = std_msgs::msg::Int32();
+        // auto msg_angular_ = std_msgs::msg::Int32();
+
+        // msg_linear_.data = -linearVel;
         // msg_angular_.data = 0;
-        // msg_linear_.data = -linear_vel_ + (-linearVel);
-        msg_linear_.data = -linearVel;
-        msg_angular_.data = 0;
 
-        pub_dxl_linear_vel_->publish(msg_linear_);
-        pub_dxl_angular_vel_->publish(msg_angular_);
+        // pub_dxl_linear_vel_->publish(msg_linear_);
+        // pub_dxl_angular_vel_->publish(msg_angular_);
         RCLCPP_INFO(node->get_logger(), "후진 이동");
     }
 }
@@ -245,6 +239,9 @@ void MasterNode::ctlDxlBack(int linearVel, int angularVel) {
 
 void MasterNode::stopDxl() {
     isRobotRun_ = !isRobotRun_;
+    
+    linear_vel_ = 0;  // 상태 갱신
+    angular_vel_ = 0;
 
     auto msg_linear_ = std_msgs::msg::Int32();
     auto msg_angular_ = std_msgs::msg::Int32();

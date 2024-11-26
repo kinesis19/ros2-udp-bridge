@@ -240,7 +240,7 @@ void LaptopWindow::onMoveRightButtonClicked() {
 }
 
 void LaptopWindow::onMoveStopButtonClicked() {
-  // masterNode_->runDxl(0, 0);
+  masterNode_->runDxl(0, 0);
 }
 
 
