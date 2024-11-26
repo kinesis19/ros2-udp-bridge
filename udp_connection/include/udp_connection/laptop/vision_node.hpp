@@ -8,6 +8,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/float32_multi_array.hpp>
 #include <vector>
 #include <array>  // std::array를 위해 추가
 #include <QImage>
@@ -40,12 +41,15 @@ private:
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_white_detected_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yellow_pos_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_pos_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_blue_sign_detected_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_white_line_points_;
 
     bool initialized_; // 초기화 상태 확인 변수
     bool yellow_line_detected;
     bool white_line_detected;
     int yellow_line_count;
     int white_line_count;
+    bool blue_sign_detected; // 삼거리 표지판 감지 변수
 
     static const int ARRAY_SIZE = 10;
     static const int DETECTION_THRESHOLD = 7;
