@@ -27,6 +27,7 @@ private:
 public:
     KalmanFilter(float q = 0.1, float r = 0.1) : Q(q), R(r), first_run(true) {}
     float update(float measurement);
+    float getState() const { return X; }
 };
 
 class ImuNode : public QThread
@@ -37,6 +38,7 @@ public:
     ImuNode();
     ~ImuNode();
     bool isInitialized() const; // 초기화 상태 확인 메서드
+    void resetAngles();  // yaw 각도 초기화 함수
 
 protected:
     void run() override;
@@ -48,10 +50,22 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_pitch_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yaw_;
 
-    LowPassFilter roll_lpf{0.1}, pitch_lpf{0.1}, yaw_lpf{0.1};
-    KalmanFilter roll_kf{0.1, 0.1}, pitch_kf{0.1, 0.1}, yaw_kf{0.1, 0.1};
+    // LowPassFilter roll_lpf{0.1}, pitch_lpf{0.1}, yaw_lpf{0.1};
+    // KalmanFilter roll_kf{0.1, 0.1}, pitch_kf{0.1, 0.1}, yaw_kf{0.1, 0.1};
 
     bool initialized_; // 초기화 상태 확인 변수
+
+    // yaw 오프셋 변수 추가
+    double yaw_offset = 0.0;
+    
+    LowPassFilter roll_lpf;
+    LowPassFilter pitch_lpf;
+    LowPassFilter yaw_lpf;
+    
+    KalmanFilter roll_kf;
+    KalmanFilter pitch_kf;
+    KalmanFilter yaw_kf;
+
 
     void imuCallback(const std_msgs::msg::String::SharedPtr msg);
     void processImuData(const std::vector<double>& data);

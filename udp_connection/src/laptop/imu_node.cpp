@@ -66,7 +66,7 @@ bool ImuNode::isInitialized() const
 }
 
 
-void ImuNode::quaternionToEuler(const double q0, const double q1, const double q2, const double q3, double& roll, double& pitch, double& yaw) {
+void ImuNode::quaternionToEuler(const double q0, const double q1, const double q2, const double q3, double &roll, double &pitch, double &yaw) {
     double sinr_cosp = 2 * (q3 * q2 + q1 * q0);
     double cosr_cosp = 1 - 2 * (q2 * q2 + q1 * q1);
     roll = std::atan2(sinr_cosp, cosr_cosp);
@@ -88,6 +88,16 @@ void ImuNode::quaternionToEuler(const double q0, const double q1, const double q
     yaw = yaw * 180.0 / M_PI;
 }
 
+void ImuNode::resetAngles() {
+    // yaw 오프셋만 현재 값으로 설정
+    yaw_offset = yaw_kf.getState();
+    
+    // yaw 관련 필터만 초기화
+    yaw_lpf = LowPassFilter();
+    yaw_kf = KalmanFilter();
+}
+
+
 void ImuNode::imuCallback(const std_msgs::msg::String::SharedPtr msg)
 {
     std::vector<double> values;
@@ -108,6 +118,9 @@ void ImuNode::processImuData(const std::vector<double>& data)
 {
     double roll, pitch, yaw;
     quaternionToEuler(data[0], data[1], data[2], data[3], roll, pitch, yaw);
+
+    // yaw에만 오프셋 적용
+    yaw -= yaw_offset;
     
     float filtered_roll = roll_lpf.update(roll);
     float filtered_pitch = pitch_lpf.update(pitch);

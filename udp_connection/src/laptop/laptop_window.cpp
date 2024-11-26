@@ -60,7 +60,9 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
   connect(ui->btnMoveRight, &QPushButton::clicked, this, &LaptopWindow::onMoveRightButtonClicked);
   connect(ui->btnMoveStop, &QPushButton::clicked, this, &LaptopWindow::onMoveStopButtonClicked);
 
-  
+  // ========== [IMU 버튼 슬롯 연결] ==========
+  connect(ui->btnIMUReset, &QPushButton::clicked, this, &LaptopWindow::onImuResetButtonClicked);
+
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
 
@@ -239,4 +241,10 @@ void LaptopWindow::onMoveRightButtonClicked() {
 
 void LaptopWindow::onMoveStopButtonClicked() {
   masterNode_->runDxl(0, 0);
+}
+
+
+// ========== [IMU 초기화 메서드] ==========
+void LaptopWindow::onImuResetButtonClicked() {
+  imuNode_->resetAngles();
 }

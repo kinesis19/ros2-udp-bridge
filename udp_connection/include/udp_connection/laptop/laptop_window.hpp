@@ -43,6 +43,8 @@ private slots:
   void onMoveRightButtonClicked();
   void onMoveStopButtonClicked();
 
+  void onImuResetButtonClicked();
+
 private:
   Ui::LaptopWindowDesign* ui;
 
