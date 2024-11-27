@@ -211,8 +211,6 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
                 {
                     float x = vertices[i].x;
                     float y = vertices[i].y;
-                    x = (x < 0.0f) ? 0.0f : x;
-                    y = (y < 0.0f) ? 0.0f : y;
                     line_points_msg.data[i * 2] = x;
                     line_points_msg.data[i * 2 + 1] = y;
                 }
@@ -270,8 +268,6 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
                 for (int i = 0; i < 4; i++) {
                     float x = vertices[i].x;
                     float y = vertices[i].y;
-                    x = (x < 0.0f) ? 0.0f : x;
-                    y = (y < 0.0f) ? 0.0f : y;
                     line_points_msg.data[i * 2] = x;
                     line_points_msg.data[i * 2 + 1] = y;
                 }

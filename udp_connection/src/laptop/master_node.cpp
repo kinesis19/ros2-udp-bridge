@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/master_node.hpp"
 
-MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0), psd_adc_left_(0), psd_adc_front_(0), psd_adc_right_(0), white_line_points_(8, 0.0) 
+MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0), psd_adc_left_(0), psd_adc_front_(0), psd_adc_right_(0), white_line_points_(8, 0.0), yellow_line_points_(8, 0.0), white_line_angle_(0.0), yellow_line_angle_(0.0)
 {
     node = rclcpp::Node::make_shared("master_node");
 
@@ -26,9 +26,13 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     sub_stm32_psd_adc_front_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/psd_adc_value_front", 10, std::bind(&MasterNode::psdFrontCallback, this, std::placeholders::_1));
     sub_stm32_psd_adc_left_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/psd_adc_value_left", 10, std::bind(&MasterNode::psdLeftCallback, this, std::placeholders::_1));
 
-    // ========== [White Line 감지 및 좌표 서브스크라이브] ==========
+    // ========== [White & Yellow Line 감지 및 좌표 서브스크라이브] ==========
     sub_white_line_points_ = node->create_subscription<std_msgs::msg::Float32MultiArray>("/vision/white_line_points", 10, std::bind(&MasterNode::getWhiteLinePoints, this, std::placeholders::_1));
+    sub_yellow_line_points_ = node->create_subscription<std_msgs::msg::Float32MultiArray>("/vision/yellow_line_points", 10, std::bind(&MasterNode::getYellowLinePoints, this, std::placeholders::_1));
 
+    // ========== [White & Yellow Angle(각도) 서브스크라이브] ==========
+    sub_white_angle_ = node->create_subscription<std_msgs::msg::Float32>("/vision/white_line_angle", 10, std::bind(&MasterNode::getWhiteLineAngle, this, std::placeholders::_1));
+    sub_yellow_angle_ = node->create_subscription<std_msgs::msg::Float32>("/vision/yellow_line_angle", 10, std::bind(&MasterNode::getYellowLineAngle, this, std::placeholders::_1));
 
     stage_number_ = 1; // 최초 시작: 스테이지1
 }
@@ -50,7 +54,9 @@ void MasterNode::run()
         * 각 line별 detected랑 position X값 사용해서 주행 로직 구현하기
         * 노란색 처리 우선(빛 반사 적음)
         */
-        // RCLCPP_INFO(node->get_logger(), "Linear: %d | Angular: %d", linear_vel_, angular_vel_);
+        emit updateCurrentStage(stage_number_);
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f", yellow_line_angle_, white_line_angle_);
+
         if (stage_number_ == 1) {
             runRobotStage1();
         } else if (stage_number_ == 2) {
@@ -80,37 +86,52 @@ bool MasterNode::isInitialized() const
 // ========== [스테이지별 이동 처리 메서드] ==========
 void MasterNode::runRobotStage1() {
     if (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) { // 직진 주행
-        ctlDxlFront(7, 0);
+        ctlDxlFront(17, 0);
     } else if (((0.15 >= yellow_line_x_) && (yellow_line_x_ >= -0.5))) { // 우회전 
-        // 우회전 예외처리 추가해도 됨(가속)
-        ctlDxlRight(7, 3);
+        // 첫 번째 오른쪽 코너
+        if (yellow_line_angle_ < 10) {
+            ctlDxlRight(7, 3);
+        } else if (yellow_line_angle_ < 20) {
+            ctlDxlRight(5, 5);
+        } else if (yellow_line_angle_ < 25) {
+            ctlDxlRight(3, 7);
+        } else if (yellow_line_angle_ < 35) {
+            ctlDxlRight(1, 12);
+        }
+
     } else if (((0.95 >= white_line_x_) && (white_line_x_ >= 0.35))) { // 좌회전
-        // 우회전 예외처리 추가해도 됨(가속)
-        ctlDxlLeft(7, 3);
+        // 주행 도중 라인 유지
+        ctlDxlLeft(7, 2);
     } else {
         ctlDxlFront(7, 0);
     }
 
     // Stage2 감지
-    if (psd_adc_left_ >= 2450 && (!isDetectYellowLine && (white_line_points_[0] < 200))) {
+    if (psd_adc_left_ >= 2450 && (!isDetectYellowLine && (white_line_angle_ < 200))) {
         stage_number_ = 2;
     }
 }
 
 void MasterNode::runRobotStage2() {
-    stopDxl();
+    // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지2");
-    // if (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) { // 직진 주행
-    //     ctlDxlFront(7, 0);
-    // } else if (!isDetectYellowLine && isDetectWhiteLine) { // 우회전 
-    //     // 우회전 예외처리 추가해도 됨(가속)
-    //     ctlDxlRight(7, 3);
-    // } else if (isDetectYellowLine && !isDetectWhiteLine) { // 좌회전
-    //     // 우회전 예외처리 추가해도 됨(가속)
-    //     ctlDxlLeft(7, 3);
-    // } else {
-    //     ctlDxlFront(7, 0);
-    // }
+    // 흰 선에 대한 코너링 처리
+    if ((!isDetectYellowLine && isDetectWhiteLine) && white_line_points_[0] < 100) {
+        ctlDxlLeft(3, 5);
+    } else if ((!isDetectYellowLine && isDetectWhiteLine) && white_line_points_[0] < 300) {
+        ctlDxlLeft(5, 3);
+    } else if ((!isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > 500 && psd_adc_front_ < 2500)) {
+        ctlDxlFront(7, 0);
+        // if (psd_adc_left_ < 3000 && psd_adc_right_ < 3000) {
+        //     ctlDxlLeft(5, 3);
+        // } else {
+        //     RCLCPP_INFO(node->get_logger(), "7");
+        //     ctlDxlFront(7, 0);
+        // }
+    }
+    if (psd_adc_front_ > 2500) {
+        stopDxl();
+    }
 }
 
 
@@ -152,6 +173,23 @@ void MasterNode::getWhiteLinePoints(const std_msgs::msg::Float32MultiArray::Shar
         white_line_points_[i] = msg->data[i];
     }
     // RCLCPP_INFO(node->get_logger(), "Updated white_line_points_: [%f, %f, %f, %f, %f, %f, %f, %f]", white_line_points_[0], white_line_points_[1], white_line_points_[2], white_line_points_[3], white_line_points_[4], white_line_points_[5], white_line_points_[6], white_line_points_[7]);
+}
+
+void MasterNode::getYellowLinePoints(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
+    for (size_t i = 0; i < yellow_line_points_.size(); i++) {
+        yellow_line_points_[i] = msg->data[i];
+    }
+    // RCLCPP_INFO(node->get_logger(), "Updated yellow_line_points_: [%f, %f, %f, %f, %f, %f, %f, %f] | %f", yellow_line_points_[0], yellow_line_points_[1], yellow_line_points_[2], yellow_line_points_[3], yellow_line_points_[4], yellow_line_points_[5], yellow_line_points_[6], yellow_line_points_[7], yellow_line_angle_);
+}
+
+void MasterNode::getWhiteLineAngle(const std_msgs::msg::Float32::SharedPtr msg) {
+    white_line_angle_ = msg->data;
+    // RCLCPP_INFO(node->get_logger(), "White value: %.2f", yellow_line_angle_);
+}
+
+void MasterNode::getYellowLineAngle(const std_msgs::msg::Float32::SharedPtr msg) {
+    yellow_line_angle_ = msg->data;
+    // RCLCPP_INFO(node->get_logger(), "Yellow value: %.2f", yellow_line_angle_);
 }
 
 
@@ -239,7 +277,7 @@ void MasterNode::ctlDxlBack(int linearVel, int angularVel) {
 
 void MasterNode::stopDxl() {
     isRobotRun_ = !isRobotRun_;
-    
+
     linear_vel_ = 0;  // 상태 갱신
     angular_vel_ = 0;
 
@@ -272,7 +310,7 @@ void MasterNode::runDxl(int linearVel, int angularVel) {
     msg_linear_.data = linearVel;
     msg_angular_.data = angularVel;
     
-    RCLCPP_INFO(node->get_logger(), "runDxl - Publishing Linear: %d | Angular: %d", msg_linear_.data, msg_angular_.data);
+    // RCLCPP_INFO(node->get_logger(), "runDxl - Publishing Linear: %d | Angular: %d", msg_linear_.data, msg_angular_.data);
 
     pub_dxl_linear_vel_->publish(msg_linear_);
     pub_dxl_angular_vel_->publish(msg_angular_);
