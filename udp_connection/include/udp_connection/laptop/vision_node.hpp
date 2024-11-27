@@ -43,6 +43,10 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_pos_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_blue_sign_detected_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_white_line_points_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_yellow_line_points_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yellow_angle_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_angle_;
+
 
     bool initialized_; // 초기화 상태 확인 변수
     bool yellow_line_detected;
