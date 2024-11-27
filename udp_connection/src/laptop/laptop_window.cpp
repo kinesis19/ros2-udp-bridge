@@ -63,6 +63,11 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
   // ========== [IMU 버튼 슬롯 연결] ==========
   connect(ui->btnIMUReset, &QPushButton::clicked, this, &LaptopWindow::onImuResetButtonClicked);
 
+  // ========== [Current Stage Numver 슬롯 연결] ==========
+  connect(masterNode_.get(), &MasterNode::updateCurrentStage, this, [this](const int &stageNum) {
+    ui->labelCurrentStage->setText(QString("Stage: %1").arg(stageNum));
+  });
+
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
 
