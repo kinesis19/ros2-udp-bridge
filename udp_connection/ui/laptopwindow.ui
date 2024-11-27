@@ -441,6 +441,24 @@
       <string>Stop</string>
      </property>
     </widget>
+    <widget class="QLabel" name="labelCurrentStage">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>250</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Current Stage: 1</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBoxConnection">
     <property name="geometry">
