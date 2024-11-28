@@ -10,16 +10,6 @@
 #include <sstream>
 
 
-class LowPassFilter {
-private:
-    float alpha;
-    float filtered_value;
-    bool first_run;
-public:
-    LowPassFilter(float a = 0.1) : alpha(a), first_run(true) {}
-    float update(float input);
-};
-
 class KalmanFilter {
 private:
     float Q, R, P, X, K;
@@ -58,10 +48,6 @@ private:
     // yaw 오프셋 변수 추가
     double yaw_offset = 0.0;
     
-    LowPassFilter roll_lpf;
-    LowPassFilter pitch_lpf;
-    LowPassFilter yaw_lpf;
-    
     KalmanFilter roll_kf;
     KalmanFilter pitch_kf;
     KalmanFilter yaw_kf;
@@ -69,7 +55,8 @@ private:
 
     void imuCallback(const std_msgs::msg::String::SharedPtr msg);
     void processImuData(const std::vector<double>& data);
-    void quaternionToEuler(const double q0, const double q1, const double q2, const double q3, double& roll, double& pitch, double& yaw);
+    void quaternionToEuler(const double qx, const double qy, const double qz, const double qw, double &roll, double &pitch, double &yaw);
+    void normalizeAngle(double &angle);
 };
 
 #endif // UDP_CONNECTION_IMU_HPP
