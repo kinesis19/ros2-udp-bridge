@@ -120,7 +120,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::inRange(hsv, lower_yellow_hsv, upper_yellow_hsv, yellow_mask_hsv);
 
         cv::Mat yellow_mask_lab;
-        cv::inRange(lab, cv::Scalar(150, 120, 130), cv::Scalar(250, 140, 200), yellow_mask_lab);
+        cv::inRange(lab, cv::Scalar(150, 130, 140), cv::Scalar(250, 140, 200), yellow_mask_lab);//150,230,130
 
         cv::Mat yellow_mask_rgb;
         cv::inRange(preprocessed, cv::Scalar(180, 180, 0), cv::Scalar(255, 255, 150), yellow_mask_rgb);
