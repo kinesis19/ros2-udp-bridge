@@ -114,10 +114,10 @@ void MasterNode::runRobotStage1() {
             ctlDxlRight(7, 3);
             RCLCPP_INFO(node->get_logger(), "2");
         } else if (yellow_line_angle_ < 20) {
-            ctlDxlRight(7, 4);
+            ctlDxlRight(6, 4);
             RCLCPP_INFO(node->get_logger(), "3");
         } else if (yellow_line_angle_ < 25) {
-            ctlDxlRight(7, 5);
+            ctlDxlRight(6, 5);
             RCLCPP_INFO(node->get_logger(), "4");
         } else {
             ctlDxlRight(7, 3);
@@ -130,17 +130,19 @@ void MasterNode::runRobotStage1() {
             ctlDxlLeft(7, 2);
             RCLCPP_INFO(node->get_logger(), "6");
         } else if (white_line_angle_ > 83) {
-            ctlDxlLeft(5, 4);
+            ctlDxlLeft(5, 3);
             RCLCPP_INFO(node->get_logger(), "7");
         } else {
-            ctlDxlLeft(6, 2);
+            ctlDxlLeft(5, 2);
             RCLCPP_INFO(node->get_logger(), "8");
         }
     }
 
     // Stage2 감지
     if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 432)) && (!isDetectYellowLine && (75 < white_line_angle_ && white_line_angle_ < 90))) {
-        stage_number_ = 2;
+        if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
+            stage_number_ = 2;
+        }
     }
 }
 
