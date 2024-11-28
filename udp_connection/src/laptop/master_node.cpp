@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/master_node.hpp"
 
-MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0), psd_adc_left_(0), psd_adc_front_(0), psd_adc_right_(0), white_line_points_(8, 0.0), yellow_line_points_(8, 0.0), white_line_angle_(0.0), yellow_line_angle_(0.0), isDetectBarrier(false)
+MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), isRobotRun_(false), linear_vel_(0), angular_vel_(0), yellow_line_x_(0.0), white_line_x_(0.0), stage_number_(0), imu_yaw_(0.0), psd_adc_left_(0), psd_adc_front_(0), psd_adc_right_(0), white_line_points_(8, 0.0), yellow_line_points_(8, 0.0), white_line_angle_(0.0), yellow_line_angle_(0.0), isDetectBarrier(false), isDetectSecondObjectStage2(false), isPassSecondObjectStage2(false)
 {
     node = rclcpp::Node::make_shared("master_node");
 
@@ -61,7 +61,7 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        // RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || Y Points[2]: %.2f | W Points[0]: %.2f || Y Line X: %.2f | W Line X: %.2f || IMU: %.2f", yellow_line_angle_, white_line_angle_, yellow_line_points_[2], white_line_points_[0], yellow_line_x_, white_line_x_, imu_yaw_);
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || Y Points[2]: %.2f | W Points[0]: %.2f || Y Line X: %.2f | W Line X: %.2f || IMU: %.2f", yellow_line_angle_, white_line_angle_, yellow_line_points_[2], white_line_points_[0], yellow_line_x_, white_line_x_, imu_yaw_);
 
         if (stage_number_ == 1) {
             runRobotStage1();
@@ -93,7 +93,7 @@ bool MasterNode::isInitialized() const
 void MasterNode::runRobotStage1() {    
     if ((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (530 < white_line_points_[0] && white_line_points_[0] < 630)) { // 직진 주행
         if (yellow_line_points_[2] < white_line_points_[0]) {
-            ctlDxlFront(15, 0);
+            ctlDxlFront(10, 0);
         }
 
         // 주행 도중, 라인 유지 처리
@@ -102,13 +102,6 @@ void MasterNode::runRobotStage1() {
         }
 
     } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-        
-        // if ((white_line_angle_ < 2 || white_line_angle_ > 89)) {
-        //     return 0;
-        // }
-        
-        
-
         // 첫 번째 오른쪽 코너
         if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
             ctlDxlRight(7, 2);
@@ -142,7 +135,7 @@ void MasterNode::runRobotStage1() {
     }
 
     // Stage2 감지
-    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 432)) && (!isDetectYellowLine && (75 < white_line_angle_ && white_line_angle_ < 90))) {
+    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 432)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
         if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
             stage_number_ = 2;
         }
@@ -150,24 +143,69 @@ void MasterNode::runRobotStage1() {
 }
 
 void MasterNode::runRobotStage2() {
-    stopDxl();
+    // stopDxl();
     RCLCPP_INFO(node->get_logger(), "스테이지2");
-    // 흰 선에 대한 코너링 처리
-    // if ((!isDetectYellowLine && isDetectWhiteLine) && white_line_points_[0] < 100) {
-    //     ctlDxlLeft(3, 5);
-    // } else if ((!isDetectYellowLine && isDetectWhiteLine) && white_line_points_[0] < 300) {
-    //     ctlDxlLeft(5, 3);
-    // } else if ((!isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > 500 && psd_adc_front_ < 2500)) {
-    //     ctlDxlFront(7, 0);
-    //     // if (psd_adc_left_ < 3000 && psd_adc_right_ < 3000) {
-    //     //     ctlDxlLeft(5, 3);
-    //     // } else {
-    //     //     RCLCPP_INFO(node->get_logger(), "7");
-    //     //     ctlDxlFront(7, 0);
-    //     // }
-    // }
+    bool isDetectWhiteLineNowStage2_1 = (!isDetectYellowLine && isDetectWhiteLine);
+
+    // 두 번째 장애물 감지 전까지의 로직
+    if (!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) {
+        // 흰 선에 대한 코너링 처리
+        if (isDetectWhiteLineNowStage2_1 && white_line_x_ < 0) {
+            ctlDxlLeft(7, 3);
+            RCLCPP_INFO(node->get_logger(), "9");
+        }else if (0.3 < white_line_x_ && white_line_x_ < 1) {
+            ctlDxlRight(4, 1);
+            RCLCPP_INFO(node->get_logger(), "10");
+        } 
+        
+        if (520 < white_line_points_[0] && white_line_x_ < 570) {
+            ctlDxlFront(10, 0);
+            RCLCPP_INFO(node->get_logger(), "11");
+        }
+    } else if (isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) {
+        if (!isPassSecondObjectStage2) {
+            if (psd_adc_front_ > 2500) {
+                if (-90 < imu_yaw_) {
+                    ctlDxlLeft(0, 5);
+                    RCLCPP_INFO(node->get_logger(), "12");
+                }
+            }
+            
+            if (-85 < imu_yaw_ && imu_yaw_ < -70) {
+                isPassSecondObjectStage2 = true;
+                ctlDxlFront(10, 0);
+                RCLCPP_INFO(node->get_logger(), "13");
+            }   
+        } else {
+            // 두 번째 오브젝트에서 턴하고, 세 번째 오브젝트 감지를 위해 yellow line을 감지해서 멈춰도 됨.
+            // if (isDetectYellowLine) {
+            //     stopDxl();
+            // }
+
+            // 근데, psd left 사용해서 멈추는 게 더 좋을 듯 (무엇을 사용하든다 준비 됨)
+            if (1300 < psd_adc_left_) { 
+                ctlDxlRight(0, 5);
+                RCLCPP_INFO(node->get_logger(), "14");
+            }
+
+            if (-20 < imu_yaw_ && imu_yaw_ < 5) {
+                ctlDxlFront(10, 0);
+                RCLCPP_INFO(node->get_logger(), "15");
+            }
+        }
+
+
+
+
+        // else {
+        //     ctlDxlLeft(0, 10);
+        //     RCLCPP_INFO(node->get_logger(), "13");
+        // }
+    }
+
     if (psd_adc_front_ > 2500) {
-        stopDxl();
+        isDetectSecondObjectStage2 = true;
+        // stopDxl();
     }
 }
 
@@ -199,10 +237,10 @@ void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
 void MasterNode::detectBarrier(const std_msgs::msg::Bool::SharedPtr msg) {
     if (msg->data) {
         isDetectBarrier = true;
-        RCLCPP_INFO(node->get_logger(), "Barrier: True");
+        // RCLCPP_INFO(node->get_logger(), "Barrier: True");
     } else {
         isDetectBarrier = false;
-        RCLCPP_INFO(node->get_logger(), "Barrier: False");
+        // RCLCPP_INFO(node->get_logger(), "Barrier: False");
     }
 }
 

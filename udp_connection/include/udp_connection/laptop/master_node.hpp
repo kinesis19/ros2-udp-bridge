@@ -118,6 +118,9 @@ private:
 
 
     // ========== [Stage2 감지 플래그 변수] ==========
+    bool isDetectSecondObjectStage2;
+    bool isDetectThirdObjectStage2;
+    bool isPassSecondObjectStage2;
     
 
     // ========== [Line Detect 메서드] ==========
