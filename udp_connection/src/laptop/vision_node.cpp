@@ -30,6 +30,8 @@ VisionNode::VisionNode() :  yellow_line_detected(false), white_line_detected(fal
     pub_yellow_angle_ = node->create_publisher<std_msgs::msg::Float32>("/vision/yellow_line_angle", 10);
     pub_white_angle_ = node->create_publisher<std_msgs::msg::Float32>("/vision/white_line_angle", 10);
 
+    pub_barrier_detected_ = node->create_publisher<std_msgs::msg::Bool>("/vision/barrier_detected", 10);
+
     yellow_detection_array.fill(false);
     white_detection_array.fill(false);
 }
@@ -72,12 +74,21 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Point2f src_vertices[4];
         cv::Point2f dst_vertices[4];
         cv::Point2f signs_vertices[4];
+        cv::Point2f bar_vertices[4];
+        
+        // 차단바
+        bar_vertices[0] = cv::Point2f(width * 0.35f, height * 0.55f);
+        bar_vertices[1] = cv::Point2f(width * 0.65f, height * 0.55f);
+        bar_vertices[2] = cv::Point2f(width * 0.65f, height * 0.7f);
+        bar_vertices[3] = cv::Point2f(width * 0.35f, height * 0.7f);
 
+        // 표지판
         signs_vertices[0] = cv::Point2f(width * 0.95f, height * 0.3f);
         signs_vertices[1] = cv::Point2f(width * 1.0f, height * 0.3f);
         signs_vertices[2] = cv::Point2f(width * 1.0f, height * 0.55f);
         signs_vertices[3] = cv::Point2f(width * 0.95f, height * 0.55f);
 
+        // 라인트레이싱
         src_vertices[0] = cv::Point2f(width * 0.15f, height * 0.9f);
         src_vertices[1] = cv::Point2f(width * 0.85f, height * 0.9f);
         src_vertices[2] = cv::Point2f(width * 0.9f, height * 1.0f);
@@ -115,12 +126,12 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Mat yellow_mask_combined;
 
         cv::Mat yellow_mask_hsv;
-        cv::Scalar lower_yellow_hsv(15, 130, 130);
+        cv::Scalar lower_yellow_hsv(20, 150, 150); // 이전 hsv: 15, 130, 130
         cv::Scalar upper_yellow_hsv(30, 255, 255);
         cv::inRange(hsv, lower_yellow_hsv, upper_yellow_hsv, yellow_mask_hsv);
 
         cv::Mat yellow_mask_lab;
-        cv::inRange(lab, cv::Scalar(150, 130, 140), cv::Scalar(250, 140, 200), yellow_mask_lab);//150,230,130
+        cv::inRange(lab, cv::Scalar(150, 130, 140), cv::Scalar(250, 140, 200), yellow_mask_lab); // 이전 hsv: 150, 230, 130
 
         cv::Mat yellow_mask_rgb;
         cv::inRange(preprocessed, cv::Scalar(180, 180, 0), cv::Scalar(255, 255, 150), yellow_mask_rgb);
@@ -182,7 +193,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         // 노란색 선 그리기
         for (const auto &contour : yellow_contours) {
             double area = cv::contourArea(contour);
-            if (area > 150.0) {
+            if (area > 200.0) { // 이전: 150.0
                 yellow_line_detected = true;
                 yellow_line_count++;
 
@@ -299,6 +310,84 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         if (yellow_line_detected || white_line_detected) {
             // RCLCPP_INFO(node->get_logger(), "Lines detected - Yellow: %d (count: %d), White: %d (count: %d)", yellow_line_detected, yellow_line_count, white_line_detected, white_line_count);
         }
+
+        // 차단바 검출
+        cv::Mat bar_roi_mask = cv::Mat::zeros(resized_frame.size(), CV_8UC1);
+        std::vector<cv::Point> bar_roi_points;
+
+        for (int i = 0; i < 4; i++) {
+            bar_roi_points.push_back(cv::Point(bar_vertices[i].x, bar_vertices[i].y));
+        }
+        cv::fillConvexPoly(bar_roi_mask, bar_roi_points, cv::Scalar(255));
+        // 차단바용 색상 검출
+        cv::Mat bar_hsv;
+        cv::cvtColor(resized_frame, bar_hsv, cv::COLOR_BGR2HSV);
+        // 차단바 전용 노란색 마스크
+        cv::Mat bar_yellow_roi;
+        cv::Scalar barrier_lower_yellow(15, 100, 100);
+        cv::Scalar barrier_upper_yellow(35, 255, 255);
+        cv::inRange(bar_hsv, barrier_lower_yellow, barrier_upper_yellow, bar_yellow_roi);
+        // ROI 적용
+        cv::bitwise_and(bar_yellow_roi, bar_roi_mask, bar_yellow_roi);
+        // 노이즈 제거
+        cv::morphologyEx(bar_yellow_roi, bar_yellow_roi, cv::MORPH_OPEN, kernel);
+        cv::morphologyEx(bar_yellow_roi, bar_yellow_roi, cv::MORPH_CLOSE, kernel_large);
+        
+        std::vector<std::vector<cv::Point>> bar_yellow_contours;
+        cv::findContours(bar_yellow_roi, bar_yellow_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        std::vector<cv::RotatedRect> candidate_rects;
+        barrier_detected = false;
+
+        // 먼저 적절한 크기의 모든 사각형을 수집
+        for (const auto &yellow_contour : bar_yellow_contours) {
+            double area = cv::contourArea(yellow_contour);
+
+            if (area > 50.0 && area < 1000.0) {
+                cv::RotatedRect yellow_rect = cv::minAreaRect(yellow_contour);
+                candidate_rects.push_back(yellow_rect);
+            }
+        }
+        if (candidate_rects.size() >= 4) {
+            // y 좌표로 정렬
+            std::sort(candidate_rects.begin(), candidate_rects.end(), [](const cv::RotatedRect &a, const cv::RotatedRect &b) {
+                return a.center.y < b.center.y;
+            });
+            float prev_y = candidate_rects[0].center.y;
+            int same_line_count = 1;
+            float total_width = 0;
+            float avg_height = 0;
+            for (size_t i = 1; i < candidate_rects.size(); i++) {
+                float curr_y = candidate_rects[i].center.y;
+                if (std::abs(curr_y - prev_y) < 15.0) {
+                    same_line_count++;
+                    float width = std::min(candidate_rects[i].size.width, candidate_rects[i].size.height);
+                    float height = std::max(candidate_rects[i].size.width, candidate_rects[i].size.height);
+                    total_width += width;
+                    avg_height += height;
+                    float x_diff = std::abs(candidate_rects[i].center.x - candidate_rects[i - 1].center.x);
+                    if (x_diff > 50.0)
+                        continue;
+                }
+            }
+
+            avg_height /= same_line_count;
+
+            if (same_line_count >= 4 && avg_height > 10.0 && total_width > 50.0) {
+                barrier_detected = true;
+                // 시각화
+                for (const auto &rect : candidate_rects) {
+                    cv::Point2f vertices[4];
+                    rect.points(vertices);
+                    for (int i = 0; i < 4; i++) {
+                        cv::line(line_display, vertices[i], vertices[(i + 1) % 4], cv::Scalar(0, 0, 255), 2);
+                    }
+                }
+            }
+        }
+        // 차단바 검출 결과 발행
+        auto barrier_msg = std_msgs::msg::Bool();
+        barrier_msg.data = barrier_detected;
+        pub_barrier_detected_->publish(barrier_msg);
         
 
         // 표지판 검출 부분
@@ -344,7 +433,11 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         blue_sign_msg.data = blue_sign_detected;
         pub_blue_sign_detected_->publish(blue_sign_msg);
 
-        // ROI 영역 표시 (빨간색)
+        // ROI 영역 표시
+        for (int i = 0; i < 4; i++) {
+            cv::line(resized_frame, bar_vertices[i], bar_vertices[(i + 1) % 4], cv::Scalar(255, 0, 0), 2);
+        }
+
         for (int i = 0; i < 4; i++) {
             cv::line(resized_frame, signs_vertices[i], signs_vertices[(i + 1) % 4], cv::Scalar(0, 0, 255), 2);
         }
