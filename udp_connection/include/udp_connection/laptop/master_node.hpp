@@ -13,12 +13,19 @@ class MasterNode : public QThread
     Q_OBJECT
 
 public:
+
     MasterNode();
     ~MasterNode();
     bool isInitialized() const; // 초기화 상태 확인 메서드
     void stopDxl();
     void updateDxlData(int linearVel, int angularVel); // Dxl 데이터를 UI로 입력 받아 제어하기
     void runDxl(int linearVel, int angularVel); // Dxl 원격 제어(버튼)
+
+    void responePidTest();
+
+
+    // ========== [PID Control 메서드] ==========
+    void ctlDxlYaw(float target_yaw);
 
 
 signals:
@@ -95,6 +102,13 @@ private:
     float white_line_angle_;
     float yellow_line_angle_;
 
+    // PID Control 변수
+    bool playYawFlag = false;
+    float cal_pi = 0.0;
+    float angular_vel_pi = 0.0;
+    float target_yaw_ = 0.0;
+
+
     // ========== [Stage2 감지 플래그 변수] ==========
     
 
@@ -127,6 +141,7 @@ private:
     // ========== [스테이지별 이동 처리 메서드] ==========
     void runRobotStage1(); // 스테이지1 일때의 이동처리 로직
     void runRobotStage2();
+
 
 };
 

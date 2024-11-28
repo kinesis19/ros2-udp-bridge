@@ -45,6 +45,8 @@ private slots:
 
   void onImuResetButtonClicked();
 
+  void onPidTestButtonClicked();
+
 private:
   Ui::LaptopWindowDesign* ui;
 

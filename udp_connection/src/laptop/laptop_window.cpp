@@ -60,6 +60,9 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
   connect(ui->btnMoveRight, &QPushButton::clicked, this, &LaptopWindow::onMoveRightButtonClicked);
   connect(ui->btnMoveStop, &QPushButton::clicked, this, &LaptopWindow::onMoveStopButtonClicked);
 
+  // ========== [PID Test 버튼 슬롯 연결] ==========
+  connect(ui->btnPidTest, &QPushButton::clicked, this, &LaptopWindow::onPidTestButtonClicked);
+
   // ========== [IMU 버튼 슬롯 연결] ==========
   connect(ui->btnIMUReset, &QPushButton::clicked, this, &LaptopWindow::onImuResetButtonClicked);
 
@@ -237,11 +240,12 @@ void LaptopWindow::onMoveBackButtonClicked() {
 }
 
 void LaptopWindow::onMoveLeftButtonClicked() {
-  masterNode_->runDxl(2, 3);
+  masterNode_->runDxl(0, 3);
 }
 
 void LaptopWindow::onMoveRightButtonClicked() {
-  masterNode_->runDxl(2, -3);
+  masterNode_->runDxl(0, -3);
+  // masterNode_->ctlDxlYaw(100.0);
 }
 
 void LaptopWindow::onMoveStopButtonClicked() {
@@ -252,4 +256,9 @@ void LaptopWindow::onMoveStopButtonClicked() {
 // ========== [IMU 초기화 메서드] ==========
 void LaptopWindow::onImuResetButtonClicked() {
   imuNode_->resetAngles();
+}
+
+void LaptopWindow::onPidTestButtonClicked() {
+  masterNode_->responePidTest();
+  ui->btnPidTest->setText("Clicked");
 }
