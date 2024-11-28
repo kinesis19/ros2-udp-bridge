@@ -10,6 +10,7 @@
 #include <QImage>
 #include <QPixmap>
 #include <QLCDNumber>
+#include <QKeyEvent>
 #include "QIcon"
 #include "../qnode.hpp"
 #include "ui_laptopwindow.h"
@@ -70,6 +71,8 @@ private:
   void checkImuNodeInitializeCondition(); // Imu 노드 초기화 상태 학인 메서드
   void checkDxlLeftNodeInitializeCondition(); // DxlLeft 노드 초기화 상태 학인 메서드
   void checkDxlRightNodeInitializeCondition(); // DxlRight 노드 초기화 상태 학인 메서드
+
+  void keyPressEvent(QKeyEvent* event);
 
 };
 

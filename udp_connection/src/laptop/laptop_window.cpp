@@ -4,6 +4,9 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
 {
   ui->setupUi(this);
 
+ui->lineEditConnectCheckSendData->setFocusPolicy(Qt::NoFocus);
+ui->lineEditTargetDeviceIPAddress->setFocusPolicy(Qt::NoFocus);
+
   QIcon icon("://ros-icon.png");
   this->setWindowIcon(icon);
 
@@ -261,4 +264,27 @@ void LaptopWindow::onImuResetButtonClicked() {
 void LaptopWindow::onPidTestButtonClicked() {
   masterNode_->responePidTest();
   ui->btnPidTest->setText("Clicked");
+}
+
+void LaptopWindow::keyPressEvent(QKeyEvent* event) {
+  switch (event->key()) {
+    case Qt::Key_W:
+      onMoveFrontButtonClicked();  // 위쪽 화살표 → 전진
+      break;
+    case Qt::Key_S:
+      onMoveBackButtonClicked();   // 아래쪽 화살표 → 후진
+      break;
+    case Qt::Key_A:
+      onMoveLeftButtonClicked();   // 왼쪽 화살표 → 좌회전
+      break;
+    case Qt::Key_D:
+      onMoveRightButtonClicked();  // 오른쪽 화살표 → 우회전
+      break;
+    case Qt::Key_Space:
+      onMoveStopButtonClicked();   // 스페이스 → 정지
+      break;
+    default:
+      QMainWindow::keyPressEvent(event);  // 다른 키는 기본 처리
+      break;
+  }
 }
