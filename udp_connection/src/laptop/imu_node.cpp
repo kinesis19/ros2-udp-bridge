@@ -73,8 +73,8 @@ void ImuNode::quaternionToEuler(const double qx, const double qy, const double q
     pitch = pitch * 180.0 / M_PI;
     yaw = yaw * 180.0 / M_PI;
 
-    normalizeAngle(roll);
-    normalizeAngle(yaw);
+    // normalizeAngle(roll);
+    // normalizeAngle(yaw);
     
     if (pitch > 90.0) pitch = -90.0;
     if (pitch < -90.0) pitch = 90.0;
@@ -116,7 +116,7 @@ void ImuNode::processImuData(const std::vector<double>& data)
     // Kalman 필터 적용
     float final_roll = roll_kf.update(roll);
     float final_pitch = pitch_kf.update(pitch);
-    float final_yaw = yaw_kf.update(yaw);
+    int final_yaw = yaw_kf.update(yaw);
 
     auto roll_msg = std_msgs::msg::Float32();
     auto pitch_msg = std_msgs::msg::Float32();
@@ -131,8 +131,8 @@ void ImuNode::processImuData(const std::vector<double>& data)
     pub_pitch_->publish(pitch_msg);
     pub_yaw_->publish(yaw_msg);
 }
-
+/*
 void ImuNode::normalizeAngle(double &angle) {
     while (angle > 180.0) angle -= 360.0;
     while (angle < -180.0) angle += 360.0;
-}
+}*/

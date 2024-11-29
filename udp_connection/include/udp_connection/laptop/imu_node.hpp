@@ -56,7 +56,7 @@ private:
     void imuCallback(const std_msgs::msg::String::SharedPtr msg);
     void processImuData(const std::vector<double>& data);
     void quaternionToEuler(const double qx, const double qy, const double qz, const double qw, double &roll, double &pitch, double &yaw);
-    void normalizeAngle(double &angle);
+    //void normalizeAngle(double &angle);
 };
 
 #endif // UDP_CONNECTION_IMU_HPP
