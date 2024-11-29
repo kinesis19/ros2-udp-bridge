@@ -61,14 +61,14 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || Y Points[2]: %.2f | W Points[0]: %.2f || Y Line X: %.2f | W Line X: %.2f || IMU: %.2f", yellow_line_angle_, white_line_angle_, yellow_line_points_[2], white_line_points_[0], yellow_line_x_, white_line_x_, imu_yaw_);
+        // RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || Y Points[2]: %.2f | W Points[0]: %.2f || Y Line X: %.2f | W Line X: %.2f || IMU: %.2f", yellow_line_angle_, white_line_angle_, yellow_line_points_[2], white_line_points_[0], yellow_line_x_, white_line_x_, imu_yaw_);
 
         if (stage_number_ == 1) {
             runRobotStage1();
         } else if (stage_number_ == 2) {
             runRobotStage2();
         }
-        
+
         // 현재 상태를 유지하며 지속적으로 퍼블리시
         auto msg_linear_ = std_msgs::msg::Int32();
         auto msg_angular_ = std_msgs::msg::Int32();
@@ -91,8 +91,8 @@ bool MasterNode::isInitialized() const
 
 // ========== [스테이지별 이동 처리 메서드] ==========
 void MasterNode::runRobotStage1() {    
-    if ((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (530 < white_line_points_[0] && white_line_points_[0] < 630)) { // 직진 주행
-        if (yellow_line_points_[2] < white_line_points_[0]) {
+    if ((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (530 < white_line_points_[0] && white_line_points_[0] < 600)) { // 직진 주행
+        if ((yellow_line_points_[2] < white_line_points_[0])) {
             ctlDxlFront(10, 0);
         }
 
@@ -144,7 +144,7 @@ void MasterNode::runRobotStage1() {
 
 void MasterNode::runRobotStage2() {
     // stopDxl();
-    RCLCPP_INFO(node->get_logger(), "스테이지2");
+    // RCLCPP_INFO(node->get_logger(), "스테이지2");
     bool isDetectWhiteLineNowStage2_1 = (!isDetectYellowLine && isDetectWhiteLine);
 
     // 두 번째 장애물 감지 전까지의 로직
@@ -167,7 +167,7 @@ void MasterNode::runRobotStage2() {
 
         if (!isPassSecondObjectStage2) {
             if (psd_adc_front_ > 2500) {
-                if (-60 < imu_yaw_) {
+                if (-30 < imu_yaw_) {
                     ctlDxlLeft(0, 5);
                     RCLCPP_INFO(node->get_logger(), "12");
                 }
@@ -391,6 +391,10 @@ void MasterNode::stopDxl() {
 }
 
 void MasterNode::ctlDxlYaw(float target_yaw) {
+    if (!playYawFlag) {
+        RCLCPP_INFO(node->get_logger(), "예외");
+        return;
+    }
     RCLCPP_INFO(node->get_logger(), "진입");
 
     yaw_error = target_yaw - imu_yaw_;
@@ -400,13 +404,14 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
     if(yaw_error < -180.0f)
         yaw_error += 360.0f;
 
-    if(fabs(yaw_error) < yaw_ok) {
+    if(std::fabs(yaw_error) < yaw_ok) {
         intergral = 0;
         playYawFlag = false;
         angular_vel_pid = 0;
         target_yaw_ = imu_yaw_;
         RCLCPP_INFO(node->get_logger(), "조건문");
         stopDxl();
+        return;
     }
 
     intergral += yaw_error;
@@ -417,16 +422,12 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
     if(angular_vel_pid < -max_angular_vel)
         angular_vel_pid = -max_angular_vel;
 
-    if ((angular_vel_pid > 0) && (angular_vel_pid < min_angular_vel))
+    if (angular_vel_pid > 0 && angular_vel_pid < min_angular_vel)
         angular_vel_pid = min_angular_vel;
-    if ((angular_vel_pid < 0) && (angular_vel_pid > -min_angular_vel))
+    if (angular_vel_pid < 0 && angular_vel_pid > -min_angular_vel)
         angular_vel_pid = -min_angular_vel;
 
-    if (fabs(yaw_error) < yaw_ok) {
-        angular_vel_pid *= fabs(yaw_error) / yaw_ok;
-    }
-
-    runDxl(0, static_cast<int>(angular_vel_pid));
+    runDxl(0, static_cast<int>(-angular_vel_pid));
     pre_yaw_error = yaw_error;
 }
 
