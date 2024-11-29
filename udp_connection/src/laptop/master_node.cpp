@@ -174,7 +174,12 @@ void MasterNode::runRobotStage2() {
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
             if (psd_adc_front_ > 2400 || psd_adc_left_ > 2000 && psd_adc_front_ > 2000) {
-                target_yaw_ = -50.0;
+                if (imu_yaw_ - 50.0 < -180) {
+                    target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
+                } else {
+                    target_yaw_ = imu_yaw_ - 50.0;
+                }
+                // target_yaw_ = -50.0;
                 playYawFlag = true;
                 isPassSecondObjectStage2 = true;
                 RCLCPP_INFO(node->get_logger(), "12");
@@ -182,7 +187,7 @@ void MasterNode::runRobotStage2() {
             
         } else {
             // 노란색 선을 감지하러 직진하기
-            if ((!isDetectYellowLineStage2 && !playYawFlag) && (-60 < imu_yaw_ && imu_yaw_ < -40)) {
+            if ((!isDetectYellowLineStage2 && !playYawFlag)) {
                 ctlDxlFront(10, 0);
                 RCLCPP_INFO(node->get_logger(), "13");
             }
@@ -192,18 +197,23 @@ void MasterNode::runRobotStage2() {
             }
 
             // Yellow Line에서 오른쪽 방향으로 회전하기
-            if (isDetectYellowLineStage2 && yellow_line_points_[2] > 300) { 
-                target_yaw_ = 45.0;
+            if (isDetectYellowLineStage2) { 
+                if (imu_yaw_ + 45.0 > 180) {
+                    target_yaw_ = (imu_yaw_ + 45.0) - 360; // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+                } else {
+                    target_yaw_ = imu_yaw_ + 45.0;
+                }
+                // target_yaw_ = 45.0;
                 playYawFlag = true;
                 RCLCPP_INFO(node->get_logger(), "14");
             }
 
-            if (isDetectYellowLineStage2 && (5 < imu_yaw_ && imu_yaw_ < 45)) { 
+            if (isDetectYellowLineStage2 && !playYawFlag) { 
                 ctlDxlFront(10, 0);
                 RCLCPP_INFO(node->get_logger(), "15");
             }
 
-            if (isDetectYellowLineStage2 && isDetectWhiteLine) {
+            if ((isDetectYellowLineStage2 && isDetectWhiteLine) && !playYawFlag) {
                 isDetectWhiteLineStage2 = true;
             }
         }
