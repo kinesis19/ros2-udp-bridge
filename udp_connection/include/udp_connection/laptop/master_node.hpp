@@ -110,11 +110,19 @@ private:
     float white_line_angle_;
     float yellow_line_angle_;
 
-    // PID Control 변수
+    // PID Control 변수    
+    const float kP = 0.05;
+    const float kI = 0.0;
+    const float kD = 0.0;
+    const float yaw_ok = 10.0;
+    const float max_angular_vel = 3.0;
+    const float min_angular_vel = 0.7;
     bool playYawFlag = false;
-    float cal_pi = 0.0;
-    float angular_vel_pi = 0.0;
+    float intergral = 0.0;
+    float angular_vel_pid = 0.0;
     float target_yaw_ = 0.0;
+    float yaw_error = 0.0;
+    float pre_yaw_error = 0.0;
 
 
     // ========== [Stage2 감지 플래그 변수] ==========

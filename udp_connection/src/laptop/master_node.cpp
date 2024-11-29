@@ -162,20 +162,23 @@ void MasterNode::runRobotStage2() {
             ctlDxlFront(10, 0);
             RCLCPP_INFO(node->get_logger(), "11");
         }
-    } else if (isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) {
+    
+    } else if (isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) { // 두 번째 장애물 감지 이후의 처리 로직
+
         if (!isPassSecondObjectStage2) {
             if (psd_adc_front_ > 2500) {
-                if (-90 < imu_yaw_) {
+                if (-60 < imu_yaw_) {
                     ctlDxlLeft(0, 5);
                     RCLCPP_INFO(node->get_logger(), "12");
                 }
             }
             
-            if (-85 < imu_yaw_ && imu_yaw_ < -70) {
+            if (-90 < imu_yaw_ && imu_yaw_ < -70) {
                 isPassSecondObjectStage2 = true;
                 ctlDxlFront(10, 0);
                 RCLCPP_INFO(node->get_logger(), "13");
-            }   
+            }
+
         } else {
             // 두 번째 오브젝트에서 턴하고, 세 번째 오브젝트 감지를 위해 yellow line을 감지해서 멈춰도 됨.
             // if (isDetectYellowLine) {
@@ -192,6 +195,7 @@ void MasterNode::runRobotStage2() {
                 ctlDxlFront(10, 0);
                 RCLCPP_INFO(node->get_logger(), "15");
             }
+        
         }
 
 
@@ -203,7 +207,8 @@ void MasterNode::runRobotStage2() {
         // }
     }
 
-    if (psd_adc_front_ > 2500) {
+    // 스테이지2 - 두 번째 장애물 감지 조건
+    if ((!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && psd_adc_front_ > 2500) {
         isDetectSecondObjectStage2 = true;
         // stopDxl();
     }
@@ -236,6 +241,7 @@ void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
 // ========== [차단바 감지 서브스크라이브] ==========
 void MasterNode::detectBarrier(const std_msgs::msg::Bool::SharedPtr msg) {
     if (msg->data) {
+        stopDxl();
         isDetectBarrier = true;
         // RCLCPP_INFO(node->get_logger(), "Barrier: True");
     } else {
@@ -386,13 +392,8 @@ void MasterNode::stopDxl() {
 
 void MasterNode::ctlDxlYaw(float target_yaw) {
     RCLCPP_INFO(node->get_logger(), "진입");
-    const float kP = 0.1;
-    const float kI = 0.0;
-    const float yaw_ok = 10.0;
-    const float max_angular_vel = 2.0;
-    const float min_angular_vel = 1.0;
 
-    float yaw_error = target_yaw - imu_yaw_;
+    yaw_error = target_yaw - imu_yaw_;
 
     if(yaw_error > 180.0f)
         yaw_error -= 360.0f;
@@ -400,28 +401,33 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
         yaw_error += 360.0f;
 
     if(fabs(yaw_error) < yaw_ok) {
-        cal_pi = 0;
+        intergral = 0;
         playYawFlag = false;
-        angular_vel_pi = 0;
+        angular_vel_pid = 0;
+        target_yaw_ = imu_yaw_;
         RCLCPP_INFO(node->get_logger(), "조건문");
         stopDxl();
     }
 
-    else {
-        cal_pi += yaw_error;
-        angular_vel_pi = (kP * yaw_error) + (kI * cal_pi);
-        if(angular_vel_pi > max_angular_vel)
-            angular_vel_pi = max_angular_vel;
-        if(angular_vel_pi < -max_angular_vel)
-            angular_vel_pi = -max_angular_vel;
+    intergral += yaw_error;
+    float d_term = yaw_error - pre_yaw_error;
+    angular_vel_pid = (kP * yaw_error) + (kI * intergral) + (kD * d_term);
+    if(angular_vel_pid > max_angular_vel)
+        angular_vel_pid = max_angular_vel;
+    if(angular_vel_pid < -max_angular_vel)
+        angular_vel_pid = -max_angular_vel;
 
-        if ((angular_vel_pi > 0) && (angular_vel_pi < min_angular_vel))
-            angular_vel_pi = min_angular_vel;
-        if ((angular_vel_pi < 0) && (angular_vel_pi > -min_angular_vel))
-            angular_vel_pi = -min_angular_vel;
+    if ((angular_vel_pid > 0) && (angular_vel_pid < min_angular_vel))
+        angular_vel_pid = min_angular_vel;
+    if ((angular_vel_pid < 0) && (angular_vel_pid > -min_angular_vel))
+        angular_vel_pid = -min_angular_vel;
 
-        runDxl(0, static_cast<int>(angular_vel_pi));
+    if (fabs(yaw_error) < yaw_ok) {
+        angular_vel_pid *= fabs(yaw_error) / yaw_ok;
     }
+
+    runDxl(0, static_cast<int>(angular_vel_pid));
+    pre_yaw_error = yaw_error;
 }
 
 
