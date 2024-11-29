@@ -173,8 +173,8 @@ void ImuNode::processImuData(const std::vector<double>& data)
     pub_yaw_->publish(final_msg);
 
     // 디버깅을 위한 로그 추가
-    RCLCPP_INFO(node->get_logger(), "Raw Yaw: %.2f, Filtered: %.2f, Offset: %.2f, Final: %d",
-                yaw, yaw_kf.getState(), yaw_offset, final_yaw);
+    // RCLCPP_INFO(node->get_logger(), "Raw Yaw: %.2f, Filtered: %.2f, Offset: %.2f, Final: %d",
+    //             yaw, yaw_kf.getState(), yaw_offset, final_yaw);
 }
 
 void ImuNode::normalizeAngle(double &angle)
