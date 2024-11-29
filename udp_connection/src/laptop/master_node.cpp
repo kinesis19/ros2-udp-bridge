@@ -141,7 +141,7 @@ void MasterNode::runRobotStage1() {
     }
 
     // Stage2 감지
-    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 460)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
+    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 430)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
         if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
             stage_number_ = 2;
         }
@@ -154,21 +154,22 @@ void MasterNode::runRobotStage2() {
     bool isDetectWhiteLineNowStage2_1 = (!isDetectYellowLine && isDetectWhiteLine);
 
     // 두 번째 장애물 감지 전까지의 로직
-    if (!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) {
+    if ((!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && !isDetectWhiteLineStage2) {
         // 흰 선에 대한 코너링 처리
         if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0)) {
             ctlDxlLeft(6, 3);
             RCLCPP_INFO(node->get_logger(), "9");
         }
-        else if (0.3 < white_line_x_ && white_line_x_ < 1) {
+        else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
             ctlDxlRight(2, 1);
             RCLCPP_INFO(node->get_logger(), "10");
+
         } else if (520 < white_line_points_[0] && white_line_x_ < 570) {
             ctlDxlFront(10, 0);
             RCLCPP_INFO(node->get_logger(), "11");
         }
     
-    } else if (isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) { // 두 번째 장애물 감지 이후의 처리 로직
+    } else if ((isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && !isDetectWhiteLineStage2) { // 두 번째 장애물 감지 이후의 처리 로직
 
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
@@ -180,9 +181,14 @@ void MasterNode::runRobotStage2() {
             }
             
         } else {
+            // 노란색 선을 감지하러 직진하기
             if ((!isDetectYellowLineStage2 && !playYawFlag) && (-60 < imu_yaw_ && imu_yaw_ < -40)) {
                 ctlDxlFront(10, 0);
                 RCLCPP_INFO(node->get_logger(), "13");
+            }
+
+            if (isDetectYellowLine && !isDetectYellowLineStage2) {
+                isDetectYellowLineStage2 = true;
             }
 
             // Yellow Line에서 오른쪽 방향으로 회전하기
@@ -200,57 +206,43 @@ void MasterNode::runRobotStage2() {
             if (isDetectYellowLineStage2 && isDetectWhiteLine) {
                 isDetectWhiteLineStage2 = true;
             }
-
-
-
-            // 오브젝트2 통과 이후 흰색 라인 감지했을 떄의 주행 처리 로직
-            if (isDetectWhiteLineStage2) {
-                if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
-
-                ctlDxlFront(12, 0);
-
-            } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-                // 첫 번째 오른쪽 코너
-                if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
-                    ctlDxlRight(7, 2);
-                    RCLCPP_INFO(node->get_logger(), "1");
-                } else if (yellow_line_angle_ < 15) {
-                    ctlDxlRight(7, 3);
-                    RCLCPP_INFO(node->get_logger(), "2");
-                } else if (yellow_line_angle_ < 20) {
-                    ctlDxlRight(6, 4);
-                    RCLCPP_INFO(node->get_logger(), "3");
-                } else if (yellow_line_angle_ < 25) {
-                    ctlDxlRight(6, 5);
-                    RCLCPP_INFO(node->get_logger(), "4");
-                } else {
-                    ctlDxlRight(7, 3);
-                    RCLCPP_INFO(node->get_logger(), "5");
-                }
-
-            } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= -1)))) { // 좌회전
-                // 주행 도중 라인 유지
-                if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
-                    return;
-                }
-
-                if (white_line_angle_ > 88) {
-                    ctlDxlLeft(7, 1);
-                    RCLCPP_INFO(node->get_logger(), "6");
-                } else if (white_line_angle_ > 83) {
-                    ctlDxlLeft(5, 2);
-                    RCLCPP_INFO(node->get_logger(), "7");
-                } else {
-                    ctlDxlLeft(5, 2);
-                    RCLCPP_INFO(node->get_logger(), "8");
-                }
+        }
+    } else if (isDetectWhiteLineStage2) {
+        if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
+            ctlDxlFront(12, 0);
+        } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
+            // 첫 번째 오른쪽 코너
+            if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
+                ctlDxlRight(7, 2);
+                RCLCPP_INFO(node->get_logger(), "2-1");
+            } else if (yellow_line_angle_ < 15) {
+                ctlDxlRight(7, 3);
+                RCLCPP_INFO(node->get_logger(), "2-2");
+            } else if (yellow_line_angle_ < 20) {
+                ctlDxlRight(6, 4);
+                RCLCPP_INFO(node->get_logger(), "2-3");
+            } else if (yellow_line_angle_ < 25) {
+                ctlDxlRight(6, 5);
+                RCLCPP_INFO(node->get_logger(), "2-4");
+            } else {
+                ctlDxlRight(7, 3);
+                RCLCPP_INFO(node->get_logger(), "2-5");
             }
+        } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= -1)))) { // 좌회전
+            // 주행 도중 라인 유지
+            if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
+                return;
             }
 
-
-            // 오브젝트2 통과 이후, Yellow Line이 감지될 때 (최초 1회 실행)
-            if (isDetectYellowLine && !isDetectYellowLineStage2) {
-                isDetectYellowLineStage2 = true;
+            if (white_line_angle_ > 88) {
+                ctlDxlLeft(7, 1);
+                RCLCPP_INFO(node->get_logger(), "2-6");
+            } else if (white_line_angle_ > 83) {
+                ctlDxlLeft(5, 2);
+                RCLCPP_INFO(node->get_logger(), "2-7");
+            } else {
+                ctlDxlLeft(3, 3);
+                RCLCPP_INFO(node->get_logger(), "2-8");
             }
         }
     }
