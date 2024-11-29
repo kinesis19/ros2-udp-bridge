@@ -127,9 +127,11 @@ private:
 
 
     // ========== [Stage2 감지 플래그 변수] ==========
-    bool isDetectSecondObjectStage2;
-    bool isDetectThirdObjectStage2;
-    bool isPassSecondObjectStage2;
+    bool isDetectSecondObjectStage2; // 오브젝트2 정면 감지 변수
+    bool isDetectThirdObjectStage2; // 오브젝트3 정면 감지 변수
+    bool isPassSecondObjectStage2; // 오브젝트2 통과 감지 변수
+    bool isDetectYellowLineStage2; // 오브젝트2 통과 이후, 직진을 위한 Yellow Line 감지 변수
+    bool isDetectWhiteLineStage2; // 오브젝트2 통과 이후, 라인트레이싱을 위한 White Line 감지 변수
     
 
     // ========== [Line Detect 메서드] ==========
