@@ -48,26 +48,32 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_angle_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_barrier_detected_;
 
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_barrier_yellow_line_detected_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_barrier_white_line_detected_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_barrier_yellow_line_angle_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_barrier_white_line_angle_;
+
 
 
     bool initialized_; // 초기화 상태 확인 변수
     bool barrier_detected;
-    bool yellow_line_detected;
-    bool white_line_detected;
-    int yellow_line_count;
-    int white_line_count;
+    bool yellow_line_detected; // 노란 선 감지
+    bool white_line_detected; // 흰 선 감지
+    int yellow_line_count; // 노란선 카운트
+    int white_line_count; // 흰 선 카운트
     bool blue_sign_detected; // 삼거리 표지판 감지 변수
+    int array_index; // 배열 숫자(라인을 실제로 감지했는지, 배열에 저장해서 계속 유지되는 값인지 확인)
+    bool yellow_line_valid; // 배열 검사에 따른 노란선 유효값
+    bool white_line_valid; // 배열 검사에 따른 흰선 유효값
+    float yellow_line_x; // 노란선 x좌표
+    float white_line_x; // 흰선의 x좌표 두 좌표를 통해 선의 각도 산출
+
 
     static const int ARRAY_SIZE = 10;
     static const int DETECTION_THRESHOLD = 7;
     std::array<bool, 10> yellow_detection_array;
     std::array<bool, 10> white_detection_array;
-    int array_index;
-    bool yellow_line_valid;
-    bool white_line_valid;
 
-    float yellow_line_x;
-    float white_line_x;
 
     void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg);
     bool isLineValid(std::array<bool, 10> &detection_array, bool current_detection);
