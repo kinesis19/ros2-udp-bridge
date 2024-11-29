@@ -17,6 +17,7 @@ find_package(std_msgs REQUIRED)
 # Vision dependencies
 find_package(OpenCV REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
 
@@ -45,7 +46,7 @@ add_executable(${PROJECT_NAME}
   ${QT_RESOUCE_HPP}
   ${QT_UI_HPP} 
 )
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs OpenCV sensor_msgs cv_bridge image_transport serial Boost)
+ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs OpenCV sensor_msgs cv_bridge image_transport serial std_srvs Boost)
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network ${OpenCV_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
