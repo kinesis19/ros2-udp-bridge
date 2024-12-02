@@ -188,7 +188,7 @@ void MasterNode::runRobotStage2() {
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
             // || psd_adc_left_ > 2000 && psd_adc_front_ > 2000
-            if (psd_adc_front_ > 2400 ) {
+            if (psd_adc_front_ > 2700 ) {
                 if (imu_yaw_ - 50.0 < -180) {
                     target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
                 } else {
@@ -251,46 +251,6 @@ void MasterNode::runRobotStage2() {
             ctlDxlFront(7, 0);
             RCLCPP_INFO(node->get_logger(), "11");
         }
-        
-        // if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
-        //     ctlDxlFront(10, 0);
-        // } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-        //     // 첫 번째 오른쪽 코너
-        //     if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
-        //         ctlDxlRight(7, 2);
-        //         RCLCPP_INFO(node->get_logger(), "2-1");
-        //     } else if (yellow_line_angle_ < 15) {
-        //         ctlDxlRight(7, 3);
-        //         RCLCPP_INFO(node->get_logger(), "2-2");
-        //     } else if (yellow_line_angle_ < 20) {
-        //         ctlDxlRight(6, 4);
-        //         RCLCPP_INFO(node->get_logger(), "2-3");
-        //     } else if (yellow_line_angle_ < 25) {
-        //         ctlDxlRight(6, 5);
-        //         RCLCPP_INFO(node->get_logger(), "2-4");
-        //     } else {
-        //         ctlDxlRight(7, 3);
-        //         RCLCPP_INFO(node->get_logger(), "2-5");
-        //     }
-        // } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= -1)))) { // 좌회전
-        //     // 주행 도중 라인 유지
-        //     if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
-        //         return;
-        //     }
-
-        //     if (white_line_angle_ > 88) {
-        //         ctlDxlLeft(7, 1);
-        //         RCLCPP_INFO(node->get_logger(), "2-6");
-        //     } else if (white_line_angle_ > 83) {
-        //         ctlDxlLeft(5, 2);
-        //         RCLCPP_INFO(node->get_logger(), "2-7");
-        //     } else {
-        //         ctlDxlLeft(3, 3);
-        //         RCLCPP_INFO(node->get_logger(), "2-8");
-        //     }
-        // }
-
-
     }
 
     // 스테이지2 - 두 번째 장애물 감지 조건
