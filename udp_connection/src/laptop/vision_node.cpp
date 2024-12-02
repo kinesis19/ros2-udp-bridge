@@ -89,10 +89,10 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         signs_vertices[3] = cv::Point2f(width * 0.95f, height * 0.55f);
 
         // 라인트레이싱
-        src_vertices[0] = cv::Point2f(width * 0.15f, height * 0.9f);
-        src_vertices[1] = cv::Point2f(width * 0.85f, height * 0.9f);
-        src_vertices[2] = cv::Point2f(width * 0.9f, height * 1.0f);
-        src_vertices[3] = cv::Point2f(width * 0.1f, height * 1.0f);
+        src_vertices[0] = cv::Point2f(width * 0.1f, height * 0.9f);
+        src_vertices[1] = cv::Point2f(width * 0.9f, height * 0.9f);
+        src_vertices[2] = cv::Point2f(width * 0.95f, height * 1.0f);
+        src_vertices[3] = cv::Point2f(width * 0.05f, height * 1.0f);
 
         dst_vertices[0] = cv::Point2f(0, 0);
         dst_vertices[1] = cv::Point2f(width, 0);
@@ -397,23 +397,29 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
             roi_points.push_back(cv::Point(signs_vertices[i].x, signs_vertices[i].y));
         }
         cv::fillConvexPoly(sign_roi_mask, roi_points, cv::Scalar(255));
-        // HSV 색공간에서 파란색 검출
+
+
+        // 먼저 ROI 영역만 추출
+        cv::Mat roi_image;
+        resized_frame.copyTo(roi_image, sign_roi_mask);
+
+        // ROI 영역에 대해서만 HSV 변환 수행
         cv::Mat sign_hsv;
-        cv::cvtColor(resized_frame, sign_hsv, cv::COLOR_BGR2HSV);
+        cv::cvtColor(roi_image, sign_hsv, cv::COLOR_BGR2HSV);
         // 파란색 마스크 생성 - HSV 값 조정
         cv::Mat blue_mask;
-        cv::Scalar lower_blue_hsv(100, 50, 50); // 더 어두운 파란색도 검출하도록 수정
+        cv::Scalar lower_blue_hsv(100, 70, 50); // 더 어두운 파란색도 검출하도록 수정
         cv::Scalar upper_blue_hsv(130, 255, 255);
         cv::inRange(sign_hsv, lower_blue_hsv, upper_blue_hsv, blue_mask);
         // ROI 영역 내의 파란색만 검출
         cv::Mat blue_roi;
         cv::bitwise_and(blue_mask, sign_roi_mask, blue_roi);
         // 노이즈 제거
-        cv::morphologyEx(blue_roi, blue_roi, cv::MORPH_OPEN, kernel);
-        cv::morphologyEx(blue_roi, blue_roi, cv::MORPH_CLOSE, kernel_large);
+        cv::morphologyEx(blue_mask, blue_mask, cv::MORPH_OPEN, kernel);
+        cv::morphologyEx(blue_mask, blue_mask, cv::MORPH_CLOSE, kernel_large);
         // 파란색 영역 검출
         std::vector<std::vector<cv::Point>> blue_contours;
-        cv::findContours(blue_roi, blue_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(blue_mask, blue_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
         // 파란색 표지판 검출 여부
         bool blue_sign_detected = false;
@@ -422,7 +428,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         for (const auto &contour : blue_contours) {
             double area = cv::contourArea(contour);
 
-            if (area > 50.0) { // 면적 임계값 낮춤
+            if (area > 100.0) { // 면적 임계값 낮춤
                 blue_sign_detected = true;
                 break;
             }
