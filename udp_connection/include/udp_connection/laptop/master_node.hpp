@@ -128,7 +128,6 @@ private:
     float yaw_error = 0.0f;
     float pre_yaw_error = 0.0f;
 
-
     // ========== [Stage2 감지 플래그 변수] ==========
     bool isDetectSecondObjectStage2; // 오브젝트2 정면 감지 변수
     bool isDetectThirdObjectStage2; // 오브젝트3 정면 감지 변수
@@ -136,7 +135,13 @@ private:
     bool isDetectYellowLineStage2; // 오브젝트2 통과 이후, 직진을 위한 Yellow Line 감지 변수
     bool isDetectWhiteLineStage2; // 오브젝트2 통과 이후, 라인트레이싱을 위한 White Line 감지 변수
     bool isStartPidRightTurnStage2; // 오브젝트2 통과 이후, 노란색 선 감지하고 정해진 각도만큼 최초 1회만 PID 제어를 감지하는 변수
+    bool isDetectBlueSignStage2 = false; // 오브젝트3 통과 이후, 파란 표지판 감지 변수
     
+    // ========== [Stage3 감지 플래그 변수] ==========
+    bool isMissYellowLineStage3 = false;
+    bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
+    bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
+
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);

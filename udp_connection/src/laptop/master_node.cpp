@@ -102,7 +102,7 @@ void MasterNode::runRobotStage1() {
         //     ctlDxlFront(10, 0);
         // }
 
-        ctlDxlFront(10, 0);
+        ctlDxlFront(12, 0);
 
         // 주행 도중, 라인 유지 처리
         if ((1 < yellow_line_angle_ && yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 88)) {
@@ -230,6 +230,7 @@ void MasterNode::runRobotStage2() {
             if (isDetectYellowLineStage2 && !playYawFlag) { 
                 ctlDxlFront(10, 0);
                 RCLCPP_INFO(node->get_logger(), "15");
+                isDetectBlueSignStage2 = true;
             }
 
             if ((isDetectYellowLineStage2 && isDetectWhiteLine) && !playYawFlag) {
@@ -260,16 +261,123 @@ void MasterNode::runRobotStage2() {
     }
 
     // 주차 표지판 감지시, 스테이지 전환
-    if (isDetectBlueSign) {
+    if (isDetectBlueSign && isDetectBlueSignStage2) {
         stage_number_ = 3;
     }
 }
 
 void MasterNode::runRobotStage3() {
-    stopDxl();
-    RCLCPP_INFO(node->get_logger(), "스테이지3");
-}
+    // stopDxl();
+    // RCLCPP_INFO(node->get_logger(), "스테이지3");
+    
+    /*
+    * 1. 직진 주행 로직
+    * 2. 노란색 선 잊어 버렸을 때, isMissYellowLineStage3값을 true하기
+    * 3. isMissYellowLineStage3가 true가 되고, yellow_line angle과 white_line angle이 직선 기울기일 때, 왼쪽으로 PID제어하기
+    * 4. 양 옆이 노란색 라인으로 직진 주행처리하기
+    */
+    if (!isReadyPidControlThreeWayStreetInStage3) {
+        if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { 
+        if (!isMissYellowLineStage3) {
+            ctlDxlFront(10, 0);
+        } else {
+            ctlDxlFront(3, 0);
+        }
 
+        // 노란색 선을 잃어 버리고, 직진 중 다시 감지했을 때
+        // if ((isMissYellowLineStage3 && isDetectYellowLine) && (0 <= white_line_angle_ && white_line_angle_ <= 1) || (88 <= white_line_angle_ && white_line_angle_ <= 90)) {
+        //     if (!isDetectBlueSign && psd_adc_right_ > 900) {
+        //         isReadyPidControlThreeWayStreetInStage3 = true;
+        //         RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
+        //     }
+        // }
+    
+        if ((isDetectYellowLine) && (0 <= white_line_angle_ && white_line_angle_ <= 1) || (88 <= white_line_angle_ && white_line_angle_ <= 90)) {
+            if (!isDetectBlueSign && psd_adc_right_ > 900) {
+                isReadyPidControlThreeWayStreetInStage3 = true;
+                RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
+            }
+        }
+
+        } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
+            // 첫 번째 오른쪽 코너
+            if ((yellow_line_angle_ < 7) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
+                ctlDxlRight(6, 2);
+                RCLCPP_INFO(node->get_logger(), "3-1111111");
+            } else if (yellow_line_angle_ < 15) {
+                ctlDxlRight(7, 3);
+                RCLCPP_INFO(node->get_logger(), "3-2222222");
+            } else if (yellow_line_angle_ < 20) {
+                ctlDxlRight(5, 4);
+                RCLCPP_INFO(node->get_logger(), "3-3333333");
+            } else if (yellow_line_angle_ < 25) {
+                ctlDxlRight(5, 5);
+                RCLCPP_INFO(node->get_logger(), "3-444444");
+            } else if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
+                ctlDxlFront(6, 0);
+                RCLCPP_INFO(node->get_logger(), "3-555555");
+            } else {
+                ctlDxlRight(7, 3);
+                RCLCPP_INFO(node->get_logger(), "3-666666");
+            }
+
+        } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= 0.35)))) { // 좌회전
+            // 주행 도중 라인 유지
+            if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
+                return;
+            }
+
+            if (87 > white_line_angle_ && white_line_angle_ > 87) {
+                ctlDxlLeft(7, 1);
+                RCLCPP_INFO(node->get_logger(), "3-77777");
+            } else if (white_line_angle_ > 83) {
+                ctlDxlLeft(5, 2);
+                RCLCPP_INFO(node->get_logger(), "3-88888");
+            }  else if ((87 <= white_line_angle_ && white_line_angle_ <= 90) || (0 <= white_line_angle_ && white_line_angle_ <= 1)) {
+                ctlDxlFront(6, 0);
+                RCLCPP_INFO(node->get_logger(), "3-99999");
+            }else {
+                ctlDxlLeft(5, 2);
+                RCLCPP_INFO(node->get_logger(), "3-1010");
+            }
+        }
+
+        if (isDetectWhiteLine && !isDetectYellowLine) {
+            isMissYellowLineStage3 = true;
+        }
+    } else { // 삼거리 감지시
+        if (!isDonePidControlThreeWayStreetInStage3) {
+            if (imu_yaw_ - 90.0 < -180) {
+                target_yaw_ = 360 + (imu_yaw_ - 90.0); // 범위 보정
+            } else {
+                target_yaw_ = imu_yaw_ - 90.0;
+            }
+            playYawFlag = true;
+            isDonePidControlThreeWayStreetInStage3 = true;
+        } else {
+            stopDxl();
+        }
+    }
+    
+    // if ((-1 < yellow_line_x_ && yellow_line_x_ < 0)) {
+    //     ctlDxlRight(8, 2);
+    //     RCLCPP_INFO(node->get_logger(), "C-1");
+    // } else {
+    //     ctlDxlLeft(8, 2);
+    //     RCLCPP_INFO(node->get_logger(), "C-2");
+    // }
+
+    // if ((-1 < yellow_line_x_ && yellow_line_x_ < 0) && (87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
+    //     ctlDxlFront(7, 0);
+    //     RCLCPP_INFO(node->get_logger(), "C-3");
+    // }
+    
+    
+    // else if (!isDetectYellowLine || ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1))) {
+    //     ctlDxlLeft(8, 2);
+    //     RCLCPP_INFO(node->get_logger(), "C-2");
+    // }
+}
 
 // ========== [Line Detect 서브스크라이브] ==========
 void MasterNode::detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg) {
