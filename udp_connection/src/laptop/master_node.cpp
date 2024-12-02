@@ -111,17 +111,17 @@ void MasterNode::runRobotStage1() {
 
     } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
         // 첫 번째 오른쪽 코너
-        if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
-            ctlDxlRight(7, 2);
+        if ((yellow_line_angle_ < 7) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
+            ctlDxlRight(6, 2);
             RCLCPP_INFO(node->get_logger(), "1");
         } else if (yellow_line_angle_ < 15) {
             ctlDxlRight(7, 3);
             RCLCPP_INFO(node->get_logger(), "2");
         } else if (yellow_line_angle_ < 20) {
-            ctlDxlRight(6, 4);
+            ctlDxlRight(5, 4);
             RCLCPP_INFO(node->get_logger(), "3");
         } else if (yellow_line_angle_ < 25) {
-            ctlDxlRight(6, 5);
+            ctlDxlRight(5, 5);
             RCLCPP_INFO(node->get_logger(), "4");
         } else if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
             ctlDxlFront(6, 0);
@@ -174,13 +174,11 @@ void MasterNode::runRobotStage2() {
         } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.9)) {
             ctlDxlLeft(6, 1);
             RCLCPP_INFO(node->get_logger(), "9-1111111111");
-        }
-        else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
+        } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
             ctlDxlRight(2, 1);
             RCLCPP_INFO(node->get_logger(), "10");
 
-        } 
-        else if (520 < white_line_points_[0] && white_line_x_ < 570) {
+        } else if (520 < white_line_points_[0] && white_line_x_ < 570) {
             ctlDxlFront(7, 0);
             RCLCPP_INFO(node->get_logger(), "11");
         }
@@ -189,7 +187,8 @@ void MasterNode::runRobotStage2() {
 
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
-            if (psd_adc_front_ > 2300 || psd_adc_left_ > 2000 && psd_adc_front_ > 2000) {
+            // || psd_adc_left_ > 2000 && psd_adc_front_ > 2000
+            if (psd_adc_front_ > 2400 ) {
                 if (imu_yaw_ - 50.0 < -180) {
                     target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
                 } else {
@@ -238,43 +237,60 @@ void MasterNode::runRobotStage2() {
             }
         }
     } else if (isDetectWhiteLineStage2) {
-        if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
-            ctlDxlFront(10, 0);
-        } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-            // 첫 번째 오른쪽 코너
-            if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
-                ctlDxlRight(7, 2);
-                RCLCPP_INFO(node->get_logger(), "2-1");
-            } else if (yellow_line_angle_ < 15) {
-                ctlDxlRight(7, 3);
-                RCLCPP_INFO(node->get_logger(), "2-2");
-            } else if (yellow_line_angle_ < 20) {
-                ctlDxlRight(6, 4);
-                RCLCPP_INFO(node->get_logger(), "2-3");
-            } else if (yellow_line_angle_ < 25) {
-                ctlDxlRight(6, 5);
-                RCLCPP_INFO(node->get_logger(), "2-4");
-            } else {
-                ctlDxlRight(7, 3);
-                RCLCPP_INFO(node->get_logger(), "2-5");
-            }
-        } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= -1)))) { // 좌회전
-            // 주행 도중 라인 유지
-            if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
-                return;
-            }
+        if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.2)) {
+            ctlDxlLeft(6, 3);
+            RCLCPP_INFO(node->get_logger(), "9");
+        } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.9)) {
+            ctlDxlLeft(6, 1);
+            RCLCPP_INFO(node->get_logger(), "9-1111111111");
+        } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
+            ctlDxlRight(2, 1);
+            RCLCPP_INFO(node->get_logger(), "10");
 
-            if (white_line_angle_ > 88) {
-                ctlDxlLeft(7, 1);
-                RCLCPP_INFO(node->get_logger(), "2-6");
-            } else if (white_line_angle_ > 83) {
-                ctlDxlLeft(5, 2);
-                RCLCPP_INFO(node->get_logger(), "2-7");
-            } else {
-                ctlDxlLeft(3, 3);
-                RCLCPP_INFO(node->get_logger(), "2-8");
-            }
+        } else if (520 < white_line_points_[0] && white_line_x_ < 570) {
+            ctlDxlFront(7, 0);
+            RCLCPP_INFO(node->get_logger(), "11");
         }
+        
+        // if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
+        //     ctlDxlFront(10, 0);
+        // } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
+        //     // 첫 번째 오른쪽 코너
+        //     if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
+        //         ctlDxlRight(7, 2);
+        //         RCLCPP_INFO(node->get_logger(), "2-1");
+        //     } else if (yellow_line_angle_ < 15) {
+        //         ctlDxlRight(7, 3);
+        //         RCLCPP_INFO(node->get_logger(), "2-2");
+        //     } else if (yellow_line_angle_ < 20) {
+        //         ctlDxlRight(6, 4);
+        //         RCLCPP_INFO(node->get_logger(), "2-3");
+        //     } else if (yellow_line_angle_ < 25) {
+        //         ctlDxlRight(6, 5);
+        //         RCLCPP_INFO(node->get_logger(), "2-4");
+        //     } else {
+        //         ctlDxlRight(7, 3);
+        //         RCLCPP_INFO(node->get_logger(), "2-5");
+        //     }
+        // } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= -1)))) { // 좌회전
+        //     // 주행 도중 라인 유지
+        //     if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
+        //         return;
+        //     }
+
+        //     if (white_line_angle_ > 88) {
+        //         ctlDxlLeft(7, 1);
+        //         RCLCPP_INFO(node->get_logger(), "2-6");
+        //     } else if (white_line_angle_ > 83) {
+        //         ctlDxlLeft(5, 2);
+        //         RCLCPP_INFO(node->get_logger(), "2-7");
+        //     } else {
+        //         ctlDxlLeft(3, 3);
+        //         RCLCPP_INFO(node->get_logger(), "2-8");
+        //     }
+        // }
+
+
     }
 
     // 스테이지2 - 두 번째 장애물 감지 조건
@@ -284,9 +300,9 @@ void MasterNode::runRobotStage2() {
     }
 
     // 주차 표지판 감지시, 스테이지 전환
-    // if (isDetectBlueSign) {
-    //     stage_number_ = 3;
-    // }
+    if (isDetectBlueSign) {
+        stage_number_ = 3;
+    }
 }
 
 void MasterNode::runRobotStage3() {
