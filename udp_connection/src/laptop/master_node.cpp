@@ -197,14 +197,18 @@ void MasterNode::runRobotStage2() {
             }
 
             // Yellow Line에서 오른쪽 방향으로 회전하기
-            if (isDetectYellowLineStage2) { 
+            if (isDetectYellowLineStage2 && !isStartPidRightTurnStage2) { 
                 if (imu_yaw_ + 45.0 > 180) {
-                    target_yaw_ = (imu_yaw_ + 45.0) - 360; // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+                    // target_yaw_ = (imu_yaw_ + 45.0) - 360; // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+                    target_yaw_ = 360 - (imu_yaw_ + 90.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+                    RCLCPP_INFO(node->get_logger(), "오른쪽조건111");
                 } else {
-                    target_yaw_ = imu_yaw_ + 45.0;
+                    target_yaw_ = imu_yaw_ + 90.0;
+                    RCLCPP_INFO(node->get_logger(), "오른쪽조건222");
                 }
                 // target_yaw_ = 45.0;
                 playYawFlag = true;
+                isStartPidRightTurnStage2 = true;
                 RCLCPP_INFO(node->get_logger(), "14");
             }
 
@@ -449,10 +453,10 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
 
     yaw_error = target_yaw - imu_yaw_;
 
-    // if(yaw_error > 180.0f)
-    //     yaw_error -= 360.0f;
-    // if(yaw_error < -180.0f)
-    //     yaw_error += 360.0f;
+    if(yaw_error > 180.0f)
+        yaw_error -= 360.0f;
+    if(yaw_error < -180.0f)
+        yaw_error += 360.0f;
 
     if(std::fabs(yaw_error) < yaw_ok) {
         intergral = 0;

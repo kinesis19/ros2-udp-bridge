@@ -132,6 +132,7 @@ private:
     bool isPassSecondObjectStage2; // 오브젝트2 통과 감지 변수
     bool isDetectYellowLineStage2; // 오브젝트2 통과 이후, 직진을 위한 Yellow Line 감지 변수
     bool isDetectWhiteLineStage2; // 오브젝트2 통과 이후, 라인트레이싱을 위한 White Line 감지 변수
+    bool isStartPidRightTurnStage2; // 오브젝트2 통과 이후, 노란색 선 감지하고 정해진 각도만큼 최초 1회만 PID 제어를 감지하는 변수
     
 
     // ========== [Line Detect 메서드] ==========
