@@ -141,7 +141,7 @@ void MasterNode::runRobotStage1() {
             ctlDxlLeft(7, 1);
             RCLCPP_INFO(node->get_logger(), "6");
         } else if (white_line_angle_ > 83) {
-            ctlDxlLeft(5, 2);
+            ctlDxlLeft(5, 1);
             RCLCPP_INFO(node->get_logger(), "7");
         }  else if ((87 <= white_line_angle_ && white_line_angle_ <= 90) || (0 <= white_line_angle_ && white_line_angle_ <= 1)) {
             ctlDxlFront(6, 0);
@@ -171,7 +171,7 @@ void MasterNode::runRobotStage2() {
         if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.2)) {
             ctlDxlLeft(6, 3);
             RCLCPP_INFO(node->get_logger(), "9");
-        } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.9)) {
+        } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 1)) {
             ctlDxlLeft(6, 1);
             RCLCPP_INFO(node->get_logger(), "9-1111111111");
         } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
@@ -188,7 +188,7 @@ void MasterNode::runRobotStage2() {
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
             // || psd_adc_left_ > 2000 && psd_adc_front_ > 2000
-            if (psd_adc_front_ > 2700 ) {
+            if (psd_adc_front_ > 2400 ) {
                 if (imu_yaw_ - 50.0 < -180) {
                     target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
                 } else {
@@ -278,10 +278,11 @@ void MasterNode::runRobotStage3() {
     */
     if (!isReadyPidControlThreeWayStreetInStage3) {
         if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { 
-        if (!isMissYellowLineStage3) {
+        if (isDetectBlueSign) {
             ctlDxlFront(10, 0);
         } else {
             ctlDxlFront(3, 0);
+            isDetectBlueSignStage3 = true;
         }
 
         // 노란색 선을 잃어 버리고, 직진 중 다시 감지했을 때
@@ -291,8 +292,15 @@ void MasterNode::runRobotStage3() {
         //         RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
         //     }
         // }
-    
-        if ((isDetectYellowLine) && (0 <= white_line_angle_ && white_line_angle_ <= 1) || (88 <= white_line_angle_ && white_line_angle_ <= 90)) {
+
+        // if ((isDetectYellowLine) && (0 <= white_line_angle_ && white_line_angle_ <= 1) || (88 <= white_line_angle_ && white_line_angle_ <= 90)) {
+        //     if (!isDetectBlueSign && psd_adc_right_ > 900) {
+        //         isReadyPidControlThreeWayStreetInStage3 = true;
+        //         RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
+        //     }
+        // }
+
+        if (isDetectBlueSignStage3) {
             if (!isDetectBlueSign && psd_adc_right_ > 900) {
                 isReadyPidControlThreeWayStreetInStage3 = true;
                 RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
@@ -355,9 +363,19 @@ void MasterNode::runRobotStage3() {
             playYawFlag = true;
             isDonePidControlThreeWayStreetInStage3 = true;
         } else {
-            stopDxl();
+            if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
+                ctlDxlFront(10, 0);
+            } else if ((-1 < yellow_line_x_ && yellow_line_x_ < 0) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
+                ctlDxlRight(7, 2);
+            } else if ((0 < yellow_line_x_ && yellow_line_x_ < 1) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
+                ctlDxlLeft(7, 2);
+            }            
         }
     }
+
+    // if (isDetectBlueSign) {
+    //     isDetectBlueSignStage3 = 1;
+    // }
     
     // if ((-1 < yellow_line_x_ && yellow_line_x_ < 0)) {
     //     ctlDxlRight(8, 2);

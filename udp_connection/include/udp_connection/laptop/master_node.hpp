@@ -139,6 +139,7 @@ private:
     
     // ========== [Stage3 감지 플래그 변수] ==========
     bool isMissYellowLineStage3 = false;
+    bool isDetectBlueSignStage3 = false; // 삼거리에서 표지판 감지 플래그 -> 삼거리 PID 처리를 위한 변수
     bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
     bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
 
