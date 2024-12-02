@@ -47,6 +47,9 @@ private slots:
   void onImuResetButtonClicked();
 
   void onPidTestButtonClicked();
+  
+  // ========== [Debugging: Set Stage 처리 메서드] ==========
+  void onSetStageButtonClicked();
 
 private:
   Ui::LaptopWindowDesign* ui;

@@ -15,6 +15,8 @@ class MasterNode : public QThread
 
 public:
 
+    int stage_number_; // 현재 스테이지 나타내는 변수
+
     MasterNode();
     ~MasterNode();
     bool isInitialized() const; // 초기화 상태 확인 메서드
@@ -77,8 +79,6 @@ private:
 
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
-
-    int stage_number_; // 현재 스테이지 나타내는 변수
 
     // 선 감지 확인 변수
     bool isDetectYellowLine;

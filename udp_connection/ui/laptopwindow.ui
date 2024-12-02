@@ -868,14 +868,43 @@
     <widget class="QPushButton" name="btnPidTest">
      <property name="geometry">
       <rect>
-       <x>540</x>
-       <y>40</y>
+       <x>270</x>
+       <y>35</y>
        <width>89</width>
        <height>50</height>
       </rect>
      </property>
      <property name="text">
       <string>PID Test</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnSetStage">
+     <property name="geometry">
+      <rect>
+       <x>570</x>
+       <y>35</y>
+       <width>89</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set Stage</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxTargetStage">
+     <property name="geometry">
+      <rect>
+       <x>680</x>
+       <y>50</y>
+       <width>44</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>-20</number>
+     </property>
+     <property name="maximum">
+      <number>20</number>
      </property>
     </widget>
    </widget>

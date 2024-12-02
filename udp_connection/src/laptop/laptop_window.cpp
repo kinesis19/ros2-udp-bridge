@@ -69,6 +69,9 @@ ui->lineEditTargetDeviceIPAddress->setFocusPolicy(Qt::NoFocus);
   // ========== [IMU 버튼 슬롯 연결] ==========
   connect(ui->btnIMUReset, &QPushButton::clicked, this, &LaptopWindow::onImuResetButtonClicked);
 
+  // ========== [Set Stage 버튼 슬롯 연결] ==========
+  connect(ui->btnSetStage, &QPushButton::clicked, this, &LaptopWindow::onSetStageButtonClicked);
+
   // ========== [Current Stage Numver 슬롯 연결] ==========
   connect(masterNode_.get(), &MasterNode::updateCurrentStage, this, [this](const int &stageNum) {
     ui->labelCurrentStage->setText(QString("Stage: %1").arg(stageNum));
@@ -287,4 +290,10 @@ void LaptopWindow::keyPressEvent(QKeyEvent* event) {
       QMainWindow::keyPressEvent(event);  // 다른 키는 기본 처리
       break;
   }
+}
+
+// ========== [Debugging: Set Stage 처리 메서드] ==========
+void LaptopWindow::onSetStageButtonClicked() {
+  int target_stage_num_ = ui->spinBoxTargetStage->value();
+  masterNode_->stage_number_ = target_stage_num_;
 }

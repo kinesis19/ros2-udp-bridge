@@ -96,12 +96,13 @@ bool MasterNode::isInitialized() const
 
 // ========== [스테이지별 이동 처리 메서드] ==========
 void MasterNode::runRobotStage1() {    
-    if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
+    // (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) &&
+    if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { // 직진 주행
         // if ((yellow_line_points_[2] < white_line_points_[0]) && (isDetectYellowLine && isDetectWhiteLine)) {
         //     ctlDxlFront(10, 0);
         // }
 
-        ctlDxlFront(12, 0);
+        ctlDxlFront(10, 0);
 
         // 주행 도중, 라인 유지 처리
         if ((1 < yellow_line_angle_ && yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 88)) {
@@ -122,6 +123,9 @@ void MasterNode::runRobotStage1() {
         } else if (yellow_line_angle_ < 25) {
             ctlDxlRight(6, 5);
             RCLCPP_INFO(node->get_logger(), "4");
+        } else if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
+            ctlDxlFront(6, 0);
+            RCLCPP_INFO(node->get_logger(), "4-111111");
         } else {
             ctlDxlRight(7, 3);
             RCLCPP_INFO(node->get_logger(), "5");
@@ -133,20 +137,23 @@ void MasterNode::runRobotStage1() {
             return;
         }
 
-        if (white_line_angle_ > 88) {
+        if (87 > white_line_angle_ && white_line_angle_ > 87) {
             ctlDxlLeft(7, 1);
             RCLCPP_INFO(node->get_logger(), "6");
         } else if (white_line_angle_ > 83) {
             ctlDxlLeft(5, 2);
             RCLCPP_INFO(node->get_logger(), "7");
-        } else {
+        }  else if ((87 <= white_line_angle_ && white_line_angle_ <= 90) || (0 <= white_line_angle_ && white_line_angle_ <= 1)) {
+            ctlDxlFront(6, 0);
+            RCLCPP_INFO(node->get_logger(), "4-2222");
+        }else {
             ctlDxlLeft(5, 2);
             RCLCPP_INFO(node->get_logger(), "8");
         }
     }
 
     // Stage2 감지
-    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 430)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
+    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
         if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
             stage_number_ = 2;
         }
@@ -161,16 +168,20 @@ void MasterNode::runRobotStage2() {
     // 두 번째 장애물 감지 전까지의 로직
     if ((!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && !isDetectWhiteLineStage2) {
         // 흰 선에 대한 코너링 처리
-        if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0)) {
+        if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.2)) {
             ctlDxlLeft(6, 3);
             RCLCPP_INFO(node->get_logger(), "9");
+        } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.9)) {
+            ctlDxlLeft(6, 1);
+            RCLCPP_INFO(node->get_logger(), "9-1111111111");
         }
         else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
             ctlDxlRight(2, 1);
             RCLCPP_INFO(node->get_logger(), "10");
 
-        } else if (520 < white_line_points_[0] && white_line_x_ < 570) {
-            ctlDxlFront(10, 0);
+        } 
+        else if (520 < white_line_points_[0] && white_line_x_ < 570) {
+            ctlDxlFront(7, 0);
             RCLCPP_INFO(node->get_logger(), "11");
         }
     
@@ -178,7 +189,7 @@ void MasterNode::runRobotStage2() {
 
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
-            if (psd_adc_front_ > 2200 || psd_adc_left_ > 2000 && psd_adc_front_ > 2000) {
+            if (psd_adc_front_ > 2300 || psd_adc_left_ > 2000 && psd_adc_front_ > 2000) {
                 if (imu_yaw_ - 50.0 < -180) {
                     target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
                 } else {
@@ -193,7 +204,7 @@ void MasterNode::runRobotStage2() {
         } else {
             // 노란색 선을 감지하러 직진하기
             if ((!isDetectYellowLineStage2 && !playYawFlag)) {
-                ctlDxlFront(10, 0);
+                ctlDxlFront(7, 0);
                 RCLCPP_INFO(node->get_logger(), "13");
             }
 
@@ -205,10 +216,10 @@ void MasterNode::runRobotStage2() {
             if (isDetectYellowLineStage2 && !isStartPidRightTurnStage2) { 
                 if (imu_yaw_ + 45.0 > 180) {
                     // target_yaw_ = (imu_yaw_ + 45.0) - 360; // 범위 보정 (양수에서 초과할 경우 음수로 변환)
-                    target_yaw_ = 360 - (imu_yaw_ + 90.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+                    target_yaw_ = 360 - (imu_yaw_ + 75.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
                     RCLCPP_INFO(node->get_logger(), "오른쪽조건111");
                 } else {
-                    target_yaw_ = imu_yaw_ + 90.0;
+                    target_yaw_ = imu_yaw_ + 75.0;
                     RCLCPP_INFO(node->get_logger(), "오른쪽조건222");
                 }
                 // target_yaw_ = 45.0;
@@ -228,7 +239,7 @@ void MasterNode::runRobotStage2() {
         }
     } else if (isDetectWhiteLineStage2) {
         if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || (500 < white_line_points_[0] && white_line_angle_ < 1)) { // 직진 주행
-            ctlDxlFront(12, 0);
+            ctlDxlFront(10, 0);
         } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
             // 첫 번째 오른쪽 코너
             if ((yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
@@ -273,9 +284,9 @@ void MasterNode::runRobotStage2() {
     }
 
     // 주차 표지판 감지시, 스테이지 전환
-    if (isDetectBlueSign) {
-        stage_number_ = 3;
-    }
+    // if (isDetectBlueSign) {
+    //     stage_number_ = 3;
+    // }
 }
 
 void MasterNode::runRobotStage3() {
