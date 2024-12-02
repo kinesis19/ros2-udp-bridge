@@ -34,6 +34,9 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     sub_white_angle_ = node->create_subscription<std_msgs::msg::Float32>("/vision/white_line_angle", 10, std::bind(&MasterNode::getWhiteLineAngle, this, std::placeholders::_1));
     sub_yellow_angle_ = node->create_subscription<std_msgs::msg::Float32>("/vision/yellow_line_angle", 10, std::bind(&MasterNode::getYellowLineAngle, this, std::placeholders::_1));
 
+    // ========== [주차 표지판 감지 서브스크라이브] ==========
+    sub_blue_sign_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/blue_sign_detected", 10, std::bind(&MasterNode::detectBlueSign, this, std::placeholders::_1));
+
     // ========== [차단바 감지 서브스크라이브] ==========
     sub_barrier_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/barrier_detected", 10, std::bind(&MasterNode::detectBarrier, this, std::placeholders::_1));
 
@@ -67,6 +70,8 @@ void MasterNode::run()
             runRobotStage1();
         } else if (stage_number_ == 2) {
             runRobotStage2();
+        } else if (stage_number_ == 3) {
+            runRobotStage3();
         }
 
         // 현재 상태를 유지하며 지속적으로 퍼블리시
@@ -173,7 +178,7 @@ void MasterNode::runRobotStage2() {
 
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
-            if (psd_adc_front_ > 2400 || psd_adc_left_ > 2000 && psd_adc_front_ > 2000) {
+            if (psd_adc_front_ > 2200 || psd_adc_left_ > 2000 && psd_adc_front_ > 2000) {
                 if (imu_yaw_ - 50.0 < -180) {
                     target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
                 } else {
@@ -266,6 +271,16 @@ void MasterNode::runRobotStage2() {
         isDetectSecondObjectStage2 = true;
         // stopDxl();
     }
+
+    // 주차 표지판 감지시, 스테이지 전환
+    if (isDetectBlueSign) {
+        stage_number_ = 3;
+    }
+}
+
+void MasterNode::runRobotStage3() {
+    stopDxl();
+    RCLCPP_INFO(node->get_logger(), "스테이지3");
 }
 
 
@@ -536,4 +551,14 @@ void MasterNode::psdLeftCallback(const std_msgs::msg::Int32::SharedPtr msg) {
 void MasterNode::responePidTest() {
     target_yaw_ = -90.0;
     playYawFlag = true;
+}
+
+
+// ========== [주차 표지판 감지 서브스크라이브] ==========
+void MasterNode::detectBlueSign(const std_msgs::msg::Bool::SharedPtr msg) {
+    if (msg->data == true) {
+        isDetectBlueSign = true;
+    } else {
+        isDetectBlueSign = false;
+    }
 }

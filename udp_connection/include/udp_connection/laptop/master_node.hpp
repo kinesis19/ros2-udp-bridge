@@ -69,11 +69,11 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_yellow_angle_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_white_angle_;
 
+    // ========== [주차 표지판 감지 메서드] ==========
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_blue_sign_detected_;
+
     // ========== [차단바 감지 서브스크라이브] ==========
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_barrier_detected_;
-
-
-
 
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
@@ -83,6 +83,9 @@ private:
     // 선 감지 확인 변수
     bool isDetectYellowLine;
     bool isDetectWhiteLine;
+
+    // 주차 표지판 감지 확인 변수
+    bool isDetectBlueSign = false;
 
     // 차단바 감지 확인 변수
     bool isDetectBarrier;
@@ -155,6 +158,9 @@ private:
     // ========== [IMU 메서드] ==========
     void getImuYaw(const std_msgs::msg::Float32::SharedPtr msg);
 
+    // ========== [주차 표지판 감지 메서드] ==========
+    void detectBlueSign(const std_msgs::msg::Bool::SharedPtr msg);
+
     // ========== [차단바 감지 메서드] ==========
     void detectBarrier(const std_msgs::msg::Bool::SharedPtr msg);
 
@@ -167,6 +173,7 @@ private:
     // ========== [스테이지별 이동 처리 메서드] ==========
     void runRobotStage1(); // 스테이지1 일때의 이동처리 로직
     void runRobotStage2();
+    void runRobotStage3();
 
 
 };
