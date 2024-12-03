@@ -96,61 +96,21 @@ bool MasterNode::isInitialized() const
 }
 
 // ========== [스테이지별 이동 처리 메서드] ==========
-void MasterNode::runRobotStage1() {    
-    // (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) &&
-    if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { // 직진 주행
-        // if ((yellow_line_points_[2] < white_line_points_[0]) && (isDetectYellowLine && isDetectWhiteLine)) {
-        //     ctlDxlFront(10, 0);
-        // }
-
-        ctlDxlFront(12, 0);
-
-        // 주행 도중, 라인 유지 처리
-        if ((1 < yellow_line_angle_ && yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 88)) {
-            // ctlDxlRight(1, 3);
-        }
-
+void MasterNode::runRobotStage1() {
+    // stopDxl();
+    // RCLCPP_INFO(node->get_logger(), "스테이지1");
+    if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) {
+        ctlDxlFront(0.65, 0);
     } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
         // 첫 번째 오른쪽 코너
-        if ((yellow_line_angle_ < 7) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
-            ctlDxlRight(6, 2);
-            RCLCPP_INFO(node->get_logger(), "1");
-        } else if (yellow_line_angle_ < 15) {
-            ctlDxlRight(7, 3);
-            RCLCPP_INFO(node->get_logger(), "2");
-        } else if (yellow_line_angle_ < 20) {
-            ctlDxlRight(5, 4);
-            RCLCPP_INFO(node->get_logger(), "3");
-        } else if (yellow_line_angle_ < 25) {
-            ctlDxlRight(5, 5);
-            RCLCPP_INFO(node->get_logger(), "4");
-        } else if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
-            ctlDxlFront(6, 0);
-            RCLCPP_INFO(node->get_logger(), "4-111111");
-        } else {
-            ctlDxlRight(7, 3);
-            RCLCPP_INFO(node->get_logger(), "5");
-        }
-
+        ctlDxlRight(0.35, 0.1);
+        RCLCPP_INFO(node->get_logger(), "1");
     } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= 0.35)))) { // 좌회전
         // 주행 도중 라인 유지
         if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
             return;
         }
-
-        if (87 > white_line_angle_ && white_line_angle_ > 87) {
-            ctlDxlLeft(7, 1);
-            RCLCPP_INFO(node->get_logger(), "6");
-        } else if (white_line_angle_ > 83) {
-            ctlDxlLeft(5, 1);
-            RCLCPP_INFO(node->get_logger(), "7");
-        }  else if ((87 <= white_line_angle_ && white_line_angle_ <= 90) || (0 <= white_line_angle_ && white_line_angle_ <= 1)) {
-            ctlDxlFront(6, 0);
-            RCLCPP_INFO(node->get_logger(), "4-2222");
-        }else {
-            ctlDxlLeft(5, 2);
-            RCLCPP_INFO(node->get_logger(), "8");
-        }
+        ctlDxlLeft(0.35, 0.1);
     }
 
     // Stage2 감지
@@ -164,258 +124,29 @@ void MasterNode::runRobotStage1() {
 void MasterNode::runRobotStage2() {
     // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지2");
-    bool isDetectWhiteLineNowStage2_1 = (!isDetectYellowLine && isDetectWhiteLine);
-
-    // 두 번째 장애물 감지 전까지의 로직
-    if ((!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && !isDetectWhiteLineStage2) {
-        // 흰 선에 대한 코너링 처리
-        if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.2)) {
-            ctlDxlLeft(6, 3);
-            RCLCPP_INFO(node->get_logger(), "9");
-        } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 1)) {
-            ctlDxlLeft(6, 1);
-            RCLCPP_INFO(node->get_logger(), "9-1111111111");
-        } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
-            ctlDxlRight(2, 1);
-            RCLCPP_INFO(node->get_logger(), "10");
-
-        } else if (520 < white_line_points_[0] && white_line_x_ < 570) {
-            ctlDxlFront(7, 0);
-            RCLCPP_INFO(node->get_logger(), "11");
-        }
-    
-    } else if ((isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && !isDetectWhiteLineStage2) { // 두 번째 장애물 감지 이후의 처리 로직
-
-        if (!isPassSecondObjectStage2) {
-            // 오브젝트2 감지 조건
-            // || psd_adc_left_ > 2000 && psd_adc_front_ > 2000
-            if (psd_adc_front_ > 2000 ) {
-                if (imu_yaw_ - 50.0 < -180) {
-                    target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
-                } else {
-                    target_yaw_ = imu_yaw_ - 50.0;
-                }
-                // target_yaw_ = -50.0;
-                playYawFlag = true;
-                isPassSecondObjectStage2 = true;
-                RCLCPP_INFO(node->get_logger(), "12");
-            }
-            
-        } else {
-            // 노란색 선을 감지하러 직진하기
-            if ((!isDetectYellowLineStage2 && !playYawFlag)) {
-                ctlDxlFront(7, 0);
-                RCLCPP_INFO(node->get_logger(), "13");
-            }
-
-            if (isDetectYellowLine && !isDetectYellowLineStage2) {
-                isDetectYellowLineStage2 = true;
-            }
-
-            // Yellow Line에서 오른쪽 방향으로 회전하기
-            if (isDetectYellowLineStage2 && !isStartPidRightTurnStage2) { 
-                if (imu_yaw_ + 45.0 > 180) {
-                    // target_yaw_ = (imu_yaw_ + 45.0) - 360; // 범위 보정 (양수에서 초과할 경우 음수로 변환)
-                    target_yaw_ = 360 - (imu_yaw_ + 75.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
-                    RCLCPP_INFO(node->get_logger(), "오른쪽조건111");
-                } else {
-                    target_yaw_ = imu_yaw_ + 75.0;
-                    RCLCPP_INFO(node->get_logger(), "오른쪽조건222");
-                }
-                // target_yaw_ = 45.0;
-                playYawFlag = true;
-                isStartPidRightTurnStage2 = true;
-                RCLCPP_INFO(node->get_logger(), "14");
-            }
-
-            if (isDetectYellowLineStage2 && !playYawFlag) { 
-                ctlDxlFront(10, 0);
-                RCLCPP_INFO(node->get_logger(), "15");
-                isDetectBlueSignStage2 = true;
-            }
-
-            if ((isDetectYellowLineStage2 && isDetectWhiteLine) && !playYawFlag) {
-                isDetectWhiteLineStage2 = true;
-            }
-        }
-    } else if (isDetectWhiteLineStage2) {
-        if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.2)) {
-            ctlDxlLeft(6, 3);
-            RCLCPP_INFO(node->get_logger(), "9");
-        } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 0.9)) {
-            ctlDxlLeft(6, 1);
-            RCLCPP_INFO(node->get_logger(), "9-1111111111");
-        } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
-            ctlDxlRight(2, 1);
-            RCLCPP_INFO(node->get_logger(), "10");
-
-        } else if (520 < white_line_points_[0] && white_line_x_ < 570) {
-            ctlDxlFront(7, 0);
-            RCLCPP_INFO(node->get_logger(), "11");
-        }
-    }
-
-    // 스테이지2 - 두 번째 장애물 감지 조건
-    if ((!isDetectSecondObjectStage2 && !isDetectThirdObjectStage2) && psd_adc_front_ > 2500) {
-        isDetectSecondObjectStage2 = true;
-        // stopDxl();
-    }
-
-    // 주차 표지판 감지시, 스테이지 전환
-    if (isDetectBlueSign && isDetectBlueSignStage2) {
-        stage_number_ = 3;
-    }
 }
 
 void MasterNode::runRobotStage3() {
     // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지3");
-    
-    /*
-    * 1. 직진 주행 로직
-    * 2. 노란색 선 잊어 버렸을 때, isMissYellowLineStage3값을 true하기
-    * 3. isMissYellowLineStage3가 true가 되고, yellow_line angle과 white_line angle이 직선 기울기일 때, 왼쪽으로 PID제어하기
-    * 4. 양 옆이 노란색 라인으로 직진 주행처리하기
-    */
-    if (!isReadyPidControlThreeWayStreetInStage3) {
-        if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { 
-        if (isDetectBlueSign) {
-            ctlDxlFront(10, 0);
-        } else {
-            ctlDxlFront(3, 0);
-            isDetectBlueSignStage3 = true;
-        }
-
-        // 노란색 선을 잃어 버리고, 직진 중 다시 감지했을 때
-        // if ((isMissYellowLineStage3 && isDetectYellowLine) && (0 <= white_line_angle_ && white_line_angle_ <= 1) || (88 <= white_line_angle_ && white_line_angle_ <= 90)) {
-        //     if (!isDetectBlueSign && psd_adc_right_ > 900) {
-        //         isReadyPidControlThreeWayStreetInStage3 = true;
-        //         RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
-        //     }
-        // }
-
-        // if ((isDetectYellowLine) && (0 <= white_line_angle_ && white_line_angle_ <= 1) || (88 <= white_line_angle_ && white_line_angle_ <= 90)) {
-        //     if (!isDetectBlueSign && psd_adc_right_ > 900) {
-        //         isReadyPidControlThreeWayStreetInStage3 = true;
-        //         RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
-        //     }
-        // }
-
-        if (isDetectBlueSignStage3) {
-            if (!isDetectBlueSign && psd_adc_right_ > 900) {
-                isReadyPidControlThreeWayStreetInStage3 = true;
-                RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
-            }
-        }
-
-        } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-            // 첫 번째 오른쪽 코너
-            if ((yellow_line_angle_ < 7) || (80 < yellow_line_angle_ && yellow_line_angle_ < 87)) {
-                ctlDxlRight(6, 2);
-                RCLCPP_INFO(node->get_logger(), "3-1111111");
-            } else if (yellow_line_angle_ < 15) {
-                ctlDxlRight(7, 3);
-                RCLCPP_INFO(node->get_logger(), "3-2222222");
-            } else if (yellow_line_angle_ < 20) {
-                ctlDxlRight(5, 4);
-                RCLCPP_INFO(node->get_logger(), "3-3333333");
-            } else if (yellow_line_angle_ < 25) {
-                ctlDxlRight(5, 5);
-                RCLCPP_INFO(node->get_logger(), "3-444444");
-            } else if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
-                ctlDxlFront(6, 0);
-                RCLCPP_INFO(node->get_logger(), "3-555555");
-            } else {
-                ctlDxlRight(7, 3);
-                RCLCPP_INFO(node->get_logger(), "3-666666");
-            }
-
-        } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= 0.35)))) { // 좌회전
-            // 주행 도중 라인 유지
-            if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
-                return;
-            }
-
-            if (87 > white_line_angle_ && white_line_angle_ > 87) {
-                ctlDxlLeft(7, 1);
-                RCLCPP_INFO(node->get_logger(), "3-77777");
-            } else if (white_line_angle_ > 83) {
-                ctlDxlLeft(5, 2);
-                RCLCPP_INFO(node->get_logger(), "3-88888");
-            }  else if ((87 <= white_line_angle_ && white_line_angle_ <= 90) || (0 <= white_line_angle_ && white_line_angle_ <= 1)) {
-                ctlDxlFront(6, 0);
-                RCLCPP_INFO(node->get_logger(), "3-99999");
-            }else {
-                ctlDxlLeft(5, 2);
-                RCLCPP_INFO(node->get_logger(), "3-1010");
-            }
-        }
-
-        if (isDetectWhiteLine && !isDetectYellowLine) {
-            isMissYellowLineStage3 = true;
-        }
-    } else { // 삼거리 감지시
-        if (!isDonePidControlThreeWayStreetInStage3) {
-            if (imu_yaw_ - 90.0 < -180) {
-                target_yaw_ = 360 + (imu_yaw_ - 90.0); // 범위 보정
-            } else {
-                target_yaw_ = imu_yaw_ - 90.0;
-            }
-            playYawFlag = true;
-            isDonePidControlThreeWayStreetInStage3 = true;
-        } else {
-            if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
-                ctlDxlFront(10, 0);
-            } else if ((-1 < yellow_line_x_ && yellow_line_x_ < 0) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
-                ctlDxlRight(7, 2);
-            } else if ((0 < yellow_line_x_ && yellow_line_x_ < 1) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
-                ctlDxlLeft(7, 2);
-            }            
-        }
-    }
-
-    // if (isDetectBlueSign) {
-    //     isDetectBlueSignStage3 = 1;
-    // }
-    
-    // if ((-1 < yellow_line_x_ && yellow_line_x_ < 0)) {
-    //     ctlDxlRight(8, 2);
-    //     RCLCPP_INFO(node->get_logger(), "C-1");
-    // } else {
-    //     ctlDxlLeft(8, 2);
-    //     RCLCPP_INFO(node->get_logger(), "C-2");
-    // }
-
-    // if ((-1 < yellow_line_x_ && yellow_line_x_ < 0) && (87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
-    //     ctlDxlFront(7, 0);
-    //     RCLCPP_INFO(node->get_logger(), "C-3");
-    // }
-    
-    
-    // else if (!isDetectYellowLine || ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1))) {
-    //     ctlDxlLeft(8, 2);
-    //     RCLCPP_INFO(node->get_logger(), "C-2");
-    // }
 }
 
 // ========== [Line Detect 서브스크라이브] ==========
+// 노랑 라인 감지 메서드
 void MasterNode::detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg) {
     isDetectYellowLine = msg->data;
     if (isDetectYellowLine) {
         isDetectYellowLine = true;
-        // RCLCPP_INFO(node->get_logger(), "노란색 라인 감지");
-        // ctlDxlRight();
     } else {
         isDetectYellowLine = false;
     }
 }
 
+// 흰색 라인 감지 메서드
 void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
     isDetectWhiteLine = msg->data;
     if (isDetectWhiteLine) {
         isDetectWhiteLine = true;
-        // RCLCPP_INFO(node->get_logger(), "흰색 라인 감지");
-        // ctlDxlLeft();
     } else {
         isDetectWhiteLine = false;
     }
@@ -426,135 +157,85 @@ void MasterNode::detectBarrier(const std_msgs::msg::Bool::SharedPtr msg) {
     if (msg->data) {
         stopDxl();
         isDetectBarrier = true;
-        // RCLCPP_INFO(node->get_logger(), "Barrier: True");
     } else {
         isDetectBarrier = false;
-        // RCLCPP_INFO(node->get_logger(), "Barrier: False");
     }
 }
 
 
-
+// ========== [라인 감지 서브스크라이브] ==========
 void MasterNode::getYellowLineX(const std_msgs::msg::Float32::SharedPtr msg) {
     yellow_line_x_ = msg->data;
-    // RCLCPP_INFO(node->get_logger(), "value: %.2f", yellow_line_x_);
 }
 
 void MasterNode::getWhiteLineX(const std_msgs::msg::Float32::SharedPtr msg) {
     white_line_x_ = msg->data;
-    // RCLCPP_INFO(node->get_logger(), "value: %.2f", white_line_x_);
 }
 
 void MasterNode::getWhiteLinePoints(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
     for (size_t i = 0; i < white_line_points_.size(); i++) {
         white_line_points_[i] = msg->data[i];
     }
-    // RCLCPP_INFO(node->get_logger(), "Updated white_line_points_: [%f, %f, %f, %f, %f, %f, %f, %f]", white_line_points_[0], white_line_points_[1], white_line_points_[2], white_line_points_[3], white_line_points_[4], white_line_points_[5], white_line_points_[6], white_line_points_[7]);
 }
 
 void MasterNode::getYellowLinePoints(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
     for (size_t i = 0; i < yellow_line_points_.size(); i++) {
         yellow_line_points_[i] = msg->data[i];
     }
-    // RCLCPP_INFO(node->get_logger(), "Updated yellow_line_points_: [%f, %f, %f, %f, %f, %f, %f, %f] | %f", yellow_line_points_[0], yellow_line_points_[1], yellow_line_points_[2], yellow_line_points_[3], yellow_line_points_[4], yellow_line_points_[5], yellow_line_points_[6], yellow_line_points_[7], yellow_line_angle_);
 }
 
 void MasterNode::getWhiteLineAngle(const std_msgs::msg::Float32::SharedPtr msg) {
     white_line_angle_ = msg->data;
-    // RCLCPP_INFO(node->get_logger(), "White value: %.2f", yellow_line_angle_);
 }
 
 void MasterNode::getYellowLineAngle(const std_msgs::msg::Float32::SharedPtr msg) {
     yellow_line_angle_ = msg->data;
-    // RCLCPP_INFO(node->get_logger(), "Yellow value: %.2f", yellow_line_angle_);
 }
 
 
 // ========== [IMU 서브스크라이브] ==========
 void MasterNode::getImuYaw(const std_msgs::msg::Float32::SharedPtr msg) {
     imu_yaw_ = msg->data;
-    // RCLCPP_INFO(node->get_logger(), "IMU value: %.2f", imu_yaw_);
     if(playYawFlag) {
         ctlDxlYaw(target_yaw_);
     }
 }
 
 
-
-
-
 // ========== [Dxl Control 메서드] ==========
+// Dxl 직진 메서드
 void MasterNode::ctlDxlFront(float linearVel, float angularVel) {
     if (isRobotRun_) {
         linear_vel_ = linearVel;  // 상태 갱신
         angular_vel_ = angularVel;
-
-        // auto msg_linear_ = std_msgs::msg::Int32();
-        // auto msg_angular_ = std_msgs::msg::Int32();
-
-        // msg_linear_.data = linearVel;
-        // msg_angular_.data = 0;
-
-        // pub_dxl_linear_vel_->publish(msg_linear_);
-        // pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "직진 이동");
     }
 }
 
+// Dxl 좌회전 메서드
 void MasterNode::ctlDxlLeft(float linearVel, float angularVel) {
     if (isRobotRun_) {
         linear_vel_ = linearVel;  // 상태 갱신
         angular_vel_ = angularVel;
-
-        // auto msg_linear_ = std_msgs::msg::Int32();
-        // auto msg_angular_ = std_msgs::msg::Int32();
-
-        // msg_linear_.data = linearVel;
-        // msg_angular_.data = angularVel;
-
-        // pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
-        // pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "왼쪽으로 이동");
     }
 }
 
-
+// Dxl 우회전 메서드
 void MasterNode::ctlDxlRight(float linearVel, float angularVel) {
     if (isRobotRun_) {
         linear_vel_ = linearVel;  // 상태 갱신
         angular_vel_ = -angularVel;
-
-        // auto msg_linear_ = std_msgs::msg::Int32();
-        // auto msg_angular_ = std_msgs::msg::Int32();
-
-        // msg_linear_.data = linearVel;
-        // msg_angular_.data = -angularVel;
-
-
-        // pub_dxl_linear_vel_->publish(msg_linear_); // 퍼블리시
-        // pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "오른쪽으로 이동");
     }
 }
 
+// Dxl 후진 메서드
 void MasterNode::ctlDxlBack(float linearVel, float angularVel) {
     if (isRobotRun_) {
-        // linear_vel_ = linearVel;  // 상태 갱신
-        // angular_vel_ = angularVel;
-
-        // auto msg_linear_ = std_msgs::msg::Int32();
-        // auto msg_angular_ = std_msgs::msg::Int32();
-
-        // msg_linear_.data = -linearVel;
-        // msg_angular_.data = 0;
-
-        // pub_dxl_linear_vel_->publish(msg_linear_);
-        // pub_dxl_angular_vel_->publish(msg_angular_);
-        // RCLCPP_INFO(node->get_logger(), "후진 이동");
+        linear_vel_ = linearVel;  // 상태 갱신
+        angular_vel_ = angularVel;
     }
 }
 
-
+// Dxl 정지 메서드
 void MasterNode::stopDxl() {
     isRobotRun_ = !isRobotRun_;
 
@@ -615,13 +296,15 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
 }
 
 
-// 수동 조작 모드일 때, GUI에서 입력한 linear와 angular 데이터 반영
+// (사용X) 수동 조작 모드일 때, GUI에서 입력한 linear와 angular 데이터 반영
 void MasterNode::updateDxlData(float linearVel, float angularVel) {
     linear_vel_ = linearVel;
     angular_vel_ = angularVel;
     RCLCPP_INFO(node->get_logger(), "UPDATEUPDATE!");
 }
 
+
+// Qt에서 단축키로 로봇을 제어하기 위한 메서드
 void MasterNode::runDxl(float linearVel, float angularVel) {
     isRobotRun_ = false;
     linear_vel_ = linearVel;  // 상태 저장
@@ -632,31 +315,24 @@ void MasterNode::runDxl(float linearVel, float angularVel) {
 
     msg_linear_.data = linearVel;
     msg_angular_.data = angularVel;
-    
-    // RCLCPP_INFO(node->get_logger(), "runDxl - Publishing Linear: %d | Angular: %d", msg_linear_.data, msg_angular_.data);
 
     pub_dxl_linear_vel_->publish(msg_linear_);
     pub_dxl_angular_vel_->publish(msg_angular_);
-
-    // RCLCPP_INFO(node->get_logger(), "RUNRUNRUNRUN!");
 }
 
 
 // ========== [STM32 PSD Value Callback Method] ==========
 void MasterNode::psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg) {
-    // RCLCPP_INFO(node->get_logger(), "PSD Right: %d", msg->data);
     psd_adc_right_ = msg->data;
     emit stmPsdRightReceived(msg->data);
 }
 
 void MasterNode::psdFrontCallback(const std_msgs::msg::Int32::SharedPtr msg) {
-    // RCLCPP_INFO(node->get_logger(), "PSD Front: %d", msg->data);
     psd_adc_front_ = msg->data;
     emit stmPsdFrontReceived(msg->data);
 }
 
 void MasterNode::psdLeftCallback(const std_msgs::msg::Int32::SharedPtr msg) {
-    // RCLCPP_INFO(node->get_logger(), "PSD Left: %d", msg->data);
     psd_adc_left_ = msg->data;
     emit stmPsdLeftReceived(msg->data);
 }
