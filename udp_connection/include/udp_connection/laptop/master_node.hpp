@@ -142,6 +142,9 @@ private:
     bool isDetectBlueSignStage3 = false; // 삼거리에서 표지판 감지 플래그 -> 삼거리 PID 처리를 위한 변수
     bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
     bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
+    bool isDetectWhiteLineInParkingAreaInStage3 = false; // 주차 영역 진입 중 하얀색 차선 감지했을 때 플래그
+    bool isDetectYellowLineInParkingAreaInStage3 = false; // 주차 영역 진입 중 하얀색 차선 감지 이후, 건너편 노란색 차선 감지했을 때 플래그
+
 
 
     // ========== [Line Detect 메서드] ==========

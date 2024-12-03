@@ -98,11 +98,11 @@ bool MasterNode::isInitialized() const
 void MasterNode::runRobotStage1() {    
     // (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) &&
     if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { // 직진 주행
-        // if ((yellow_line_points_[2] < white_line_points_[0]) && (isDetectYellowLine && isDetectWhiteLine)) {
-        //     ctlDxlFront(10, 0);
-        // }
+        if (yellow_line_points_[2] < white_line_points_[0]) {
+            ctlDxlFront(12, 0);
+        }
 
-        ctlDxlFront(12, 0);
+        // ctlDxlFront(12, 0);
 
         // 주행 도중, 라인 유지 처리
         if ((1 < yellow_line_angle_ && yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 88)) {
@@ -172,7 +172,7 @@ void MasterNode::runRobotStage2() {
             ctlDxlLeft(6, 3);
             RCLCPP_INFO(node->get_logger(), "9");
         } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 1)) {
-            ctlDxlLeft(6, 1);
+            ctlDxlLeft(4, 1);
             RCLCPP_INFO(node->get_logger(), "9-1111111111");
         } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
             ctlDxlRight(2, 1);
@@ -301,7 +301,7 @@ void MasterNode::runRobotStage3() {
         // }
 
         if (isDetectBlueSignStage3) {
-            if (!isDetectBlueSign && psd_adc_right_ > 900) {
+            if ((!isDetectBlueSign && psd_adc_right_ > 1100) && psd_adc_left_ < 1000) {
                 isReadyPidControlThreeWayStreetInStage3 = true;
                 RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
             }
@@ -364,12 +364,24 @@ void MasterNode::runRobotStage3() {
             isDonePidControlThreeWayStreetInStage3 = true;
         } else {
             if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
-                ctlDxlFront(10, 0);
+                ctlDxlFront(8, 0);
+                if (isDetectWhiteLine && !isDetectWhiteLineInParkingAreaInStage3) {
+                    isDetectWhiteLineInParkingAreaInStage3 = true;
+                    RCLCPP_INFO(node->get_logger(), "P-1111111");
+                } else if (isDetectWhiteLineInParkingAreaInStage3 && isDetectYellowLine) {
+                    isDetectYellowLineInParkingAreaInStage3 = true;
+                    RCLCPP_INFO(node->get_logger(), "P-2222222");
+                }
+
+                if (isDetectYellowLineInParkingAreaInStage3) {
+                    stopDxl();
+                    RCLCPP_INFO(node->get_logger(), "P-3333333");
+                }
             } else if ((-1 < yellow_line_x_ && yellow_line_x_ < 0) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
                 ctlDxlRight(7, 2);
             } else if ((0 < yellow_line_x_ && yellow_line_x_ < 1) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
                 ctlDxlLeft(7, 2);
-            }            
+            }
         }
     }
 
