@@ -4,8 +4,8 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
 {
   ui->setupUi(this);
 
-ui->lineEditConnectCheckSendData->setFocusPolicy(Qt::NoFocus);
-ui->lineEditTargetDeviceIPAddress->setFocusPolicy(Qt::NoFocus);
+// ui->lineEditConnectCheckSendData->setFocusPolicy(Qt::NoFocus);
+// ui->lineEditTargetDeviceIPAddress->setFocusPolicy(Qt::NoFocus);
 
   QIcon icon("://ros-icon.png");
   this->setWindowIcon(icon);
@@ -238,19 +238,19 @@ void LaptopWindow::onDeployButtonClicked() {
 
 // ========== [로봇 원격 제어 메서드] ==========
 void LaptopWindow::onMoveFrontButtonClicked() {
-  masterNode_->runDxl(10, 0);
+  masterNode_->runDxl(0.5, 0);
 }
 
 void LaptopWindow::onMoveBackButtonClicked() {
-  masterNode_->runDxl(-10, 0);
+  masterNode_->runDxl(-0.5, 0);
 }
 
 void LaptopWindow::onMoveLeftButtonClicked() {
-  masterNode_->runDxl(0, 3);
+  masterNode_->runDxl(0, 0.25);
 }
 
 void LaptopWindow::onMoveRightButtonClicked() {
-  masterNode_->runDxl(0, -3);
+  masterNode_->runDxl(0, -0.25);
   // masterNode_->ctlDxlYaw(100.0);
 }
 

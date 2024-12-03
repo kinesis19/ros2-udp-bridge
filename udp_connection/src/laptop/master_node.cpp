@@ -14,9 +14,9 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     sub_yellow_line_x_ = node->create_subscription<std_msgs::msg::Float32>("/vision/yellow_line_x", 10, std::bind(&MasterNode::getYellowLineX, this, std::placeholders::_1));
     sub_white_line_x_ = node->create_subscription<std_msgs::msg::Float32>("/vision/white_line_x", 10, std::bind(&MasterNode::getWhiteLineX, this, std::placeholders::_1));
 
-    // ========== [Dynamixel 퍼블리셔 생성] ==========
-    pub_dxl_linear_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_linear_vel", 10);
-    pub_dxl_angular_vel_ = node->create_publisher<std_msgs::msg::Int32>("/stm32/dxl_angular_vel", 10);
+    // ========== [Dynamixel 퍼블리셔 생성] ==========s
+    pub_dxl_linear_vel_ = node->create_publisher<std_msgs::msg::Float32>("/stm32/dxl_linear_vel", 10);
+    pub_dxl_angular_vel_ = node->create_publisher<std_msgs::msg::Float32>("/stm32/dxl_angular_vel", 10);
 
     // ========== [IMU 서브스크라이버] ==========
     sub_imu_yaw_ = node->create_subscription<std_msgs::msg::Float32>("/imu/yaw", 10, std::bind(&MasterNode::getImuYaw, this, std::placeholders::_1));
@@ -68,15 +68,16 @@ void MasterNode::run()
 
         if (stage_number_ == 1) {
             runRobotStage1();
-        } else if (stage_number_ == 2) {
+        } 
+        else if (stage_number_ == 2) {
             runRobotStage2();
         } else if (stage_number_ == 3) {
             runRobotStage3();
         }
 
         // 현재 상태를 유지하며 지속적으로 퍼블리시
-        auto msg_linear_ = std_msgs::msg::Int32();
-        auto msg_angular_ = std_msgs::msg::Int32();
+        auto msg_linear_ = std_msgs::msg::Float32();
+        auto msg_angular_ = std_msgs::msg::Float32();
 
         msg_linear_.data = linear_vel_;
         msg_angular_.data = angular_vel_;
@@ -98,11 +99,11 @@ bool MasterNode::isInitialized() const
 void MasterNode::runRobotStage1() {    
     // (yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) &&
     if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) { // 직진 주행
-        if (yellow_line_points_[2] < white_line_points_[0]) {
-            ctlDxlFront(12, 0);
-        }
+        // if ((yellow_line_points_[2] < white_line_points_[0]) && (isDetectYellowLine && isDetectWhiteLine)) {
+        //     ctlDxlFront(10, 0);
+        // }
 
-        // ctlDxlFront(12, 0);
+        ctlDxlFront(12, 0);
 
         // 주행 도중, 라인 유지 처리
         if ((1 < yellow_line_angle_ && yellow_line_angle_ < 10) || (80 < yellow_line_angle_ && yellow_line_angle_ < 88)) {
@@ -172,7 +173,7 @@ void MasterNode::runRobotStage2() {
             ctlDxlLeft(6, 3);
             RCLCPP_INFO(node->get_logger(), "9");
         } else if ((isDetectWhiteLineNowStage2_1 && white_line_x_ < 1)) {
-            ctlDxlLeft(4, 1);
+            ctlDxlLeft(6, 1);
             RCLCPP_INFO(node->get_logger(), "9-1111111111");
         } else if (0.3 < white_line_x_ && white_line_x_ < 0.5) {
             ctlDxlRight(2, 1);
@@ -188,7 +189,7 @@ void MasterNode::runRobotStage2() {
         if (!isPassSecondObjectStage2) {
             // 오브젝트2 감지 조건
             // || psd_adc_left_ > 2000 && psd_adc_front_ > 2000
-            if (psd_adc_front_ > 2400 ) {
+            if (psd_adc_front_ > 2000 ) {
                 if (imu_yaw_ - 50.0 < -180) {
                     target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
                 } else {
@@ -301,7 +302,7 @@ void MasterNode::runRobotStage3() {
         // }
 
         if (isDetectBlueSignStage3) {
-            if ((!isDetectBlueSign && psd_adc_right_ > 1100) && psd_adc_left_ < 1000) {
+            if (!isDetectBlueSign && psd_adc_right_ > 900) {
                 isReadyPidControlThreeWayStreetInStage3 = true;
                 RCLCPP_INFO(node->get_logger(), "재감지이이이이이이이이이이이이이이이이");
             }
@@ -364,24 +365,12 @@ void MasterNode::runRobotStage3() {
             isDonePidControlThreeWayStreetInStage3 = true;
         } else {
             if ((87 <= yellow_line_angle_ && yellow_line_angle_ <= 90) || (0 <= yellow_line_angle_ && yellow_line_angle_ <= 1)) {
-                ctlDxlFront(8, 0);
-                if (isDetectWhiteLine && !isDetectWhiteLineInParkingAreaInStage3) {
-                    isDetectWhiteLineInParkingAreaInStage3 = true;
-                    RCLCPP_INFO(node->get_logger(), "P-1111111");
-                } else if (isDetectWhiteLineInParkingAreaInStage3 && isDetectYellowLine) {
-                    isDetectYellowLineInParkingAreaInStage3 = true;
-                    RCLCPP_INFO(node->get_logger(), "P-2222222");
-                }
-
-                if (isDetectYellowLineInParkingAreaInStage3) {
-                    stopDxl();
-                    RCLCPP_INFO(node->get_logger(), "P-3333333");
-                }
+                ctlDxlFront(10, 0);
             } else if ((-1 < yellow_line_x_ && yellow_line_x_ < 0) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
                 ctlDxlRight(7, 2);
             } else if ((0 < yellow_line_x_ && yellow_line_x_ < 1) && (yellow_line_angle_ < -87 || yellow_line_angle_ > 1)) {
                 ctlDxlLeft(7, 2);
-            }
+            }            
         }
     }
 
@@ -495,7 +484,7 @@ void MasterNode::getImuYaw(const std_msgs::msg::Float32::SharedPtr msg) {
 
 
 // ========== [Dxl Control 메서드] ==========
-void MasterNode::ctlDxlFront(int linearVel, int angularVel) {
+void MasterNode::ctlDxlFront(float linearVel, float angularVel) {
     if (isRobotRun_) {
         linear_vel_ = linearVel;  // 상태 갱신
         angular_vel_ = angularVel;
@@ -512,7 +501,7 @@ void MasterNode::ctlDxlFront(int linearVel, int angularVel) {
     }
 }
 
-void MasterNode::ctlDxlLeft(int linearVel, int angularVel) {
+void MasterNode::ctlDxlLeft(float linearVel, float angularVel) {
     if (isRobotRun_) {
         linear_vel_ = linearVel;  // 상태 갱신
         angular_vel_ = angularVel;
@@ -530,7 +519,7 @@ void MasterNode::ctlDxlLeft(int linearVel, int angularVel) {
 }
 
 
-void MasterNode::ctlDxlRight(int linearVel, int angularVel) {
+void MasterNode::ctlDxlRight(float linearVel, float angularVel) {
     if (isRobotRun_) {
         linear_vel_ = linearVel;  // 상태 갱신
         angular_vel_ = -angularVel;
@@ -548,7 +537,7 @@ void MasterNode::ctlDxlRight(int linearVel, int angularVel) {
     }
 }
 
-void MasterNode::ctlDxlBack(int linearVel, int angularVel) {
+void MasterNode::ctlDxlBack(float linearVel, float angularVel) {
     if (isRobotRun_) {
         // linear_vel_ = linearVel;  // 상태 갱신
         // angular_vel_ = angularVel;
@@ -572,8 +561,8 @@ void MasterNode::stopDxl() {
     linear_vel_ = 0;  // 상태 갱신
     angular_vel_ = 0;
 
-    auto msg_linear_ = std_msgs::msg::Int32();
-    auto msg_angular_ = std_msgs::msg::Int32();
+    auto msg_linear_ = std_msgs::msg::Float32();
+    auto msg_angular_ = std_msgs::msg::Float32();
 
     msg_linear_.data = 0;
     msg_angular_.data = 0;
@@ -627,19 +616,19 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
 
 
 // 수동 조작 모드일 때, GUI에서 입력한 linear와 angular 데이터 반영
-void MasterNode::updateDxlData(int linearVel, int angularVel) {
+void MasterNode::updateDxlData(float linearVel, float angularVel) {
     linear_vel_ = linearVel;
     angular_vel_ = angularVel;
     RCLCPP_INFO(node->get_logger(), "UPDATEUPDATE!");
 }
 
-void MasterNode::runDxl(int linearVel, int angularVel) {
+void MasterNode::runDxl(float linearVel, float angularVel) {
     isRobotRun_ = false;
     linear_vel_ = linearVel;  // 상태 저장
     angular_vel_ = angularVel;  // 상태 저장
 
-    auto msg_linear_ = std_msgs::msg::Int32();
-    auto msg_angular_ = std_msgs::msg::Int32();
+    auto msg_linear_ = std_msgs::msg::Float32();
+    auto msg_angular_ = std_msgs::msg::Float32();
 
     msg_linear_.data = linearVel;
     msg_angular_.data = angularVel;

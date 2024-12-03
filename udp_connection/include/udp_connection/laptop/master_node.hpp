@@ -21,8 +21,8 @@ public:
     ~MasterNode();
     bool isInitialized() const; // 초기화 상태 확인 메서드
     void stopDxl();
-    void updateDxlData(int linearVel, int angularVel); // Dxl 데이터를 UI로 입력 받아 제어하기
-    void runDxl(int linearVel, int angularVel); // Dxl 원격 제어(버튼)
+    void updateDxlData(float linearVel, float angularVel); // Dxl 데이터를 UI로 입력 받아 제어하기
+    void runDxl(float linearVel, float angularVel); // Dxl 원격 제어(버튼)
 
     void responePidTest();
 
@@ -49,8 +49,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_yellow_detected_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_white_detected_;
 
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_dxl_linear_vel_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_dxl_angular_vel_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_dxl_linear_vel_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_dxl_angular_vel_;
 
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_yellow_line_x_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_white_line_x_;
@@ -95,8 +95,8 @@ private:
     float white_line_x_;
 
     // linear, angular 변수(UI -> msg)
-    int linear_vel_;
-    int angular_vel_;
+    float linear_vel_;
+    float angular_vel_;
 
     // IMU의 yaw 데이터 변수
     float imu_yaw_;
@@ -142,9 +142,6 @@ private:
     bool isDetectBlueSignStage3 = false; // 삼거리에서 표지판 감지 플래그 -> 삼거리 PID 처리를 위한 변수
     bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
     bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
-    bool isDetectWhiteLineInParkingAreaInStage3 = false; // 주차 영역 진입 중 하얀색 차선 감지했을 때 플래그
-    bool isDetectYellowLineInParkingAreaInStage3 = false; // 주차 영역 진입 중 하얀색 차선 감지 이후, 건너편 노란색 차선 감지했을 때 플래그
-
 
 
     // ========== [Line Detect 메서드] ==========
@@ -174,10 +171,10 @@ private:
     void detectBarrier(const std_msgs::msg::Bool::SharedPtr msg);
 
     // ========== [Dxl Control 메서드] ==========
-    void ctlDxlFront(int linearVel, int angularVel);
-    void ctlDxlLeft(int linearVel, int angularVel);
-    void ctlDxlRight(int linearVel, int angularVel);
-    void ctlDxlBack(int linearVel, int angularVel);
+    void ctlDxlFront(float linearVel, float angularVel);
+    void ctlDxlLeft(float linearVel, float angularVel);
+    void ctlDxlRight(float linearVel, float angularVel);
+    void ctlDxlBack(float linearVel, float angularVel);
 
     // ========== [스테이지별 이동 처리 메서드] ==========
     void runRobotStage1(); // 스테이지1 일때의 이동처리 로직
