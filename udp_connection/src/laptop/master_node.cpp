@@ -40,6 +40,12 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     // ========== [차단바 감지 서브스크라이브] ==========
     sub_barrier_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/barrier_detected", 10, std::bind(&MasterNode::detectBarrier, this, std::placeholders::_1));
 
+    // ========== [Line Detect  중앙값 서브스크라이브] ==========
+    sub_yellow_line_center_dist_ = node->create_subscription<std_msgs::msg::Float32>("/vision/yellow_line_center_dist", 10, std::bind(&MasterNode::getDistYellowLineCenter, this, std::placeholders::_1));
+    sub_white_line_center_dist_ = node->create_subscription<std_msgs::msg::Float32>("/vision/white_line_center_dist", 10, std::bind(&MasterNode::getDistWhiteLineCenter, this, std::placeholders::_1));
+
+
+
     stage_number_ = 1; // 최초 시작: 스테이지1
 }
 
@@ -64,7 +70,7 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || Y Points[2]: %.2f | W Points[0]: %.2f || Y Line X: %.2f | W Line X: %.2f || IMU: %.2f", yellow_line_angle_, white_line_angle_, yellow_line_points_[2], white_line_points_[0], yellow_line_x_, white_line_x_, imu_yaw_);
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || ", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_);
 
         if (stage_number_ == 1) {
             runRobotStage1();
@@ -115,75 +121,53 @@ void MasterNode::runRobotStage1() {
     // }
 
     // 기본 주행 모드
-    float pixel_gap = 0.0; // 중앙선 기준 오차
     float center_x = 320.0; // 카메라 화면 중심 (예: 640x480 해상도의 중심 x좌표)
-    float linear_gain_ = 0.0115;
-    float curve_gain_ = 0.01;
-    linear_vel_ = 0.1;
+    linear_vel_ = 0.3;
 
-    if (isDetectYellowLine && isDetectWhiteLine)
-    {
-        // 두 선의 중심 좌표 계산
-        float yellow_center_x = (yellow_line_points_[0] + yellow_line_points_[2]) / 2.0;
-        float white_center_x = (white_line_points_[0] + white_line_points_[2]) / 2.0;
-
-        // 중앙 오차 계산 (TurtleBot3가 두 선의 중심을 기준으로 이동하도록 함)
-        pixel_gap = center_x - (yellow_center_x + white_center_x) / 2.0;
-
-        // 각도 기반 조정
-        angular_vel_ = pixel_gap * linear_gain_;
+    if (isDetectYellowLine && isDetectWhiteLine) {
+        pixel_gap = center_x - (int)(((dist_yellow_line_ * -1) + dist_white_line_) / 2);
+        angular_vel_= (double)pixel_gap * GAIN_LINEAR;;
         RCLCPP_INFO(node->get_logger(), "D-1");
-    }
-    else if (isDetectYellowLine && !isDetectWhiteLine)
-    {
-        // 노란색 선만 감지됨
-        if (yellow_line_angle_ >= 1 && yellow_line_angle_ < 7)
-        {
-            // 거의 직선일 경우
-            angular_vel_ = -(yellow_line_points_[2] - center_x) * linear_gain_;
+    } else if (isDetectYellowLine && !isDetectWhiteLine) { // 노란색 선만 감지됨
+        RCLCPP_INFO(node->get_logger(), "D-22222222");
+        if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 92) { // 예외 처리: 근사항 직진 주행
+            // angular_vel_ = (220 + dist_yellow_line_) * GAIN_LINEAR;
+            angular_vel_ = 0.0;
+            RCLCPP_INFO(node->get_logger(), "D-2-0");
+        } else if (92 <= yellow_line_angle_ && yellow_line_angle_ <= 97) {  // 좌회전 처리: (약 ~ 중)
+            angular_vel_ = (180 + dist_yellow_line_) * GAIN_CORNER;
             RCLCPP_INFO(node->get_logger(), "D-2-1");
-        }
-        else if (yellow_line_angle_ < 20)
-        {
-            // 좌측 곡선일 경우
-            angular_vel_ = -(yellow_line_points_[2] - center_x) * curve_gain_;
-            if (angular_vel_ > 0) {
-                angular_vel_ = -angular_vel_;
-            }
+        } else if (97 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
+            angular_vel_ = (25 + dist_yellow_line_) * GAIN_LINEAR;
             RCLCPP_INFO(node->get_logger(), "D-2-2");
         }
-    }
-    else if (!isDetectYellowLine && isDetectWhiteLine)
-    {
-        // 흰색 선만 감지됨
-        if (white_line_angle_ >= 1 && white_line_angle_ < 7)
-        {
-            // 거의 직선일 경우
-            angular_vel_ = (center_x - white_line_points_[0]) * linear_gain_ * -1;
+    } else if (!isDetectYellowLine && isDetectWhiteLine) {
+        RCLCPP_INFO(node->get_logger(), "D-33333333");
+        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+            // angular_vel_ = (dist_white_line_ - 220) * GAIN_LINEAR;
+            angular_vel_ = 0.0;
+            RCLCPP_INFO(node->get_logger(), "D-3-0"); 
+        } else if (83 < white_line_angle_ && white_line_angle_ <= 88) {
+            angular_vel_ = (dist_white_line_ - 150) * GAIN_CORNER;
             RCLCPP_INFO(node->get_logger(), "D-3-1");
-        }
-        else if (white_line_angle_ < 20)
-        {
-            // 우측 곡선일 경우
-            angular_vel_ = (center_x - white_line_points_[0]) * curve_gain_ * -1;
+        } else if (yellow_line_angle_ < 83) {
+            angular_vel_ = (dist_white_line_ - 25) * GAIN_LINEAR;
             RCLCPP_INFO(node->get_logger(), "D-3-2");
         }
-    }
-    else
-    {
-        // 선이 감지되지 않을 경우
-        linear_vel_ = 0.0;
-        angular_vel_ = 0.0;
+    } else {
+        // // 선이 감지되지 않을 경우
+        // linear_vel_ = 0.0;
+        // angular_vel_ = 0.0;
         RCLCPP_INFO(node->get_logger(), "D-4");
     }
 
 
     // Stage2 감지
-    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
-        if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
-            stage_number_ = 2;
-        }
-    }
+    // if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
+    //     if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
+    //         stage_number_ = 2;
+    //     }
+    // }
 }
 
 void MasterNode::runRobotStage2() {
@@ -417,3 +401,12 @@ void MasterNode::detectBlueSign(const std_msgs::msg::Bool::SharedPtr msg) {
         isDetectBlueSign = false;
     }
 }
+
+void MasterNode::getDistYellowLineCenter(const std_msgs::msg::Float32::SharedPtr msg) {
+    dist_yellow_line_ = msg->data;
+}
+
+void MasterNode::getDistWhiteLineCenter(const std_msgs::msg::Float32::SharedPtr msg) {
+    dist_white_line_ = msg->data;
+}
+

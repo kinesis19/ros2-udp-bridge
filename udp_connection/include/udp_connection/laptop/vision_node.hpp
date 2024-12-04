@@ -14,16 +14,6 @@
 #include <QImage>
 #include <QPixmap>
 
-struct RANSACLine
-{
-    cv::Point2f start;
-    cv::Point2f end;
-    float angle;
-    float center_x;
-    float center_y;
-    int num_inliers;
-    bool valid;
-};
 
 class VisionNode : public QThread
 {
@@ -59,11 +49,13 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_angle_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_barrier_detected_;
     
-    
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_barrier_yellow_line_detected_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_barrier_white_line_detected_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_barrier_yellow_line_angle_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_barrier_white_line_angle_;
+
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yellow_center_dist_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_center_dist_;
 
 
 

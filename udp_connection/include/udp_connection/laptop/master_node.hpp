@@ -9,6 +9,9 @@
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <cmath> 
 
+#define GAIN_LINEAR 0.001
+#define GAIN_CORNER 0.002
+
 class MasterNode : public QThread
 {
     Q_OBJECT
@@ -77,6 +80,10 @@ private:
     // ========== [차단바 감지 서브스크라이브] ==========
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_barrier_detected_;
 
+    // ========== [Line Detect  중앙값 서브스크라이브] ==========
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_yellow_line_center_dist_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_white_line_center_dist_;
+
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
 
@@ -131,6 +138,11 @@ private:
     float yaw_error = 0.0f;
     float pre_yaw_error = 0.0f;
 
+    // Line Detect Center 변수
+    float dist_yellow_line_ = 0.0;
+    float dist_white_line_ = 0.0;
+    float pixel_gap = 0.0; // 중앙선 기준 오차
+
     // ========== [Stage2 감지 플래그 변수] ==========
     bool isDetectSecondObjectStage2; // 오브젝트2 정면 감지 변수
     bool isDetectThirdObjectStage2; // 오브젝트3 정면 감지 변수
@@ -172,6 +184,10 @@ private:
 
     // ========== [차단바 감지 메서드] ==========
     void detectBarrier(const std_msgs::msg::Bool::SharedPtr msg);
+
+    // ========== [Line Detect  중앙값 서브스크라이브] ==========
+    void getDistYellowLineCenter(const std_msgs::msg::Float32::SharedPtr msg);
+    void getDistWhiteLineCenter(const std_msgs::msg::Float32::SharedPtr msg);
 
     // ========== [Dxl Control 메서드] ==========
     void ctlDxlFront(float linearVel, float angularVel);
