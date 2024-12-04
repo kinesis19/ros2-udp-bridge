@@ -65,7 +65,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_barrier_yellow_line_angle_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_barrier_white_line_angle_;
 
-
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr yellow_center_dist_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr white_center_dist_pub_;
 
     bool initialized_; // 초기화 상태 확인 변수
     bool barrier_detected;

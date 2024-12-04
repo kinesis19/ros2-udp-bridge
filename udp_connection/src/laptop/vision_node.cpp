@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/vision_node.hpp"
 
-VisionNode::VisionNode() :  yellow_line_detected(false), white_line_detected(false), yellow_line_count(0), white_line_count(0), array_index(0), yellow_line_valid(false), white_line_valid(false), yellow_line_x(0.0), white_line_x(0.0)
+VisionNode::VisionNode() : yellow_line_detected(false), white_line_detected(false), yellow_line_count(0), white_line_count(0), array_index(0), yellow_line_valid(false), white_line_valid(false), yellow_line_x(0.0), white_line_x(0.0)
 {
     node = rclcpp::Node::make_shared("vision_node");
 
@@ -37,6 +37,8 @@ VisionNode::VisionNode() :  yellow_line_detected(false), white_line_detected(fal
     pub_barrier_yellow_line_angle_ = node->create_publisher<std_msgs::msg::Float32>("/vision/barrier_yellow_line_angle", 10);
     pub_barrier_white_line_angle_ = node->create_publisher<std_msgs::msg::Float32>("/vision/barrier_white_line_angle", 10);
 
+    yellow_center_dist_pub_ = node->create_publisher<std_msgs::msg::Float32>("/vision/yellow_line_center_dist", 10);
+    white_center_dist_pub_ = node->create_publisher<std_msgs::msg::Float32>("/vision/white_line_center_dist", 10);
     yellow_detection_array.fill(false);
     white_detection_array.fill(false);
 }
@@ -64,7 +66,6 @@ bool VisionNode::isInitialized() const
     return initialized_; // 초기화 상태 반환
 }
 
-
 // ========== [Vision 라인 감지 처리] ==========
 bool VisionNode::isLineValid(std::array<bool, 10> &detection_array, bool current_detection)
 {
@@ -72,8 +73,10 @@ bool VisionNode::isLineValid(std::array<bool, 10> &detection_array, bool current
     detection_array[array_index] = current_detection;
     // true의 개수 계산
     int detection_count = 0;
-    for (bool detection : detection_array) {
-        if (detection) {
+    for (bool detection : detection_array)
+    {
+        if (detection)
+        {
             detection_count++;
         }
     }
@@ -81,11 +84,11 @@ bool VisionNode::isLineValid(std::array<bool, 10> &detection_array, bool current
     return detection_count >= DETECTION_THRESHOLD;
 }
 
-
 // ========== [Vision 처리] ==========
 void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
-    try {
+    try
+    {
         cv::Mat frame = cv_bridge::toCvCopy(msg, "bgr8")->image;
         cv::Mat resized_frame;
         cv::resize(frame, resized_frame, cv::Size(640, 480));
@@ -98,7 +101,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Point2f dst_vertices[4];
         cv::Point2f signs_vertices[4];
         cv::Point2f bar_vertices[4];
-        
+
         // 차단바
         bar_vertices[0] = cv::Point2f(width * 0.35f, height * 0.55f);
         bar_vertices[1] = cv::Point2f(width * 0.65f, height * 0.55f);
@@ -221,114 +224,130 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 노란색 선 검출 부분
         std::vector<cv::Vec4i> yellow_lines;
-        cv::HoughLinesP(yellow_mask_combined, yellow_lines, 1, CV_PI/180, 30, 20, 40);
+        cv::HoughLinesP(yellow_mask_combined, yellow_lines, 1, CV_PI / 180, 30, 20, 40);
 
-        if (!yellow_lines.empty()) {
+        if (!yellow_lines.empty())
+        {
             yellow_line_detected = true;
             yellow_line_count = yellow_lines.size();
-            
+
             // 가장 외곽(왼쪽) 라인 찾기
             float leftmost_x = width;
             cv::Vec4i leftmost_line;
             bool found = false;
-            
-            for (const auto& line : yellow_lines) {
+
+            for (const auto &line : yellow_lines)
+            {
                 float x1 = line[0], x2 = line[2];
                 float avg_x = (x1 + x2) / 2;
-                if (avg_x < leftmost_x) {
+                if (avg_x < leftmost_x)
+                {
                     leftmost_x = avg_x;
                     leftmost_line = line;
                     found = true;
                 }
             }
-            
-            if (found) {
+
+            if (found)
+            {
                 float x1 = leftmost_line[0], y1 = leftmost_line[1];
                 float x2 = leftmost_line[2], y2 = leftmost_line[3];
-                
+
                 yellow_line_x = (leftmost_x / width) * 2 - 1;
-                
+
                 // 각도 계산 수정
                 float dy = y1 - y2;
                 float dx = x1 - x2;
                 float angle = std::atan2(dy, dx) * 180.0f / M_PI;
-                
-                
+
                 // 수직선에 가까운 각도로 변환 (90도에 가깝게)
-                if (angle < 0) {
+                if (angle < 0)
+                {
                     angle += 180.0f;
                 }
-                
+
                 // 시각화를 위한 선 그리기
                 cv::line(line_display, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(0, 255, 255), 2);
-                
+
                 auto yellow_pos_msg = std_msgs::msg::Float32();
                 yellow_pos_msg.data = yellow_line_x;
                 pub_yellow_pos_->publish(yellow_pos_msg);
-                
+
                 auto angle_msg = std_msgs::msg::Float32();
                 angle_msg.data = angle;
                 pub_yellow_angle_->publish(angle_msg);
+
+                //auto center_dist_msg = std_msgs::msg::Float32();
+                //center_dist_msg.data = distance_from_center;
+                //yellow_center_dist_pub_->publish(center_dist_msg);
             }
         }
 
-        
         // 흰색 선 검출 부분
         std::vector<cv::Vec4i> white_lines;
-        cv::HoughLinesP(white_mask_combined, white_lines, 1, CV_PI/180, 30, 20, 10);
+        cv::HoughLinesP(white_mask_combined, white_lines, 1, CV_PI / 180, 30, 20, 10);
 
-        if (!white_lines.empty()) {
+        if (!white_lines.empty())
+        {
             white_line_detected = true;
             white_line_count = white_lines.size();
-            
+
             // 가장 외곽(오른쪽) 라인 찾기
             float rightmost_x = 0;
             cv::Vec4i rightmost_line;
             bool found = false;
-            
-            for(const auto& line : white_lines) {
+
+            for (const auto &line : white_lines)
+            {
                 float x1 = line[0], x2 = line[2];
                 float avg_x = (x1 + x2) / 2;
-                if (avg_x > rightmost_x) {
+                if (avg_x > rightmost_x)
+                {
                     rightmost_x = avg_x;
                     rightmost_line = line;
                     found = true;
                 }
             }
-            
-            if (found) {
+
+            if (found)
+            {
                 float x1 = rightmost_line[0], y1 = rightmost_line[1];
                 float x2 = rightmost_line[2], y2 = rightmost_line[3];
-                
+
                 white_line_x = (rightmost_x / width) * 2 - 1;
-                
+
                 // 각도 계산 수정
                 float dy = y2 - y1;
                 float dx = x2 - x1;
                 float angle = std::atan2(dy, dx) * 180.0f / M_PI;
-                
+
                 // 수직선에 가까운 각도로 변환 (90도에 가깝게)
-                if (angle < 0) {
+                if (angle < 0)
+                {
                     angle += 180.0f;
                 }
-                
+
                 cv::line(line_display, cv::Point(x1, y1), cv::Point(x2, y2),
-                        cv::Scalar(255, 255, 255), 2);
-                
+                         cv::Scalar(255, 255, 255), 2);
+
                 auto white_pos_msg = std_msgs::msg::Float32();
                 white_pos_msg.data = white_line_x;
                 pub_white_pos_->publish(white_pos_msg);
-                
+
                 auto angle_msg = std_msgs::msg::Float32();
                 angle_msg.data = angle;
                 pub_white_angle_->publish(angle_msg);
+
+                //auto center_dist_msg = std_msgs::msg::Float32();
+                //center_dist_msg.data = distance_from_center;
+                //white_center_dist_pub_->publish(center_dist_msg);
             }
         }
 
-                if (yellow_line_detected || white_line_detected) // 노란선 감지 또는 흰 선감지
-                {
-                    // nothing here
-                }
+        if (yellow_line_detected || white_line_detected) // 노란선 감지 또는 흰 선감지
+        {
+            // nothing here
+        }
 
         // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -480,9 +499,9 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         auto barrier_msg = std_msgs::msg::Bool();
         barrier_msg.data = barrier_detected;
         pub_barrier_detected_->publish(barrier_msg);
-        
+
         // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-        
+
         // 표지판 ROI 마스크 생성
         cv::Mat sign_roi_mask = cv::Mat::zeros(resized_frame.size(), CV_8UC1);
         std::vector<cv::Point> roi_points;
@@ -588,14 +607,16 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         QImage qImageDetectedFrame(line_display.data, line_display.cols, line_display.rows, line_display.step, QImage::Format_RGB888);
         QImage qImageYellowMaskFrame(yellow_mask_combined.data, yellow_mask_combined.cols, yellow_mask_combined.rows, yellow_mask_combined.step, QImage::Format_Grayscale8);
         QImage qImageWhiteMaskFrame(white_mask_combined.data, white_mask_combined.cols, white_mask_combined.rows, white_mask_combined.step, QImage::Format_Grayscale8);
-        
-        QPixmap pixmapResized = QPixmap::fromImage(qImageResizedFrame.rgbSwapped());  // RGB로 변환 후 QPixmap 생성
+
+        QPixmap pixmapResized = QPixmap::fromImage(qImageResizedFrame.rgbSwapped()); // RGB로 변환 후 QPixmap 생성
         QPixmap pixmapDetected = QPixmap::fromImage(qImageDetectedFrame.rgbSwapped());
         QPixmap pixmapYellowMask = QPixmap::fromImage(qImageYellowMaskFrame.rgbSwapped());
         QPixmap pixmapWhiteMask = QPixmap::fromImage(qImageWhiteMaskFrame.rgbSwapped());
 
-        emit imageReceived(pixmapResized, pixmapDetected, pixmapYellowMask, pixmapWhiteMask);  // 원본 이미지를 전송
-    } catch (const cv_bridge::Exception &e) {
+        emit imageReceived(pixmapResized, pixmapDetected, pixmapYellowMask, pixmapWhiteMask); // 원본 이미지를 전송
+    }
+    catch (const cv_bridge::Exception &e)
+    {
         RCLCPP_INFO(node->get_logger(), "cv_bridge exception: %s", e.what());
     }
 }
