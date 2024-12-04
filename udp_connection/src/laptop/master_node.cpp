@@ -99,19 +99,84 @@ bool MasterNode::isInitialized() const
 void MasterNode::runRobotStage1() {
     // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지1");
-    if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) {
-        ctlDxlFront(0.65, 0);
-    } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-        // 첫 번째 오른쪽 코너
-        ctlDxlRight(0.35, 0.1);
-        RCLCPP_INFO(node->get_logger(), "1");
-    } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= 0.35)))) { // 좌회전
-        // 주행 도중 라인 유지
-        if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
-            return;
-        }
-        ctlDxlLeft(0.35, 0.1);
+
+    // if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) {
+    //     ctlDxlFront(0.65, 0);
+    // } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
+    //     // 첫 번째 오른쪽 코너
+    //     ctlDxlRight(0.35, 0.1);
+    //     RCLCPP_INFO(node->get_logger(), "1");
+    // } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= 0.35)))) { // 좌회전
+    //     // 주행 도중 라인 유지
+    //     if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
+    //         return;
+    //     }
+    //     ctlDxlLeft(0.35, 0.1);
+    // }
+
+    // 기본 주행 모드
+    float pixel_gap = 0.0; // 중앙선 기준 오차
+    float center_x = 320.0; // 카메라 화면 중심 (예: 640x480 해상도의 중심 x좌표)
+    float linear_gain_ = 0.0115;
+    float curve_gain_ = 0.01;
+    linear_vel_ = 0.1;
+
+    if (isDetectYellowLine && isDetectWhiteLine)
+    {
+        // 두 선의 중심 좌표 계산
+        float yellow_center_x = (yellow_line_points_[0] + yellow_line_points_[2]) / 2.0;
+        float white_center_x = (white_line_points_[0] + white_line_points_[2]) / 2.0;
+
+        // 중앙 오차 계산 (TurtleBot3가 두 선의 중심을 기준으로 이동하도록 함)
+        pixel_gap = center_x - (yellow_center_x + white_center_x) / 2.0;
+
+        // 각도 기반 조정
+        angular_vel_ = pixel_gap * linear_gain_;
+        RCLCPP_INFO(node->get_logger(), "D-1");
     }
+    else if (isDetectYellowLine && !isDetectWhiteLine)
+    {
+        // 노란색 선만 감지됨
+        if (yellow_line_angle_ >= 1 && yellow_line_angle_ < 7)
+        {
+            // 거의 직선일 경우
+            angular_vel_ = -(yellow_line_points_[2] - center_x) * linear_gain_;
+            RCLCPP_INFO(node->get_logger(), "D-2-1");
+        }
+        else if (yellow_line_angle_ < 20)
+        {
+            // 좌측 곡선일 경우
+            angular_vel_ = -(yellow_line_points_[2] - center_x) * curve_gain_;
+            if (angular_vel_ > 0) {
+                angular_vel_ = -angular_vel_;
+            }
+            RCLCPP_INFO(node->get_logger(), "D-2-2");
+        }
+    }
+    else if (!isDetectYellowLine && isDetectWhiteLine)
+    {
+        // 흰색 선만 감지됨
+        if (white_line_angle_ >= 1 && white_line_angle_ < 7)
+        {
+            // 거의 직선일 경우
+            angular_vel_ = (center_x - white_line_points_[0]) * linear_gain_ * -1;
+            RCLCPP_INFO(node->get_logger(), "D-3-1");
+        }
+        else if (white_line_angle_ < 20)
+        {
+            // 우측 곡선일 경우
+            angular_vel_ = (center_x - white_line_points_[0]) * curve_gain_ * -1;
+            RCLCPP_INFO(node->get_logger(), "D-3-2");
+        }
+    }
+    else
+    {
+        // 선이 감지되지 않을 경우
+        linear_vel_ = 0.0;
+        angular_vel_ = 0.0;
+        RCLCPP_INFO(node->get_logger(), "D-4");
+    }
+
 
     // Stage2 감지
     if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {

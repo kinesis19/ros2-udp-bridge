@@ -80,6 +80,9 @@ private:
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
 
+    // 이미지 관련 변수
+    int image_center_point_x_ = 160; // 현재 Qt에서 이미지 Scale은 320 * 240
+
     // 선 감지 확인 변수
     bool isDetectYellowLine;
     bool isDetectWhiteLine;
