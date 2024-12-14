@@ -212,6 +212,16 @@ void MasterNode::runRobotStage1() {
             }
             // angular_vel_ = (dist_white_line_ - 25) * GAIN_LINEAR;
             RCLCPP_INFO(node->get_logger(), "D-3-2");
+        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {
+            if (dist_white_line_ < 0) {
+                // angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
+                angular_vel_ = 0.35;
+            } else {
+                // angular_vel_ = (dist_white_line_) * GAIN_LINEAR;
+                angular_vel_ = 0.25;
+            }
+            // angular_vel_ = (dist_white_line_ - 25) * GAIN_LINEAR;
+            RCLCPP_INFO(node->get_logger(), "D-3-2");
         } else {
 
         }
