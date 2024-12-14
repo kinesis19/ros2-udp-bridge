@@ -125,33 +125,44 @@ void MasterNode::runRobotStage1() {
     linear_vel_ = 0.45;
 
     if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
-        pixel_gap = center_x - (int)(((dist_yellow_line_ * -1) + dist_white_line_) / 2);
-        angular_vel_= (double)pixel_gap * GAIN_LINEAR;
+        // pixel_gap = center_x - (int)(((dist_yellow_line_ * -1) + dist_white_line_) / 2);
+        // angular_vel_= (double)pixel_gap * GAIN_LINEAR;
+        angular_vel_ = 0.0;
         RCLCPP_INFO(node->get_logger(), "D-1");
     } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
         RCLCPP_INFO(node->get_logger(), "D-22222222");
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
             // angular_vel_ = (220 + dist_yellow_line_) * GAIN_LINEAR; 
-            if (-240 < dist_yellow_line_ && dist_yellow_line_ < 0) { // 노란색 차선이 직진 주행 각도로 감지되었으나, 직진 라인이 아닌 경우
-                angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
-            RCLCPP_INFO(node->get_logger(), "D-2-0-0");
-            } else if (0 < dist_yellow_line_) {
-                angular_vel_ = (dist_yellow_line_ - 220) * GAIN_LINEAR;
+            if (-320 < dist_yellow_line_ && dist_yellow_line_ < -200) { // 노란색 차선이 직진 주행 각도로 감지되었으나, 직진 라인이 아닌 경우
+                // angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
+                angular_vel_ = -0.04;
+                RCLCPP_INFO(node->get_logger(), "D-2-0-0");
+            } else if (-200 < dist_yellow_line_) {
+                // angular_vel_ = (dist_yellow_line_ - 220) * GAIN_LINEAR;
+                angular_vel_ = -0.06;
                 RCLCPP_INFO(node->get_logger(), "D-2-0-1");
-            } else {
-                angular_vel_ = 0.0;
-                RCLCPP_INFO(node->get_logger(), "D-2-0-2");
+            } 
+            // else {
+            //     angular_vel_ = 0.0;
+            //     RCLCPP_INFO(node->get_logger(), "D-2-0-2");
+            // }
+        } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 102) {  // 좌회전 처리: (약 ~ 중)
+            if (dist_yellow_line_ < 0) {
+                angular_vel_ = -0.1;
+                RCLCPP_INFO(node->get_logger(), "D-2-1");
+            } else if (0 < dist_yellow_line_) {
+                angular_vel_ = -0.15;
+                RCLCPP_INFO(node->get_logger(), "D-2-1-1");
             }
-        } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 95) {  // 좌회전 처리: (약 ~ 중)
-            angular_vel_ = (180 + dist_yellow_line_) * GAIN_CORNER;
-            RCLCPP_INFO(node->get_logger(), "D-2-1");
-        } else if (95 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
+        } else if (102 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
             // angular_vel_ = (25 + dist_yellow_line_) * GAIN_LINEAR;
             if (0 < dist_yellow_line_) {
-                angular_vel_ = (dist_yellow_line_ - 280) * GAIN_LINEAR;
+                // angular_vel_ = (dist_yellow_line_ - 280) * GAIN_LINEAR;
+                angular_vel_ = -0.35;
                 RCLCPP_INFO(node->get_logger(), "D-2-2-0");
             } else {
-                angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
+                // angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
+                angular_vel_ = -0.25;
                 RCLCPP_INFO(node->get_logger(), "D-2-2-1");
             }
         }
@@ -169,22 +180,35 @@ void MasterNode::runRobotStage1() {
             //     angular_vel_ = 0.0;
             //     RCLCPP_INFO(node->get_logger(), "D-3-0-2"); 
             // }
-            angular_vel_ = 0.0;
-            RCLCPP_INFO(node->get_logger(), "D-3-0-3"); 
-        } else if (83 < white_line_angle_ && white_line_angle_ <= 88) {
+
+            if (320 > dist_white_line_ && dist_white_line_ > 200) { // 노란색 차선이 직진 주행 각도로 감지되었으나, 직진 라인이 아닌 경우
+                // angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
+                angular_vel_ = 0.04;
+                RCLCPP_INFO(node->get_logger(), "D-2-0-0");
+            } else if (200 > dist_white_line_) {
+                // angular_vel_ = (dist_white_line_ - 220) * GAIN_LINEAR;
+                angular_vel_ = 0.06;
+                RCLCPP_INFO(node->get_logger(), "D-2-0-1");
+            } 
+            // angular_vel_ = 0.0;
+            // RCLCPP_INFO(node->get_logger(), "D-3-0-3"); 
+        } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             if (dist_white_line_ < 0) {
-                angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
+                // angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
+                angular_vel_ = 0.1;
             } else {
-                angular_vel_ = (dist_white_line_) * GAIN_CORNER;
+                // angular_vel_ = (dist_white_line_) * GAIN_CORNER;
+                angular_vel_ = 0.15;
             }
             // angular_vel_ = (dist_white_line_ - 150) * GAIN_CORNER;
             RCLCPP_INFO(node->get_logger(), "D-3-1");
-        } else if (yellow_line_angle_ < 83) {
-
+        } else if (100 < white_line_angle_) {
             if (dist_white_line_ < 0) {
-                angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
+                // angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
+                angular_vel_ = 0.35;
             } else {
-                angular_vel_ = (dist_white_line_) * GAIN_LINEAR;
+                // angular_vel_ = (dist_white_line_) * GAIN_LINEAR;
+                angular_vel_ = 0.25;
             }
             // angular_vel_ = (dist_white_line_ - 25) * GAIN_LINEAR;
             RCLCPP_INFO(node->get_logger(), "D-3-2");
