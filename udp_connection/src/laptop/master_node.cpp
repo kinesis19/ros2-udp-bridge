@@ -122,6 +122,7 @@ void MasterNode::runRobotStage1() {
 
     // 기본 주행 모드
     float center_x = 320.0; // 카메라 화면 중심 (예: 640x480 해상도의 중심 x좌표)
+    // linear_vel_ = 0.45;
     linear_vel_ = 0.45;
 
     if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
@@ -134,7 +135,7 @@ void MasterNode::runRobotStage1() {
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
             angular_vel_ = ((320 + dist_yellow_line_) / 3000) * -1;
         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-            angular_vel_ = ((320 + dist_yellow_line_) / 3000) * -1;
+            angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
             RCLCPP_INFO(node->get_logger(), "D-2-1-L-L");
         } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
             if ((((320 + dist_yellow_line_) / 800) * -1) < -0.4) {
