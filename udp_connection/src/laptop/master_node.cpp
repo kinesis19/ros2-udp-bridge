@@ -70,12 +70,11 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || ", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_);
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f ", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_);
 
         if (stage_number_ == 1) {
             runRobotStage1();
-        } 
-        else if (stage_number_ == 2) {
+        } else if (stage_number_ == 2) {
             runRobotStage2();
         } else if (stage_number_ == 3) {
             runRobotStage3();
@@ -168,19 +167,49 @@ void MasterNode::runRobotStage1() {
         RCLCPP_INFO(node->get_logger(), "D-4");
     }
 
+    if (psd_adc_left_ > 2300 && (75 < white_line_angle_ && white_line_angle_ < 85)) {
+        isDetectObject1Stage1 = true;
+        // stopDxl();
+    }
 
     // Stage2 감지
-    // if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
-    //     if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
-    //         stage_number_ = 2;
-    //     }
+    // if (isDetectObject1Stage1 && (psd_adc_front_ > 1000)) {
+    //     stage_number_ = 2;
+    //     // 오브젝트 1과 2동시에 감지했을 때 플래그 처리
     // }
-
 }
 
 void MasterNode::runRobotStage2() {
-    // stopDxl();
-    // RCLCPP_INFO(node->get_logger(), "스테이지2");
+
+    // if (!isDetectObject1andObject2) {
+    //     stopDxl();
+    //     rclcpp::sleep_for(std::chrono::seconds(2)); // 2초 대기
+    // }
+
+    // 스테이지2 진입 후, 오브젝트1과 오브젝트2를 동시에 감지했을 때
+    if (!isDetectObject1andObject2) {
+        // PID 제어로 왼쪽으로 회전하기
+        RCLCPP_INFO(node->get_logger(), "PID 제어 시작1");
+        if (imu_yaw_ - 50.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
+        } else {
+            target_yaw_ = imu_yaw_ - 50.0;
+        }
+        playYawFlag = true;
+        isDetectObject1andObject2 = true;
+        RCLCPP_INFO(node->get_logger(), "PID 제어 시작2");
+    } 
+    
+    // else if (isDetectObject1andObject2){ // 오브젝트1과 오브젝트2 감지 및 PID 제어 이후의 로직
+    //     RCLCPP_INFO(node->get_logger(), "PID 제어 이후");
+    //     // angular_vel_ = 0.0;
+    //     // linear_vel_ = 0.45;
+    // }
+
+
+
+
+
 }
 
 void MasterNode::runRobotStage3() {
@@ -349,7 +378,7 @@ void MasterNode::ctlDxlYaw(float target_yaw) {
     if (angular_vel_pid < 0 && angular_vel_pid > -min_angular_vel)
         angular_vel_pid = -min_angular_vel;
 
-    runDxl(0, static_cast<int>(-angular_vel_pid));
+    runDxl(0, (-angular_vel_pid));
     pre_yaw_error = yaw_error;
 }
 

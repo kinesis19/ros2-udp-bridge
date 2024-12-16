@@ -7,7 +7,8 @@
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
-#include <cmath> 
+#include <cmath>
+#include <chrono>
 
 #define GAIN_LINEAR 0.001
 #define GAIN_CORNER 0.002
@@ -125,12 +126,12 @@ private:
     float yellow_line_angle_;
 
     // PID Control 변수    
-    const float kP = 0.1f;
+    const float kP = 0.005f;
     const float kI = 0.0f;
     const float kD = 0.0f;
     const float yaw_ok = 10.0f;
-    const float max_angular_vel = 5.0f;
-    const float min_angular_vel = 1.0f;
+    const float max_angular_vel = 0.4f;
+    const float min_angular_vel = 0.05f;
     bool playYawFlag = false;
     float intergral = 0.0f;
     float angular_vel_pid = 0.0f;
@@ -143,7 +144,11 @@ private:
     float dist_white_line_ = 0.0;
     float pixel_gap = 0.0; // 중앙선 기준 오차
 
+    // ========== [Stage1 감지 플래그 변수] ==========
+    bool isDetectObject1Stage1 = false; // 스테이지2 진입 전, 오브젝트1과 흰색 코너 감지를 나타내는 변수.
+
     // ========== [Stage2 감지 플래그 변수] ==========
+    // 사용 안 하는 플래그 변수들
     bool isDetectSecondObjectStage2; // 오브젝트2 정면 감지 변수
     bool isDetectThirdObjectStage2; // 오브젝트3 정면 감지 변수
     bool isPassSecondObjectStage2; // 오브젝트2 통과 감지 변수
@@ -151,6 +156,8 @@ private:
     bool isDetectWhiteLineStage2; // 오브젝트2 통과 이후, 라인트레이싱을 위한 White Line 감지 변수
     bool isStartPidRightTurnStage2; // 오브젝트2 통과 이후, 노란색 선 감지하고 정해진 각도만큼 최초 1회만 PID 제어를 감지하는 변수
     bool isDetectBlueSignStage2 = false; // 오브젝트3 통과 이후, 파란 표지판 감지 변수
+
+    bool isDetectObject1andObject2 = false; // 스테이지2 진입 후, 오브젝트 1과 2 동시에 감지를 나타내는 변수.
     
     // ========== [Stage3 감지 플래그 변수] ==========
     bool isMissYellowLineStage3 = false;
