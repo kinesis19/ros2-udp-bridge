@@ -143,84 +143,27 @@ void MasterNode::runRobotStage1() {
             } else {
                 angular_vel_ = (((320 + dist_yellow_line_) / 800) * -1);
             }
-            // angular_vel_ = ( ? 0.4 : (((320 + dist_yellow_line_) / 800) * -1);
-            // // angular_vel_ = (25 + dist_yellow_line_) * GAIN_LINEAR;
-            // if (0 < dist_yellow_line_) {
-            //     // angular_vel_ = (dist_yellow_line_ - 280) * GAIN_LINEAR;
-            //     // angular_vel_ = -0.35;
-            //     RCLCPP_INFO(node->get_logger(), "D-2-2-0");
-            // } else {
-            //     // angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
-            //     angular_vel_ = -0.25;
-            //     RCLCPP_INFO(node->get_logger(), "D-2-2-1");
-            // }
         }
     } else if (!isDetectYellowLine && isDetectWhiteLine) {
         RCLCPP_INFO(node->get_logger(), "D-33333333");
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-            // angular_vel_ = 0.04;
             angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
-            // if (320 > dist_white_line_ && dist_white_line_ > 200) { // 노란색 차선이 직진 주행 각도로 감지되었으나, 직진 라인이 아닌 경우
-            //     // angular_vel_ = (dist_yellow_line_) * GAIN_LINEAR;
-            //     angular_vel_ = 0.04;
-            //     RCLCPP_INFO(node->get_logger(), "D-2-0-0");
-            // } else if (200 > dist_white_line_) {
-            //     // angular_vel_ = (dist_white_line_ - 220) * GAIN_LINEAR;
-            //     angular_vel_ = 0.06;
-            //     RCLCPP_INFO(node->get_logger(), "D-2-0-1");
-            // } 
-            // angular_vel_ = 0.0;
-            // RCLCPP_INFO(node->get_logger(), "D-3-0-3"); 
             RCLCPP_INFO(node->get_logger(), "D-3-1-1");
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
-            // if (dist_white_line_ < 0) {
-            //     // angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
-            //     angular_vel_ = 0.1;
-            // } else {
-            //     // angular_vel_ = (dist_white_line_) * GAIN_CORNER;
-            //     angular_vel_ = 0.15;
-            // }
-            // angular_vel_ = (dist_white_line_ - 150) * GAIN_CORNER;
             RCLCPP_INFO(node->get_logger(), "D-3-1-2");
-        } 
-        // else if (100 < white_line_angle_) {
-        //     angular_vel_ = ((320 + dist_yellow_line_) / 800) * 1;
-        //     // if (dist_white_line_ < 0) {
-        //     //     // angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
-        //     //     angular_vel_ = 0.35;
-        //     // } else {
-        //     //     // angular_vel_ = (dist_white_line_) * GAIN_LINEAR;
-        //     //     angular_vel_ = 0.25;
-        //     // }
-        //     // angular_vel_ = (dist_white_line_ - 25) * GAIN_LINEAR;
-        //     RCLCPP_INFO(node->get_logger(), "D-3-1-3");
-        // } 
-        
-        else if (100 < white_line_angle_ || white_line_angle_ < 88) {
-            // angular_vel_ = ((320 - dist_white_line_) / 800) * 1; // 사용중인 로직
-            // angular_vel_ = (((320 - dist_white_line_) / 800) * 1) > 0.4 ? 0.4 : (((320 - dist_white_line_) / 800) * 1);
-            
+        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
             if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
                 angular_vel_ = 0.35;
             } else {
                 angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
             }
-            // if (dist_white_line_ < 0) {
-            //     // angular_vel_ = (dist_white_line_ + 200) * GAIN_CORNER;
-            //     angular_vel_ = 0.35;
-            // } else {
-            //     // angular_vel_ = (dist_white_line_) * GAIN_LINEAR;
-            //     angular_vel_ = 0.25;
-            // }
-            // angular_vel_ = (dist_white_line_ - 25) * GAIN_LINEAR;
             RCLCPP_INFO(node->get_logger(), "D-3-1-3");
         } else {
 
         }
     } else {
         // // 선이 감지되지 않을 경우
-        // linear_vel_ = 0.0;
         angular_vel_ = 0.0;
         RCLCPP_INFO(node->get_logger(), "D-4");
     }
