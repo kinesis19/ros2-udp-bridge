@@ -30,6 +30,7 @@ public:
 
     void responePidTest();
 
+    void resetValue();
 
     // ========== [PID Control 메서드] ==========
     void ctlDxlYaw(float target_yaw);
@@ -158,13 +159,13 @@ private:
     bool isDetectBlueSignStage2 = false; // 오브젝트3 통과 이후, 파란 표지판 감지 변수
 
     bool isDetectObject1andObject2 = false; // 스테이지2 진입 후, 오브젝트 1과 2 동시에 감지를 나타내는 변수.
+    bool isWorkedPIDControlToTurnRightStage2 = false; // 스테이지 2 진입후, 노란색 선 감지 후 PID 제어를 나타내는 변수.
     
     // ========== [Stage3 감지 플래그 변수] ==========
     bool isMissYellowLineStage3 = false;
     bool isDetectBlueSignStage3 = false; // 삼거리에서 표지판 감지 플래그 -> 삼거리 PID 처리를 위한 변수
     bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
     bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
-
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);

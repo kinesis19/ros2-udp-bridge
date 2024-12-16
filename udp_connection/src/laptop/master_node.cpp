@@ -158,8 +158,6 @@ void MasterNode::runRobotStage1() {
                 angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
             }
             RCLCPP_INFO(node->get_logger(), "D-3-1-3");
-        } else {
-
         }
     } else {
         // // 선이 감지되지 않을 경우
@@ -167,16 +165,22 @@ void MasterNode::runRobotStage1() {
         RCLCPP_INFO(node->get_logger(), "D-4");
     }
 
-    if (psd_adc_left_ > 2300 && (75 < white_line_angle_ && white_line_angle_ < 85)) {
-        isDetectObject1Stage1 = true;
-        // stopDxl();
-    }
+    // if ((3000 > psd_adc_left_ && psd_adc_left_ > 2300) && (75 < white_line_angle_ && white_line_angle_ < 85)) {
+    //     isDetectObject1Stage1 = true;
+    //     // stopDxl();
+    // }
 
-    // Stage2 감지
-    // if (isDetectObject1Stage1 && (psd_adc_front_ > 1000)) {
+    // // Stage2 감지
+    // if (isDetectObject1Stage1 && (1000 < psd_adc_front_ && psd_adc_front_ < 1500)) {
     //     stage_number_ = 2;
     //     // 오브젝트 1과 2동시에 감지했을 때 플래그 처리
     // }
+
+    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
+        if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
+            stage_number_ = 2;
+        }
+    }
 }
 
 void MasterNode::runRobotStage2() {
@@ -186,10 +190,24 @@ void MasterNode::runRobotStage2() {
     //     rclcpp::sleep_for(std::chrono::seconds(2)); // 2초 대기
     // }
 
+    // 주행 로직
+    if (!isDetectObject1andObject2 && (!isDetectYellowLine && isDetectWhiteLine)) {
+        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+            angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
+        } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+            if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+                angular_vel_ = 0.35;
+            } else {
+                angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+            }
+        }
+    }
+
     // 스테이지2 진입 후, 오브젝트1과 오브젝트2를 동시에 감지했을 때
-    if (!isDetectObject1andObject2) {
+    if (!isDetectObject1andObject2 && (psd_adc_front_ > 1300)) {
         // PID 제어로 왼쪽으로 회전하기
-        RCLCPP_INFO(node->get_logger(), "PID 제어 시작1");
         if (imu_yaw_ - 50.0 < -180) {
             target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
         } else {
@@ -197,23 +215,47 @@ void MasterNode::runRobotStage2() {
         }
         playYawFlag = true;
         isDetectObject1andObject2 = true;
-        RCLCPP_INFO(node->get_logger(), "PID 제어 시작2");
-    } 
-    
-    // else if (isDetectObject1andObject2){ // 오브젝트1과 오브젝트2 감지 및 PID 제어 이후의 로직
-    //     RCLCPP_INFO(node->get_logger(), "PID 제어 이후");
-    //     // angular_vel_ = 0.0;
-    //     // linear_vel_ = 0.45;
-    // }
+    } else if ((isDetectObject1andObject2 && !playYawFlag) && !isWorkedPIDControlToTurnRightStage2){
+        angular_vel_ = 0.0;
+        linear_vel_ = 0.35;
+        if (isDetectWhiteLine && !isDetectYellowLine) {
+            isWorkedPIDControlToTurnRightStage2 = true;
+        }
+    }
 
+    if (isDetectObject1andObject2 && ((isDetectYellowLine && !isDetectWhiteLine)) && dist_yellow_line_ > 70) { // 노란색 선만 감지됨
+        if (imu_yaw_ + 75.0 > 180) {
+            target_yaw_ = 360 - (imu_yaw_ + 75.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+        } else {
+            target_yaw_ = imu_yaw_ + 75.0;
+        }
+        playYawFlag = true;
+        isStartPidRightTurnStage2 = true;
+    }
 
+    if (isWorkedPIDControlToTurnRightStage2 && !playYawFlag) {
+        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+            angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
+        } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+            if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+                angular_vel_ = 0.35;
+            } else {
+                angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+            }
+        }
+    }
 
-
+    // Stage3 감지 처리
+    if (isDetectBlueSign) {
+        stage_number_ = 3;
+    }
 
 }
 
 void MasterNode::runRobotStage3() {
-    // stopDxl();
+    stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지3");
 }
 
@@ -325,7 +367,6 @@ void MasterNode::ctlDxlBack(float linearVel, float angularVel) {
 void MasterNode::stopDxl() {
     isRobotRun_ = !isRobotRun_;
 
-    stage_number_ = 0;
     linear_vel_ = 0;  // 상태 갱신
     angular_vel_ = 0;
 
@@ -339,6 +380,30 @@ void MasterNode::stopDxl() {
     pub_dxl_angular_vel_->publish(msg_angular_);
 
     RCLCPP_INFO(node->get_logger(), "STOPSTOPSTOP!");
+
+}
+
+// for Qt Button
+void MasterNode::resetValue() {
+
+    isRobotRun_ = !isRobotRun_;
+
+    stage_number_ = 0;
+
+    linear_vel_ = 0;  // 상태 갱신
+    angular_vel_ = 0;
+
+    auto msg_linear_ = std_msgs::msg::Float32();
+    auto msg_angular_ = std_msgs::msg::Float32();
+
+    msg_linear_.data = 0;
+    msg_angular_.data = 0;
+
+    pub_dxl_linear_vel_->publish(msg_linear_);
+    pub_dxl_angular_vel_->publish(msg_angular_);
+
+    isDetectObject1andObject2 = false;
+    isWorkedPIDControlToTurnRightStage2 = false;
 }
 
 void MasterNode::ctlDxlYaw(float target_yaw) {

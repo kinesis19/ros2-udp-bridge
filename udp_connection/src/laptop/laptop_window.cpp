@@ -226,7 +226,7 @@ void LaptopWindow::onStopButtonClicked() {
   } else {
     ui->btnRobotStart->setText("Robot Stop");
   }
-  masterNode_->stopDxl();
+  masterNode_->resetValue();
 }
 
 void LaptopWindow::onDeployButtonClicked() {
