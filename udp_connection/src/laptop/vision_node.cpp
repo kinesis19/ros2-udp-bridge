@@ -155,7 +155,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Mat yellow_mask_combined;
 
         cv::Mat yellow_mask_hsv;
-        cv::Scalar lower_yellow_hsv(20, 120, 120);
+        cv::Scalar lower_yellow_hsv(15, 120, 120);
         cv::Scalar upper_yellow_hsv(30, 255, 255);
         cv::inRange(hsv, lower_yellow_hsv, upper_yellow_hsv, yellow_mask_hsv);
 
@@ -170,7 +170,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 모폴로지 연산, 커널 사이즈 지정
         cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-        cv::Mat kernel_large = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+        cv::Mat kernel_large = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(31, 31));
 
         cv::morphologyEx(yellow_mask_combined, yellow_mask_combined, cv::MORPH_OPEN, kernel);
         cv::morphologyEx(yellow_mask_combined, yellow_mask_combined, cv::MORPH_CLOSE, kernel_large);
@@ -180,8 +180,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 1. HSV 기반 흰색 검출
         cv::Mat white_mask_hsv;
-        cv::Scalar lower_white_hsv(0, 0, 210);
-        cv::Scalar upper_white_hsv(180, 30, 255);
+        cv::Scalar lower_white_hsv(0, 0, 160);
+        cv::Scalar upper_white_hsv(180, 20, 255);
         cv::inRange(hsv, lower_white_hsv, upper_white_hsv, white_mask_hsv);
 
         // 2. Lab 기반 흰색 검출
