@@ -105,28 +105,12 @@ void MasterNode::runRobotStage1() {
     // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지1");
 
-    // if (((yellow_line_x_ <= -0.5 && white_line_x_ >= 0.5) && (500 < white_line_points_[0] && white_line_points_[0] < 600)) || ((500 < white_line_points_[0] && white_line_angle_ < 1))) {
-    //     ctlDxlFront(0.65, 0);
-    // } else if ((isDetectYellowLine && !isDetectWhiteLine) && ((0.5 >= yellow_line_x_) && (yellow_line_x_ >= -0.9))) { // 우회전 
-    //     // 첫 번째 오른쪽 코너
-    //     ctlDxlRight(0.35, 0.1);
-    //     RCLCPP_INFO(node->get_logger(), "1");
-    // } else if (((!isDetectYellowLine && isDetectWhiteLine) && ((0.8 >= white_line_x_) && (white_line_x_ >= 0.35)))) { // 좌회전
-    //     // 주행 도중 라인 유지
-    //     if ((0 <= white_line_angle_ && white_line_angle_ <= 1) && white_line_points_[0] > 430) {
-    //         return;
-    //     }
-    //     ctlDxlLeft(0.35, 0.1);
-    // }
-
     // 기본 주행 모드
     float center_x = 320.0; // 카메라 화면 중심 (예: 640x480 해상도의 중심 x좌표)
     // linear_vel_ = 0.45;
     linear_vel_ = 0.45;
 
     if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
-        // pixel_gap = center_x - (int)(((dist_yellow_line_ * -1) + dist_white_line_) / 2);
-        // angular_vel_= (double)pixel_gap * GAIN_LINEAR;
         angular_vel_ = 0.0;
         RCLCPP_INFO(node->get_logger(), "D-1");
     } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
@@ -165,17 +149,6 @@ void MasterNode::runRobotStage1() {
         RCLCPP_INFO(node->get_logger(), "D-4");
     }
 
-    // if ((3000 > psd_adc_left_ && psd_adc_left_ > 2300) && (75 < white_line_angle_ && white_line_angle_ < 85)) {
-    //     isDetectObject1Stage1 = true;
-    //     // stopDxl();
-    // }
-
-    // // Stage2 감지
-    // if (isDetectObject1Stage1 && (1000 < psd_adc_front_ && psd_adc_front_ < 1500)) {
-    //     stage_number_ = 2;
-    //     // 오브젝트 1과 2동시에 감지했을 때 플래그 처리
-    // }
-
     if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
         if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
             stage_number_ = 2;
@@ -184,11 +157,6 @@ void MasterNode::runRobotStage1() {
 }
 
 void MasterNode::runRobotStage2() {
-
-    // if (!isDetectObject1andObject2) {
-    //     stopDxl();
-    //     rclcpp::sleep_for(std::chrono::seconds(2)); // 2초 대기
-    // }
 
     // 주행 로직
     if (!isDetectObject1andObject2 && (!isDetectYellowLine && isDetectWhiteLine)) {
