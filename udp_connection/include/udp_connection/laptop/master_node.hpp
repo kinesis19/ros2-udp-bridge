@@ -175,6 +175,7 @@ private:
     bool isDonePidControlParkingStationInStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 진입 완료 여부를 나타내는 플래그
     bool isDonePidControlParkingStationOutStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 아웃 완료 여부를 나타내는 플래그
     bool isReadyToParking = false; // 주차장에서 오브젝트가 있는 방향으로 바라보고, 주차 준비가 된 상태일 때 여부를 나타내는 플래그
+    int detectObjectNumParkingStationStage3 = 0; // 주차장에서 오브젝트가 어느 위치에 위치해 있는지 저장하는 변수 (0: null, 1: 왼쪽, 2: 오른쪽)
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
