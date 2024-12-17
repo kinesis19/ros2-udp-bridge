@@ -203,7 +203,7 @@ void MasterNode::runRobotStage2() {
 
     if (isWorkedPIDControlToTurnRightStage2 && !playYawFlag) {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-            angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
+            angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
         } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
@@ -225,27 +225,18 @@ void MasterNode::runRobotStage2() {
 void MasterNode::runRobotStage3() {
     // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지3");
-
-
     // 기본 주행 (흰색)
     if (!isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3) {
-        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-            angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
+        if (88 <= white_line_angle_ && white_line_angle_ <= 93) { // 직진
+            angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
-        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-            if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
-                angular_vel_ = 0.35;
-            } else {
-                angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
-            }
         }
     }
 
     if (!isDetectBlueSign) {
         isMissBlueSignStage3 = true; // 파란색 표지판을 놓쳤을 때의 플래그 처리
     }
-
 
     if (isMissBlueSignStage3 && isDetectYellowLine) { // 파란색 표지판을 놓치고, 노란색 라인을 재감지 했을 때
         isDetectYellowLineinThreeStreetStage3 = true;
@@ -264,6 +255,30 @@ void MasterNode::runRobotStage3() {
         isStartPidTurnLeftThreeStreetStage3 = true;
     }
     
+    if ((isStartPidTurnLeftThreeStreetStage3 && !playYawFlag) && (isDetectYellowLine && !isDetectWhiteLine)) { // PID 제어 이후의 주행 로직
+        RCLCPP_INFO(node->get_logger(), "PID 제어 이후의 진입");
+        linear_vel_ = 0.45;
+        if (75 <= yellow_line_angle_ && yellow_line_angle_ < 89) { // 예외 처리: 근사항 직진 주행
+            angular_vel_ = 0.075;
+        } else if (89 <= yellow_line_angle_ && yellow_line_angle_ <= 91) {  // 좌회전 처리: (약 ~ 중)
+            angular_vel_ = 0.0;
+        } else if (91 < yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
+            angular_vel_ = -0.075;
+        }
+    } else if (!isDetectYellowLine && isDetectWhiteLine) {
+            angular_vel_ = 0.0;
+        isDetectWhiteDottedLineStage3 = true; // 흰 색 점선 감지했을 때의 플래그 전환
+    }
+
+    if (isDetectWhiteDottedLineStage3) { // 흰색 점선이 감지된 이후의 상태일 때,
+        if (isDetectYellowLine && !isDetectWhiteLine) { // 노란색 선을 감지했을 때
+            isDetectYellowLineAfterDetectWhiteDottedLineStage3 = true;
+        }
+    }
+
+    if (isDetectYellowLineAfterDetectWhiteDottedLineStage3 && (psd_adc_left_ > 1500 || psd_adc_right_ > 1500)) {
+        stopDxl();
+    }
 }
 
 // ========== [Line Detect 서브스크라이브] ==========
@@ -414,6 +429,8 @@ void MasterNode::resetValue() {
     isMissBlueSignStage3 = false;
     isDetectYellowLineinThreeStreetStage3 = false;
     isStartPidTurnLeftThreeStreetStage3 = false;
+    isDetectWhiteDottedLineStage3 = false;
+    isDetectYellowLineAfterDetectWhiteDottedLineStage3 = false;
 }
 
 void MasterNode::ctlDxlYaw(float target_yaw) {
