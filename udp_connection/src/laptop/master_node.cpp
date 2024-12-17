@@ -270,15 +270,125 @@ void MasterNode::runRobotStage3() {
         isDetectWhiteDottedLineStage3 = true; // 흰 색 점선 감지했을 때의 플래그 전환
     }
 
-    if (isDetectWhiteDottedLineStage3) { // 흰색 점선이 감지된 이후의 상태일 때,
+    // 흰색 점선이 감지된 이후의 상태일 때,
+    if (isDetectWhiteDottedLineStage3) { 
         if (isDetectYellowLine && !isDetectWhiteLine) { // 노란색 선을 감지했을 때
             isDetectYellowLineAfterDetectWhiteDottedLineStage3 = true;
         }
     }
 
-    if (isDetectYellowLineAfterDetectWhiteDottedLineStage3 && (psd_adc_left_ > 1500 || psd_adc_right_ > 1500)) {
-        stopDxl();
+    // 흰색 점선 이후에 노란색 라인을 감지함과 동시에 왼쪽 혹은 오른쪽에 오브젝트가 위치해 있을 때의 처리
+    if (((isDetectYellowLineAfterDetectWhiteDottedLineStage3 && !isDonePidControlParkingStationInStage3) && (psd_adc_left_ > 1800 || psd_adc_right_ > 1800)) && !playYawFlag) {
+        // stopDxl();
+        // rclcpp::sleep_for(std::chrono::seconds(2)); // 2초 대기
+
+        float target_yaw_vel_; // 오브젝트 위치에 따른 PID제어의 타겟 값 
+
+        if (psd_adc_left_ > 1800 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
+            target_yaw_vel_ = 90.0;
+        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 1800) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
+            target_yaw_vel_ = -90.0;
+        }
+
+        // PID 제어로 왼쪽으로 회전하기
+        if (imu_yaw_ - target_yaw_vel_ < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - target_yaw_vel_); // 범위 보정
+        } else {
+            target_yaw_ = imu_yaw_ - target_yaw_vel_;
+        }
+
+        playYawFlag = true;
+        isDonePidControlParkingStationInStage3 = true;
     }
+
+    // 주차장에서 PID 제어 이후, 오브젝트가 있는 방향으로 바라보았을 때
+    // if ((isDonePidControlParkingStationInStage3 && !isReadyToParking) && (psd_adc_front_ > 2500 && !playYawFlag)) {
+    //     isReadyToParking = true;
+    // }
+
+    // if (((isDonePidControlParkingStationInStage3 && !isReadyToParking) && !playYawFlag)) {
+    //     isReadyToParking = true;
+
+    //     RCLCPP_INFO(node->get_logger(), "딜레이 이전");
+    //     // linear_vel_ = -0.2;
+    //     // rclcpp::sleep_for(std::chrono::seconds(2));
+    //     rclcpp::sleep_for(std::chrono::milliseconds(2000));
+    //     RCLCPP_INFO(node->get_logger(), "딜레이 이후");
+    //     linear_vel_ = -0.2;
+
+    //     auto msg_linear_ = std_msgs::msg::Float32();
+    //     auto msg_angular_ = std_msgs::msg::Float32();
+
+    //     msg_linear_.data = linear_vel_;
+    //     msg_angular_.data = angular_vel_;
+
+    //     pub_dxl_linear_vel_->publish(msg_linear_);
+    //     pub_dxl_angular_vel_->publish(msg_angular_);
+
+    //     rclcpp::sleep_for(std::chrono::milliseconds(2000));
+    //     linear_vel_ = 0.0;
+
+    //     auto msg_linear_ = std_msgs::msg::Float32();
+    //     auto msg_angular_ = std_msgs::msg::Float32();
+
+    //     msg_linear_.data = linear_vel_;
+    //     msg_angular_.data = angular_vel_;
+
+    //     pub_dxl_linear_vel_->publish(msg_linear_);
+    //     pub_dxl_angular_vel_->publish(msg_angular_);
+
+    //     stopDxl();
+    // }
+
+    if (isDonePidControlParkingStationInStage3 && !isReadyToParking && !playYawFlag) {
+        isReadyToParking = true;
+
+        RCLCPP_INFO(node->get_logger(), "딜레이 이전");
+
+        // 첫 번째 딜레이 및 후진 명령
+        linear_vel_ = -0.2; // 후진 속도 설정
+        angular_vel_ = 0.0;
+
+        auto msg_linear = std_msgs::msg::Float32();
+        auto msg_angular = std_msgs::msg::Float32();
+
+        msg_linear.data = linear_vel_;
+        msg_angular.data = angular_vel_;
+
+        pub_dxl_linear_vel_->publish(msg_linear);
+        pub_dxl_angular_vel_->publish(msg_angular);
+
+        RCLCPP_INFO(node->get_logger(), "딜레이 이후: 후진 시작");
+
+        // 두 번째 딜레이 및 정지 명령
+        rclcpp::sleep_for(std::chrono::milliseconds(2000)); // 2초 딜레이
+
+        stopDxl();
+        rclcpp::sleep_for(std::chrono::milliseconds(2000)); // 2초 딜레이
+        linear_vel_ = 0.2; // 정지
+        angular_vel_ = 0.0;
+
+        msg_linear.data = linear_vel_;
+        msg_angular.data = angular_vel_;
+
+        pub_dxl_linear_vel_->publish(msg_linear);
+        pub_dxl_angular_vel_->publish(msg_angular);
+
+        RCLCPP_INFO(node->get_logger(), "딜레이 이후: 직진");
+
+        rclcpp::sleep_for(std::chrono::milliseconds(2000)); // 2초 딜레이
+        stopDxl(); // 완전 정지 호출
+    }
+
+
+
+    // if (isReadyToParking && !playYawFlag) {
+    //     linear_vel_ = -0.2;
+    //     rclcpp::sleep_for(std::chrono::seconds(2));
+    //     // linear_vel_ = 0.0;
+    //     stopDxl();
+    // }
+
 }
 
 // ========== [Line Detect 서브스크라이브] ==========
@@ -431,6 +541,8 @@ void MasterNode::resetValue() {
     isStartPidTurnLeftThreeStreetStage3 = false;
     isDetectWhiteDottedLineStage3 = false;
     isDetectYellowLineAfterDetectWhiteDottedLineStage3 = false;
+    isDonePidControlParkingStationInStage3 = false;
+    isDonePidControlParkingStationOutStage3 = false;
 }
 
 void MasterNode::ctlDxlYaw(float target_yaw) {

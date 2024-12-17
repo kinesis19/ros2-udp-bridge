@@ -172,6 +172,9 @@ private:
     bool isStartPidTurnLeftThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 왼쪽 PID 제어 감지 여부를 나태내는 플래그
     bool isDetectWhiteDottedLineStage3 = false; // Stage3 진입 후, 흰 색 점선 감지 여부를 나타내는 플래그
     bool isDetectYellowLineAfterDetectWhiteDottedLineStage3 = false; // Stage3 진입 후, 흰 색 점선 감지 이후 노란색 선 감지 여부를 나타내는 플래그
+    bool isDonePidControlParkingStationInStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 진입 완료 여부를 나타내는 플래그
+    bool isDonePidControlParkingStationOutStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 아웃 완료 여부를 나타내는 플래그
+    bool isReadyToParking = false; // 주차장에서 오브젝트가 있는 방향으로 바라보고, 주차 준비가 된 상태일 때 여부를 나타내는 플래그
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
