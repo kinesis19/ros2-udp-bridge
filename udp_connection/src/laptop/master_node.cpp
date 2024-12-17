@@ -223,8 +223,47 @@ void MasterNode::runRobotStage2() {
 }
 
 void MasterNode::runRobotStage3() {
-    stopDxl();
+    // stopDxl();
     // RCLCPP_INFO(node->get_logger(), "스테이지3");
+
+
+    // 기본 주행 (흰색)
+    if (!isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3) {
+        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+            angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
+        } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+            if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+                angular_vel_ = 0.35;
+            } else {
+                angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+            }
+        }
+    }
+
+    if (!isDetectBlueSign) {
+        isMissBlueSignStage3 = true; // 파란색 표지판을 놓쳤을 때의 플래그 처리
+    }
+
+
+    if (isMissBlueSignStage3 && isDetectYellowLine) { // 파란색 표지판을 놓치고, 노란색 라인을 재감지 했을 때
+        isDetectYellowLineinThreeStreetStage3 = true;
+    }
+
+    if (isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3) {
+        // 이후에 PID 제어
+        // PID 제어로 왼쪽으로 회전하기
+        if (imu_yaw_ - 90.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 90.0); // 범위 보정
+        } else {
+            target_yaw_ = imu_yaw_ - 90.0;
+        }
+        playYawFlag = true;
+        isDetectYellowLineinThreeStreetStage3 = false;
+        isStartPidTurnLeftThreeStreetStage3 = true;
+    }
+    
 }
 
 // ========== [Line Detect 서브스크라이브] ==========
@@ -348,7 +387,6 @@ void MasterNode::stopDxl() {
     pub_dxl_angular_vel_->publish(msg_angular_);
 
     RCLCPP_INFO(node->get_logger(), "STOPSTOPSTOP!");
-
 }
 
 // for Qt Button
@@ -372,6 +410,10 @@ void MasterNode::resetValue() {
 
     isDetectObject1andObject2 = false;
     isWorkedPIDControlToTurnRightStage2 = false;
+
+    isMissBlueSignStage3 = false;
+    isDetectYellowLineinThreeStreetStage3 = false;
+    isStartPidTurnLeftThreeStreetStage3 = false;
 }
 
 void MasterNode::ctlDxlYaw(float target_yaw) {

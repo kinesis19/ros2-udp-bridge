@@ -167,6 +167,10 @@ private:
     bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
     bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
 
+    bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 잊어버렸을 때를 위한 플래그
+    bool isDetectYellowLineinThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 노란색을 재 감지 여부를 나타내는 플래그
+    bool isStartPidTurnLeftThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 왼쪽 PID 제어 감지 여부를 나태내는 플래그
+
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
