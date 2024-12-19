@@ -419,7 +419,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 차단바 검출을 위한 노란색 마스크
         cv::Mat bar_yellow_roi;
-        cv::Scalar barrier_lower_yellow(15, 100, 100);
+        cv::Scalar barrier_lower_yellow(15, 120, 120);
         cv::Scalar barrier_upper_yellow(35, 255, 255);
         cv::inRange(bar_hsv, barrier_lower_yellow, barrier_upper_yellow, bar_yellow_roi);
 
