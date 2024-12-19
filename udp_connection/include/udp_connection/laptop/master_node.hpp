@@ -173,8 +173,7 @@ private:
     bool isDonePidControlParkingStationOutStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 아웃 완료 여부를 나타내는 플래그
     bool isReadyToParking = false; // 주차장에서 오브젝트가 있는 방향으로 바라보고, 주차 준비가 된 상태일 때 여부를 나타내는 플래그
     int detectObjectNumParkingStationStage3 = 0; // 주차장에서 오브젝트가 어느 위치에 위치해 있는지 저장하는 변수 (0: null, 1: 왼쪽, 2: 오른쪽)
-    bool isReadyToTurnLeftStage3 = false; // Stage3 코너에서 Stage4로 넘어가기 위해 필요한 좌회전 조건 플래그
-    bool isReadyToGoStage4 = false; // 삼거리 탈출할 때 파란 표지판 감지하고, Stage4로 넘어가는 여부를 나타내는 플래그
+    bool isTurnLeftToGoToStage4 = false; // 삼거리에서 Stage4로 가기 위해 좌회전 하고 있는지 여부를 나타내는 플래그
 
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
