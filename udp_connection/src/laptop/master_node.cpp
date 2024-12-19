@@ -111,12 +111,9 @@ bool MasterNode::isInitialized() const
 
 // ========== [스테이지별 이동 처리 메서드] ==========
 void MasterNode::runRobotStage1() {
-    // stopDxl();
-    // RCLCPP_INFO(node->get_logger(), "스테이지1");
 
     // 기본 주행 모드
     float center_x = 320.0; // 카메라 화면 중심 (예: 640x480 해상도의 중심 x좌표)
-    // linear_vel_ = 0.45;
     linear_vel_ = 0.45;
 
     if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] < yellow_line_points_[0])) {
@@ -162,6 +159,7 @@ void MasterNode::runRobotStage1() {
         angular_vel_ = 0.0;
     }
 
+    // Stage2 진입 감지 처리
     if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
         if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
             stage_number_ = 2;
@@ -197,13 +195,16 @@ void MasterNode::runRobotStage2() {
         playYawFlag = true;
         isDetectObject1andObject2 = true;
     } else if ((isDetectObject1andObject2 && !playYawFlag) && !isWorkedPIDControlToTurnRightStage2){
-        angular_vel_ = 0.0;
+        // PID 제어로 왼쪽 회전 및 직진 처리하기: 노란색 선이 보이기 전까지
         linear_vel_ = 0.35;
+        angular_vel_ = 0.0;
+
         if (isDetectWhiteLine && !isDetectYellowLine) {
             isWorkedPIDControlToTurnRightStage2 = true;
         }
     }
 
+    // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
     if (isDetectObject1andObject2 && ((isDetectYellowLine && !isDetectWhiteLine)) && dist_yellow_line_ > 70) { // 노란색 선만 감지됨
         if (imu_yaw_ + 75.0 > 180) {
             target_yaw_ = 360 - (imu_yaw_ + 75.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
@@ -213,6 +214,7 @@ void MasterNode::runRobotStage2() {
         playYawFlag = true;
     }
 
+    // PID 제어로 우회전 이후의 주행 로직
     if (isWorkedPIDControlToTurnRightStage2 && !playYawFlag) {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
             angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
@@ -227,7 +229,7 @@ void MasterNode::runRobotStage2() {
         }
     }
 
-    // Stage3 감지 처리
+    // Stage3 진입 감지 처리: 주차 표지판을 감지했을 때
     if (isDetectBlueSign) {
         stage_number_ = 3;
     }
