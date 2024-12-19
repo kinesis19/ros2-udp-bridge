@@ -19,7 +19,7 @@ class MasterNode : public QThread
 
 public:
 
-    int stage_number_; // 현재 스테이지 나타내는 변수
+    int stage_number_ = 0; // 현재 스테이지 나타내는 변수
 
     MasterNode();
     ~MasterNode();
@@ -93,14 +93,14 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_red_line_detected_;
 
     bool initialized_; // 초기화 상태 확인 변수
-    bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
+    bool isRobotRun_ = false; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
 
     // 이미지 관련 변수
     int image_center_point_x_ = 160; // 현재 Qt에서 이미지 Scale은 320 * 240
 
     // 선 감지 확인 변수
-    bool isDetectYellowLine;
-    bool isDetectWhiteLine;
+    bool isDetectYellowLine = false;
+    bool isDetectWhiteLine = false;
     bool isDetectRedLine = false;
 
     // 주차 표지판 감지 확인 변수
@@ -108,31 +108,34 @@ private:
     bool isDetectLeftBlueSign = false;
 
     // 차단바 감지 확인 변수
-    bool isDetectBarrier;
+    bool isDetectBarrier = false;
 
     // 감지된 선의 x 좌표 변수
-    float yellow_line_x_;
-    float white_line_x_;
+    float yellow_line_x_ = 0.0;
+    float white_line_x_ = 0.0;
 
     // linear, angular 변수(UI -> msg)
-    float linear_vel_;
-    float angular_vel_;
+    float linear_vel_ = 0.0;
+    float angular_vel_ = 0.0;
 
     // IMU의 yaw 데이터 변수
-    float imu_yaw_;
+    float imu_yaw_ = 0.0;
 
     // PSD 값 저장 변수
-    int psd_adc_left_;
-    int psd_adc_front_;
-    int psd_adc_right_;
+    int psd_adc_left_ = 0;
+    int psd_adc_front_ = 0;
+    int psd_adc_right_ = 0;
 
     // 흰 선의 좌표 저장 벡터 변수
-    std::vector<float> white_line_points_;
-    std::vector<float> yellow_line_points_;
+    // std::vector<float> white_line_points_(8, 0.0f);
+    // std::vector<float> yellow_line_points_(8, 0.0f);
+    std::vector<float> white_line_points_ = std::vector<float>(8, 0.0f);  // 등호 초기화
+    std::vector<float> yellow_line_points_ = std::vector<float>(8, 0.0f);
+
 
     // 선의 각도(angle) 저장 변수
-    float white_line_angle_;
-    float yellow_line_angle_;
+    float white_line_angle_ = 0.0;
+    float yellow_line_angle_ = 0.0;
 
     // PID Control 변수    
     const float kP = 0.005f;
@@ -157,24 +160,10 @@ private:
     bool isDetectObject1Stage1 = false; // 스테이지2 진입 전, 오브젝트1과 흰색 코너 감지를 나타내는 변수.
 
     // ========== [Stage2 감지 플래그 변수] ==========
-    // 사용 안 하는 플래그 변수들
-    bool isDetectSecondObjectStage2; // 오브젝트2 정면 감지 변수
-    bool isDetectThirdObjectStage2; // 오브젝트3 정면 감지 변수
-    bool isPassSecondObjectStage2; // 오브젝트2 통과 감지 변수
-    bool isDetectYellowLineStage2; // 오브젝트2 통과 이후, 직진을 위한 Yellow Line 감지 변수
-    bool isDetectWhiteLineStage2; // 오브젝트2 통과 이후, 라인트레이싱을 위한 White Line 감지 변수
-    bool isStartPidRightTurnStage2; // 오브젝트2 통과 이후, 노란색 선 감지하고 정해진 각도만큼 최초 1회만 PID 제어를 감지하는 변수
-    bool isDetectBlueSignStage2 = false; // 오브젝트3 통과 이후, 파란 표지판 감지 변수
-
     bool isDetectObject1andObject2 = false; // 스테이지2 진입 후, 오브젝트 1과 2 동시에 감지를 나타내는 변수.
     bool isWorkedPIDControlToTurnRightStage2 = false; // 스테이지 2 진입후, 노란색 선 감지 후 PID 제어를 나타내는 변수.
     
     // ========== [Stage3 감지 플래그 변수] ==========
-    bool isMissYellowLineStage3 = false;
-    bool isDetectBlueSignStage3 = false; // 삼거리에서 표지판 감지 플래그 -> 삼거리 PID 처리를 위한 변수
-    bool isReadyPidControlThreeWayStreetInStage3 = false; // 삼거리 입장 플래그
-    bool isDonePidControlThreeWayStreetInStage3 = false; // 삼거리 입장 후 PID 제어 완료시 플래그
-
     bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 잊어버렸을 때를 위한 플래그
     bool isDetectYellowLineinThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 노란색을 재 감지 여부를 나타내는 플래그
     bool isStartPidTurnLeftThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 왼쪽 PID 제어 감지 여부를 나태내는 플래그
