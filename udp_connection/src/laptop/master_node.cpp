@@ -18,8 +18,10 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     pub_dxl_linear_vel_ = node->create_publisher<std_msgs::msg::Float32>("/stm32/dxl_linear_vel", 10);
     pub_dxl_angular_vel_ = node->create_publisher<std_msgs::msg::Float32>("/stm32/dxl_angular_vel", 10);
 
-    // ========== [IMU 서브스크라이버] ==========
+    // ========== [IMU 서브스크라이버 & 퍼블리셔] ==========
     sub_imu_yaw_ = node->create_subscription<std_msgs::msg::Float32>("/imu/yaw", 10, std::bind(&MasterNode::getImuYaw, this, std::placeholders::_1));
+    pub_imu_reset_ = node->create_publisher<std_msgs::msg::Bool>("/imu/reset", 10);
+
 
     // ========== [STM32의 PSD(ADC) Value 서브스크라이브] ==========
     sub_stm32_psd_adc_right_ = node->create_subscription<std_msgs::msg::Int32>("/stm32/psd_adc_value_right", 10, std::bind(&MasterNode::psdRightCallback, this, std::placeholders::_1));
@@ -36,6 +38,7 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
 
     // ========== [주차 표지판 감지 서브스크라이브] ==========
     sub_blue_sign_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/blue_sign_detected", 10, std::bind(&MasterNode::detectBlueSign, this, std::placeholders::_1));
+    sub_left_blue_sign_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/left_blue_sign_detected", 10, std::bind(&MasterNode::detectLeftBlueSign, this, std::placeholders::_1));
 
     // ========== [차단바 감지 서브스크라이브] ==========
     sub_barrier_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/barrier_detected", 10, std::bind(&MasterNode::detectBarrier, this, std::placeholders::_1));
@@ -45,6 +48,8 @@ MasterNode::MasterNode() : isDetectYellowLine(false), isDetectWhiteLine(false), 
     sub_white_line_center_dist_ = node->create_subscription<std_msgs::msg::Float32>("/vision/white_line_center_dist", 10, std::bind(&MasterNode::getDistWhiteLineCenter, this, std::placeholders::_1));
 
 
+    // ========== [Red Line Detect 서브스크라이브] ==========
+    sub_red_line_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/red_line_detected", 10, std::bind(&MasterNode::detectRedLine, this, std::placeholders::_1));
 
     stage_number_ = 1; // 최초 시작: 스테이지1
 }
@@ -78,6 +83,8 @@ void MasterNode::run()
             runRobotStage2();
         } else if (stage_number_ == 3) {
             runRobotStage3();
+        } else if (stage_number_ == 4) {
+            runRobotStage4();
         }
 
         // 현재 상태를 유지하며 지속적으로 퍼블리시
@@ -219,6 +226,15 @@ void MasterNode::runRobotStage2() {
         }
     }
 
+    // if ((isDetectYellowLine && !isDetectWhiteLine) && psd_adc_left_ > 3000) {
+    //     angular_vel_ = -0.05;
+    // }
+
+    // if ((isDetectYellowLine && !isDetectWhiteLine) && (89 < yellow_line_angle_ && yellow_line_angle_ < 91)) {
+    //     angular_vel_ = -0.05;
+    //     RCLCPP_INFO(node->get_logger(), "툭툭이 ON");
+    // }
+
     // Stage3 감지 처리
     if (isDetectBlueSign) {
         stage_number_ = 3;
@@ -234,7 +250,7 @@ void MasterNode::runRobotStage3() {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) { // 직진
             angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+            angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
         }
     }
 
@@ -274,27 +290,25 @@ void MasterNode::runRobotStage3() {
                 angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * -1.1;
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
-            if (75 <= white_line_angle_ && white_line_angle_ <= 89) { // 예외 처리: 근사항 직진 주행
-                // angular_vel_ = 0.075;
-                angular_vel_ = ((320 - fabs(dist_white_line_)) / 2000) * 1;
-            } else if (89 < white_line_angle_ && white_line_angle_ < 91) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = 0.0;
-            } else if (91 <= white_line_angle_) {
-                // angular_vel_ = -0.075;
-                angular_vel_ = ((320 - fabs(dist_white_line_)) / 2000) * -1.1;
-            }
+            angular_vel_ = 0.0;
+            // if (75 <= white_line_angle_ && white_line_angle_ <= 89) { // 예외 처리: 근사항 직진 주행
+            //     // angular_vel_ = 0.075;
+            //     angular_vel_ = ((320 - fabs(dist_white_line_)) / 2000) * 1;
+            // } else if (89 < white_line_angle_ && white_line_angle_ < 91) {  // 좌회전 처리: (약 ~ 중)
+            //     angular_vel_ = 0.0;
+            // } else if (91 <= white_line_angle_) {
+            //     // angular_vel_ = -0.075;
+            //     angular_vel_ = ((320 - fabs(dist_white_line_)) / 2000) * -1.1;
+            // }
             
-            if (angular_vel_ > 0.05) {
-                angular_vel_ = 0.05;
-            }
+            // if (angular_vel_ > 0.05) {
+            //     angular_vel_ = 0.05;
+            // }
 
-            if (angular_vel_ < -0.05) {
-                angular_vel_ = -0.05;
-            }
+            // if (angular_vel_ < -0.05) {
+            //     angular_vel_ = -0.05;
+            // }
         }
-
-
-        
     } else if (!isDetectYellowLine && isDetectWhiteLine) {
             angular_vel_ = 0.0;
         isDetectWhiteDottedLineStage3 = true; // 흰 색 점선 감지했을 때의 플래그 전환
@@ -356,13 +370,13 @@ void MasterNode::runRobotStage3() {
         float target_yaw_vel_out_; // 오브젝트 위치에 따른 PID제어의 타겟 값 (나갈 때)
 
         if (detectObjectNumParkingStationStage3 == 1) { // 진입 기준 왼쪽에 오브젝트가 있을 때
-            target_seconds_move_back_ = 2400;
-            target_seconds_move_front_ = 2300;
+            target_seconds_move_back_ = 2000;
+            target_seconds_move_front_ = 2100;
             target_yaw_vel_out_ = 90.0;
         } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
             target_seconds_move_back_ = 2000;
-            target_seconds_move_front_ = 2500;
-            target_yaw_vel_out_ = -90.0;
+            target_seconds_move_front_ = 2000;
+            target_yaw_vel_out_ = -60.0; // -55.0 ~ -60.0
         }
 
         // 첫 번째 딜레이: 후진
@@ -387,17 +401,40 @@ void MasterNode::runRobotStage3() {
         rclcpp::sleep_for(std::chrono::milliseconds(target_seconds_move_front_));
         stopDxl();
 
-        rclcpp::sleep_for(std::chrono::milliseconds(2000));
+        rclcpp::sleep_for(std::chrono::milliseconds(1000));
 
+        // resetIMU();
         // PID 제어로 왼쪽으로 회전하기
-        if (imu_yaw_ - target_yaw_vel_out_ < -180) {
-            target_yaw_ = 360 + (imu_yaw_ - target_yaw_vel_out_); // 범위 보정
-        } else {
-            target_yaw_ = imu_yaw_ - target_yaw_vel_out_;
+        // if (imu_yaw_ - target_yaw_vel_out_ < -180) {
+        //     target_yaw_ = 360 + (imu_yaw_ - target_yaw_vel_out_); // 범위 보정
+        // } else {
+        //     target_yaw_ = imu_yaw_ - target_yaw_vel_out_;
+        // }
+
+        // playYawFlag = true;
+        // isDonePidControlParkingStationOutStage3 = true;
+    }
+    
+    if (isReadyToParking && !isDonePidControlParkingStationOutStage3) {
+        linear_vel_ = 0.0;
+
+        if (detectObjectNumParkingStationStage3 == 1) { // 진입 기준 왼쪽에 오브젝트가 있을 때
+            angular_vel_ = 0.05;
+        } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
+            angular_vel_ = -0.05;
         }
 
-        playYawFlag = true;
-        isDonePidControlParkingStationOutStage3 = true;
+        RCLCPP_INFO(node->get_logger(), "회전 완료");
+
+        if (((isDetectYellowLine && dist_yellow_line_ < -300) && (89 < yellow_line_angle_ && yellow_line_angle_ < 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
+            // stopDxl();
+            isDonePidControlParkingStationOutStage3 = true;
+            RCLCPP_INFO(node->get_logger(), "변환 완료");
+        } else if (((isDetectWhiteLine && dist_white_line_ > 270) && (89 < white_line_angle_ && white_line_angle_ < 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
+            // stopDxl();
+            isDonePidControlParkingStationOutStage3 = true;
+            RCLCPP_INFO(node->get_logger(), "변환 완료");
+        }
     }
 
     if (isDonePidControlParkingStationOutStage3 && !playYawFlag) {
@@ -425,6 +462,57 @@ void MasterNode::runRobotStage3() {
             }
         }
     }
+
+    if (isDetectLeftBlueSign && isDonePidControlParkingStationOutStage3) {
+        if (imu_yaw_ - 75.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 75.0); // 범위 보정
+        } else {
+            target_yaw_ = imu_yaw_ - 75.0;
+        }
+        playYawFlag = true;
+        isReadyToGoStage4 = true;
+    }
+
+    if (!playYawFlag && isReadyToGoStage4) {
+        stage_number_ = 4;
+    }
+}
+
+void MasterNode::runRobotStage4() {
+    if (isDetectBarrier) {
+        stopDxl();
+    } else {
+        if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
+            angular_vel_ = 0.0;
+        } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
+            if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
+                angular_vel_ = ((320 + dist_yellow_line_) / 3000) * -1;
+            } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
+                angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
+            } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
+                if ((((320 + dist_yellow_line_) / 800) * -1) < -0.4) {
+                    angular_vel_ = -0.4;
+                } else {
+                    angular_vel_ = (((320 + dist_yellow_line_) / 800) * -1);
+                }
+            }
+        } else if (!isDetectYellowLine && isDetectWhiteLine) {
+            if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+            } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+            } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+                if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+                    angular_vel_ = 0.35;
+                } else {
+                    angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+                }
+            }
+        } else {
+            // // 선이 감지되지 않을 경우
+            angular_vel_ = 0.0;
+        }
+    }
 }
 
 // ========== [Line Detect 서브스크라이브] ==========
@@ -448,10 +536,19 @@ void MasterNode::detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg) {
     }
 }
 
+void MasterNode::detectRedLine(const std_msgs::msg::Bool::SharedPtr msg) {
+    isDetectRedLine = msg->data;
+    if (isDetectRedLine) {
+        isDetectRedLine = true;
+        RCLCPP_INFO(node->get_logger(), "빨간 라인 감지됨");
+    } else {
+        isDetectRedLine = false;
+    }
+}
+
 // ========== [차단바 감지 서브스크라이브] ==========
 void MasterNode::detectBarrier(const std_msgs::msg::Bool::SharedPtr msg) {
     if (msg->data) {
-        stopDxl();
         isDetectBarrier = true;
     } else {
         isDetectBarrier = false;
@@ -489,12 +586,20 @@ void MasterNode::getYellowLineAngle(const std_msgs::msg::Float32::SharedPtr msg)
 }
 
 
-// ========== [IMU 서브스크라이브] ==========
+// ========== [IMU 서브스크라이브 & 퍼블리시 ] ==========
 void MasterNode::getImuYaw(const std_msgs::msg::Float32::SharedPtr msg) {
     imu_yaw_ = msg->data;
     if(playYawFlag) {
         ctlDxlYaw(target_yaw_);
     }
+}
+
+void MasterNode::resetIMU() {
+    bool isRequestResetIMU = true;
+
+    auto msg_isRequestResetIMU = std_msgs::msg::Bool();
+    msg_isRequestResetIMU.data = isRequestResetIMU;
+    pub_imu_reset_->publish(msg_isRequestResetIMU);
 }
 
 
@@ -677,6 +782,15 @@ void MasterNode::detectBlueSign(const std_msgs::msg::Bool::SharedPtr msg) {
         isDetectBlueSign = true;
     } else {
         isDetectBlueSign = false;
+    }
+}
+
+void MasterNode::detectLeftBlueSign(const std_msgs::msg::Bool::SharedPtr msg) {
+    if (msg->data == true) {
+        isDetectLeftBlueSign = true;
+        RCLCPP_INFO(node->get_logger(), "탈출 표지판 감지 완료!");
+    } else {
+        isDetectLeftBlueSign = false;
     }
 }
 

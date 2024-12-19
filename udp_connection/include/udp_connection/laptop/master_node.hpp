@@ -60,7 +60,9 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_yellow_line_x_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_white_line_x_;
 
+    // ========== [IMU 서브스크라이브 & 퍼블리시] ==========
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_imu_yaw_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_imu_reset_;
 
 
     // ========== [Psd-Adc-Value 서브스크라이브] ==========
@@ -78,6 +80,7 @@ private:
 
     // ========== [주차 표지판 감지 메서드] ==========
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_blue_sign_detected_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_left_blue_sign_detected_; // 삼거리 탈출 표지판 감지
 
     // ========== [차단바 감지 서브스크라이브] ==========
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_barrier_detected_;
@@ -85,6 +88,9 @@ private:
     // ========== [Line Detect  중앙값 서브스크라이브] ==========
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_yellow_line_center_dist_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_white_line_center_dist_;
+
+    // ========== [Red Line Detect 서브스크라이브] ==========
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_red_line_detected_;
 
     bool initialized_; // 초기화 상태 확인 변수
     bool isRobotRun_; // 로봇의 동작 여부를 나타내는 변수(토글로 사용)
@@ -95,9 +101,11 @@ private:
     // 선 감지 확인 변수
     bool isDetectYellowLine;
     bool isDetectWhiteLine;
+    bool isDetectRedLine = false;
 
     // 주차 표지판 감지 확인 변수
     bool isDetectBlueSign = false;
+    bool isDetectLeftBlueSign = false;
 
     // 차단바 감지 확인 변수
     bool isDetectBarrier;
@@ -176,6 +184,7 @@ private:
     bool isDonePidControlParkingStationOutStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 아웃 완료 여부를 나타내는 플래그
     bool isReadyToParking = false; // 주차장에서 오브젝트가 있는 방향으로 바라보고, 주차 준비가 된 상태일 때 여부를 나타내는 플래그
     int detectObjectNumParkingStationStage3 = 0; // 주차장에서 오브젝트가 어느 위치에 위치해 있는지 저장하는 변수 (0: null, 1: 왼쪽, 2: 오른쪽)
+    bool isReadyToGoStage4 = false; // 삼거리 탈출할 때 파란 표지판 감지하고, Stage4로 넘어가는 여부를 나타내는 플래그
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
@@ -189,6 +198,8 @@ private:
     void getWhiteLineAngle(const std_msgs::msg::Float32::SharedPtr msg);
     void getYellowLineAngle(const std_msgs::msg::Float32::SharedPtr msg);
 
+    void detectRedLine(const std_msgs::msg::Bool::SharedPtr msg);
+
     // ========== [STM32 PSD Value Callback Method] ==========
     void psdRightCallback(const std_msgs::msg::Int32::SharedPtr msg);
     void psdFrontCallback(const std_msgs::msg::Int32::SharedPtr msg);
@@ -196,9 +207,11 @@ private:
 
     // ========== [IMU 메서드] ==========
     void getImuYaw(const std_msgs::msg::Float32::SharedPtr msg);
+    void resetIMU(); // IMU reset을 publish 하기 위한 메서드
 
     // ========== [주차 표지판 감지 메서드] ==========
     void detectBlueSign(const std_msgs::msg::Bool::SharedPtr msg);
+    void detectLeftBlueSign(const std_msgs::msg::Bool::SharedPtr msg);
 
     // ========== [차단바 감지 메서드] ==========
     void detectBarrier(const std_msgs::msg::Bool::SharedPtr msg);
@@ -217,6 +230,7 @@ private:
     void runRobotStage1(); // 스테이지1 일때의 이동처리 로직
     void runRobotStage2();
     void runRobotStage3();
+    void runRobotStage4();
 
 
 };
