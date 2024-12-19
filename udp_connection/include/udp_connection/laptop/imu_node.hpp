@@ -7,6 +7,7 @@
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include "std_msgs/msg/bool.hpp"
 #include <vector>
 #include <sstream>
 
@@ -41,6 +42,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_pitch_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yaw_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_service_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_reset_;
 
     // LowPassFilter roll_lpf{0.1}, pitch_lpf{0.1}, yaw_lpf{0.1};
     // KalmanFilter roll_kf{0.1, 0.1}, pitch_kf{0.1, 0.1}, yaw_kf{0.1, 0.1};
@@ -59,6 +61,8 @@ private:
     void processImuData(const std::vector<double>& data);
     void normalizeAngle(double &angle);
     void quaternionToEuler(const double qx, const double qy, const double qz, const double qw, double &roll, double &pitch, double &yaw);
+
+    void resetCallback(const std_msgs::msg::Bool::SharedPtr msg);
     
     // 서비스 콜백 함수 추가
     void handleResetSignal(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response);

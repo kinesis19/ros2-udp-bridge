@@ -54,6 +54,9 @@ ImuNode::ImuNode()
 
     reset_service_ = node->create_service<std_srvs::srv::Trigger>("reset_imu", std::bind(&ImuNode::handleResetSignal, this, std::placeholders::_1, std::placeholders::_2));
 
+    sub_reset_ = node->create_subscription<std_msgs::msg::Bool>("/imu/reset", 10, std::bind(&ImuNode::resetCallback, this, std::placeholders::_1));
+
+
     RCLCPP_INFO(node->get_logger(), "imu_node 초기화 완료");
 
     initialized_ = true;
@@ -124,6 +127,11 @@ void ImuNode::resetAngles() {
     yaw_kf = KalmanFilter();
 }
 
+void ImuNode::resetCallback(const std_msgs::msg::Bool::SharedPtr msg) {
+    if (msg->data) {  // true일 때만 reset 실행
+        resetAngles();
+    }
+}
 
 void ImuNode::imuCallback(const std_msgs::msg::String::SharedPtr msg)
 {
