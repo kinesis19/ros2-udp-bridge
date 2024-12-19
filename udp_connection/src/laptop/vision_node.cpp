@@ -42,6 +42,11 @@ VisionNode::VisionNode() :  yellow_line_detected(false), white_line_detected(fal
 
     yellow_detection_array.fill(false);
     white_detection_array.fill(false);
+
+    pub_red_mask_ = node->create_publisher<sensor_msgs::msg::Image>("/vision/red_mask", 10);
+    pub_red_detected_ = node->create_publisher<std_msgs::msg::Bool>("/vision/red_line_detected", 10);
+
+    pub_left_blue_sign_detected_ = node->create_publisher<std_msgs::msg::Bool>("/vision/left_blue_sign_detected", 10);
 }
 
 VisionNode::~VisionNode()
@@ -101,12 +106,18 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Point2f dst_vertices[4];
         cv::Point2f signs_vertices[4];
         cv::Point2f bar_vertices[4];
+        cv::Point2f left_sign_vertices[4];
+        // 주차장 나오는 부분
+        left_sign_vertices[0] = cv::Point2f(width * 0.0f, height * 0.50f);
+        left_sign_vertices[1] = cv::Point2f(width * 1.0f, height * 0.50f);
+        left_sign_vertices[2] = cv::Point2f(width * 1.0f, height * 0.7f);
+        left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.7f);
         
         // 차단바
-        bar_vertices[0] = cv::Point2f(width * 0.35f, height * 0.55f);
-        bar_vertices[1] = cv::Point2f(width * 0.65f, height * 0.55f);
-        bar_vertices[2] = cv::Point2f(width * 0.65f, height * 0.7f);
-        bar_vertices[3] = cv::Point2f(width * 0.35f, height * 0.7f);
+        bar_vertices[0] = cv::Point2f(width * 0.15f, height * 0.75f);
+        bar_vertices[1] = cv::Point2f(width * 0.85f, height * 0.75f);
+        bar_vertices[2] = cv::Point2f(width * 0.85f, height * 0.95f);
+        bar_vertices[3] = cv::Point2f(width * 0.15f, height * 0.95f);
 
         // 표지판
         signs_vertices[0] = cv::Point2f(width * 0.95f, height * 0.3f);
@@ -205,6 +216,30 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::morphologyEx(white_mask_combined, white_mask_combined, cv::MORPH_OPEN, kernel);
         cv::morphologyEx(white_mask_combined, white_mask_combined, cv::MORPH_CLOSE, kernel_large);
         cv::dilate(white_mask_combined, white_mask_combined, kernel, cv::Point(-1, -1), 2);
+
+        cv::Mat red_mask;
+        cv::Scalar lower_red_hsv1(0, 100, 100);
+        cv::Scalar upper_red_hsv1(10, 255, 255);
+        cv::inRange(hsv, lower_red_hsv1, upper_red_hsv1, red_mask);
+        cv::Mat red_mask2;
+        cv::Scalar lower_red_hsv2(160, 100, 100);
+        cv::Scalar upper_red_hsv2(180, 255, 255);
+        cv::inRange(hsv, lower_red_hsv2, upper_red_hsv2, red_mask2);
+        cv::bitwise_or(red_mask, red_mask2, red_mask);
+        cv::morphologyEx(red_mask, red_mask, cv::MORPH_OPEN, kernel);
+        cv::morphologyEx(red_mask, red_mask, cv::MORPH_CLOSE, kernel_large);
+        std::vector<cv::Vec4i> red_lines;
+        cv::HoughLinesP(red_mask, red_lines, 1, CV_PI / 180, 30, 20, 10);
+        bool red_line_detected = !red_lines.empty();
+
+        // publish
+        auto red_detected_msg = std_msgs::msg::Bool();
+        red_detected_msg.data = red_line_detected;
+        pub_red_detected_->publish(red_detected_msg);
+
+        // mask image publish
+        sensor_msgs::msg::Image::SharedPtr red_mask_msg = cv_bridge::CvImage(msg->header, "mono8", red_mask).toImageMsg();
+        pub_red_mask_->publish(*red_mask_msg);
 
         // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -520,6 +555,48 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         
         // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
         
+        // 왼쪽 표지판 ROI 마스크 생성
+        cv::Mat left_sign_roi_mask = cv::Mat::zeros(resized_frame.size(), CV_8UC1);
+        std::vector<cv::Point> left_roi_points;
+        for (int i = 0; i < 4; i++)
+        {
+            left_roi_points.push_back(cv::Point(left_sign_vertices[i].x, left_sign_vertices[i].y));
+        }
+        cv::fillConvexPoly(left_sign_roi_mask, left_roi_points, cv::Scalar(255));
+        // 왼쪽 ROI 영역만 추출
+        cv::Mat left_roi_image;
+        resized_frame.copyTo(left_roi_image, left_sign_roi_mask);
+        // 왼쪽 ROI 영역에 대해서만 HSV 변환 수행
+        cv::Mat left_sign_hsv;
+        cv::cvtColor(left_roi_image, left_sign_hsv, cv::COLOR_BGR2HSV);
+        // 파란색 마스크 생성 - HSV 값 조정 (기존과 동일한 값 사용)
+        cv::Mat left_blue_mask;
+        cv::Scalar lower_blue_hsv(100, 70, 50);
+        cv::Scalar upper_blue_hsv(130, 255, 255);
+        cv::inRange(left_sign_hsv, lower_blue_hsv, upper_blue_hsv, left_blue_mask);
+        // 노이즈 제거
+        cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_OPEN, kernel);
+        cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_CLOSE, kernel_large);
+        // 파란색 영역 검출
+        std::vector<std::vector<cv::Point>> left_blue_contours;
+        cv::findContours(left_blue_mask, left_blue_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        bool left_blue_sign_detected = false;
+        for (const auto &contour : left_blue_contours)
+        {
+            double area = cv::contourArea(contour);
+            if (area > 100.0) // 동일한 임계값 사용
+            {
+                left_blue_sign_detected = true;
+                break;
+            }
+        }
+        // 왼쪽 파란색 표지판 검출 결과 발행
+        auto left_blue_sign_msg = std_msgs::msg::Bool();
+        left_blue_sign_msg.data = left_blue_sign_detected;
+        pub_left_blue_sign_detected_->publish(left_blue_sign_msg);
+        // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
         // 표지판 ROI 마스크 생성
         cv::Mat sign_roi_mask = cv::Mat::zeros(resized_frame.size(), CV_8UC1);
         std::vector<cv::Point> roi_points;
@@ -539,8 +616,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 파란색 마스크 생성 - HSV 값 조정
         cv::Mat blue_mask;
-        cv::Scalar lower_blue_hsv(100, 70, 50);
-        cv::Scalar upper_blue_hsv(130, 255, 255);
+        // cv::Scalar lower_blue_hsv(100, 70, 50);
+        // cv::Scalar upper_blue_hsv(130, 255, 255);
         cv::inRange(sign_hsv, lower_blue_hsv, upper_blue_hsv, blue_mask);
 
         // 노이즈 제거
@@ -590,6 +667,12 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         {
             cv::line(resized_frame, signs_vertices[i], signs_vertices[(i + 1) % 4],
                      cv::Scalar(0, 0, 255), 2);
+        }
+
+        // ROI 영역 표시 (초록색으로 표시)
+        for (int i = 0; i < 4; i++)
+        {
+            cv::line(resized_frame, left_sign_vertices[i], left_sign_vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);
         }
 
         yellow_line_valid = isLineValid(yellow_detection_array, yellow_line_detected);

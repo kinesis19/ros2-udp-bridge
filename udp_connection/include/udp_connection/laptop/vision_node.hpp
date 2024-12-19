@@ -57,6 +57,11 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_yellow_center_dist_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_white_center_dist_;
 
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_red_mask_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_red_detected_;
+
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_left_blue_sign_detected_; // 삼거리 탈출을 위한 파란 표지판 감지
+
 
 
     bool initialized_; // 초기화 상태 확인 변수
