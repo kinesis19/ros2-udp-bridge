@@ -653,9 +653,10 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         for (const auto &contour : blue_contours)
         {
             double area = cv::contourArea(contour);
-            if (area > 100.0)
+            if (area > 2500.0)
             {
                 blue_sign_detected = true;
+                // RCLCPP_INFO(node->get_logger(), "Blue area detected: %.2f", area);
                 break;
             }
         }
