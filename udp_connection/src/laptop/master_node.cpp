@@ -216,21 +216,6 @@ void MasterNode::runRobotStage2() {
 
     // PID 제어로 우회전 이후의 주행 로직
     if (isWorkedPIDControlToTurnRightStage2 && !playYawFlag) {
-        // if (isDetectYellowLine && !isDetectWhiteLine) {
-        //     angular_vel_ = -0.02;
-        // } else if (!isDetectYellowLine && isDetectWhiteLine) {
-        //     if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-        //         angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
-        //     } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-        //         angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
-        //     } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-        //         if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
-        //             angular_vel_ = 0.35;
-        //         } else {
-        //             angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
-        //         }
-        //     }
-        // }
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
             angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
@@ -255,20 +240,6 @@ void MasterNode::runRobotStage3() {
     
     // 기본 주행 (흰색)
     if (!isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3) {
-
-        // if (isDetectYellowLine && !isDetectWhiteLine) {
-        //     angular_vel_ = -0.02;
-        // } else if (!isDetectYellowLine && isDetectWhiteLine) {
-        //     if (88 <= white_line_angle_ && white_line_angle_ <= 93) { // 직진
-        //         angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
-        //     } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-        //         angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
-        //     }
-        //     RCLCPP_INFO(node->get_logger(), "처음 흰 로직");
-        // } else if (isDetectYellowLine && isDetectWhiteLine) {
-        //     angular_vel_ = 0.0;
-        // }
-
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) { // 직진
             angular_vel_ = ((315 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
@@ -343,10 +314,10 @@ void MasterNode::runRobotStage3() {
     if (((isDetectYellowLineAfterDetectWhiteDottedLineStage3 && !isDonePidControlParkingStationInStage3) && (psd_adc_left_ > 2500 || psd_adc_right_ > 2500)) && !playYawFlag) {
         float target_yaw_vel_; // 오브젝트 위치에 따른 PID제어의 타겟 값 
 
-        if (psd_adc_left_ > 1800 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
+        if (psd_adc_left_ > 2500 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = 90.0;
             detectObjectNumParkingStationStage3 = 1; // 왼쪽에 있다는 것을 저장.
-        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 1800) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
+        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 2500) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = -90.0;
             detectObjectNumParkingStationStage3 = 2; // 오른쪽에 있다는 것을 저장.
         }
@@ -431,10 +402,10 @@ void MasterNode::runRobotStage3() {
         RCLCPP_INFO(node->get_logger(), "주차장 퇴출을 위한 회전 처리 중");
 
         // 노란선이 왼쪽에서 수직선으로 되어 있으며, psd 조건을 충족했을 때
-        if (((isDetectYellowLine && dist_yellow_line_ < -300) && (89 < yellow_line_angle_ && yellow_line_angle_ < 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
+        if (((isDetectYellowLine && dist_yellow_line_ < -200) && (90 < yellow_line_angle_ && yellow_line_angle_ < 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
             isDonePidControlParkingStationOutStage3 = true;
             RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
-        } else if (((isDetectWhiteLine && dist_white_line_ > 270) && (89 < white_line_angle_ && white_line_angle_ < 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
+        } else if (((isDetectWhiteLine && dist_white_line_ > 270) && (90 < white_line_angle_ && white_line_angle_ < 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
             // 흰 선이 오른쪽에서 수직선으로 되어 있으며, psd 조건을 충족했을 때
             isDonePidControlParkingStationOutStage3 = true;
             RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
@@ -443,38 +414,28 @@ void MasterNode::runRobotStage3() {
 
 
     // 주차장에서 퇴출 준비가 완료된 상태일 때
-    // (isDonePidControlParkingStationOutStage3 && !isTurnLeftToGoToStage4) && !isRunWithYellowLineParkingStationOutStage3
     if ((isDonePidControlParkingStationOutStage3 && !isTurnLeftToGoToStage4)) {
-        linear_vel_ = 0.4;
+        linear_vel_ = 0.3;
 
         // 양 옆이 노란선일 때의 주행 처리
         if (isDetectYellowLine && !isDetectWhiteLine) {
-            if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 89) { // 예외 처리: 근사항 직진 주행
-                // angular_vel_ = 0.075;
-                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 1500) * 1;
-            } else if (89 < yellow_line_angle_ && yellow_line_angle_ < 91) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = 0.0;
-                // isRunWithYellowLineParkingStationOutStage3 = true;
-            } else if (91 <= yellow_line_angle_) {
-                // angular_vel_ = -0.075;
-                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 1500) * -1;
+
+            // 양 옆이 노란색 라인일 때의 주행 처리
+            if (dist_yellow_line_ < -200) {
+                if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
+                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * 1;
+                } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
+                    angular_vel_ = 0.0;
+                } else if (90 <= yellow_line_angle_) {
+                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+                }
+                RCLCPP_INFO(node->get_logger(), "노랑 탈출");
             }
-            RCLCPP_INFO(node->get_logger(), "노랑 탈출");
+
         } else {
             angular_vel_ = 0.0;
             RCLCPP_INFO(node->get_logger(), "몰라1");
         }
-
-        // 양 옆이 노란색 라인일 때의 주행 처리
-        // if ((isDetectYellowLine && !isDetectWhiteLine) && dist_yellow_line_ < -200) {
-        //     if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
-        //         angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * 1;
-        //     } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
-        //         angular_vel_ = 0.0;
-        //     } else if (90 <= yellow_line_angle_) {
-        //         angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * -1.;
-        //     }
-        // }
     }
 
     // 삼거리에서 좌회전 표지판을 감지하고, 주차장에서 퇴출이 완료된 상태일 때
