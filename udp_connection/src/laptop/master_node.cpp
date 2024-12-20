@@ -216,6 +216,21 @@ void MasterNode::runRobotStage2() {
 
     // PID 제어로 우회전 이후의 주행 로직
     if (isWorkedPIDControlToTurnRightStage2 && !playYawFlag) {
+        // if (isDetectYellowLine && !isDetectWhiteLine) {
+        //     angular_vel_ = -0.02;
+        // } else if (!isDetectYellowLine && isDetectWhiteLine) {
+        //     if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+        //         angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
+        //     } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+        //         angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+        //     } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+        //         if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+        //             angular_vel_ = 0.35;
+        //         } else {
+        //             angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+        //         }
+        //     }
+        // }
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
             angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
@@ -229,7 +244,7 @@ void MasterNode::runRobotStage2() {
         }
     }
 
-    // Stage3 진입 감지 처리: 주차 표지판을 감지했을 때
+    // Stage3 진입 감지 처리: 주차 표지판을 감지했을 때 (직진 주행임과 동시에)
     if (isDetectBlueSign) {
         stage_number_ = 3;
     }
@@ -240,10 +255,24 @@ void MasterNode::runRobotStage3() {
     
     // 기본 주행 (흰색)
     if (!isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3) {
+
+        // if (isDetectYellowLine && !isDetectWhiteLine) {
+        //     angular_vel_ = -0.02;
+        // } else if (!isDetectYellowLine && isDetectWhiteLine) {
+        //     if (88 <= white_line_angle_ && white_line_angle_ <= 93) { // 직진
+        //         angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
+        //     } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+        //         angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
+        //     }
+        //     RCLCPP_INFO(node->get_logger(), "처음 흰 로직");
+        // } else if (isDetectYellowLine && isDetectWhiteLine) {
+        //     angular_vel_ = 0.0;
+        // }
+
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) { // 직진
-            angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
+            angular_vel_ = ((315 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-            angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
+            angular_vel_ = ((315 - dist_white_line_) / 3000) * 1;
         }
         RCLCPP_INFO(node->get_logger(), "처음 흰 로직");
     }
@@ -253,13 +282,17 @@ void MasterNode::runRobotStage3() {
         isMissBlueSignStage3 = true; // 플래그 처리
     }
 
+    if (!isDetectYellowLine) {
+        isMissYellowLineStage2 = true;
+    }
+
     // 파란색 표지판을 놓치고, 노란색 라인을 재감지 했을 때
-    if (isMissBlueSignStage3 && isDetectYellowLine) {
+    if ((isMissBlueSignStage3 && isMissYellowLineStage2) && isDetectYellowLine) {
         isDetectYellowLineinThreeStreetStage3 = true; // 삼거리 감지 플래그 처리 (현재 위치: 삼거리 중앙, 서쪽 방향)
     }
 
     // 삼거리에서, 서쪽 방향을 바라보고 있을 때
-    if (isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3) {
+    if ((isDetectYellowLineinThreeStreetStage3 && !isStartPidTurnLeftThreeStreetStage3)) {
         // PID 좌회전 처리하기
         if (imu_yaw_ - 88.0 < -180) {
             target_yaw_ = 360 + (imu_yaw_ - 88.0); // 범위 보정
@@ -280,18 +313,28 @@ void MasterNode::runRobotStage3() {
 
         // 양 옆이 노란색 라인일 때의 주행 처리
         if (isDetectYellowLine && !isDetectWhiteLine) {
-            if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
-                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * 1;
-            } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = 0.0;
-            } else if (90 <= yellow_line_angle_) {
-                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+            if (dist_yellow_line_ < -200) {
+                if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
+                    angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * 1;
+                } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
+                    angular_vel_ = 0.0;
+                } else if (90 <= yellow_line_angle_) {
+                    angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+                }
+                RCLCPP_INFO(node->get_logger(), "노랑 진입 직진");
+            } else if (dist_yellow_line_ > -200) {
+                linear_vel_ = 0.0;
+                angular_vel_ = 0.05;
+                RCLCPP_INFO(node->get_logger(), "노랑 진입 직진을 위한 회전");
             }
-            RCLCPP_INFO(node->get_logger(), "노랑 진입 직진");
+            
         }
-    } else if (!isDetectYellowLine && isDetectWhiteLine) { // 주차장에서 점선 감지했을 때
+    } else if (((isStartPidTurnLeftThreeStreetStage3 && !playYawFlag) && (!isDetectYellowLine && isDetectWhiteLine)) && (detectObjectNumParkingStationStage3 == 0)) { // 주차장에서 점선 감지했을 때
+        // 주차장 입장 전까지 조건 : detectObjectNumParkingStationStage3
+        linear_vel_ = 0.3;
         angular_vel_ = 0.0;
         isDetectWhiteDottedLineStage3 = true; // 점선 감지 플래그 활성화
+        RCLCPP_INFO(node->get_logger(), "흰색 점선");
     }
 
     // 흰색 점선이 감지된 이후의 상태일 때
@@ -306,10 +349,10 @@ void MasterNode::runRobotStage3() {
     if (((isDetectYellowLineAfterDetectWhiteDottedLineStage3 && !isDonePidControlParkingStationInStage3) && (psd_adc_left_ > 2500 || psd_adc_right_ > 2500)) && !playYawFlag) {
         float target_yaw_vel_; // 오브젝트 위치에 따른 PID제어의 타겟 값 
 
-        if (psd_adc_left_ > 1800 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
+        if (psd_adc_left_ > 2500 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = 90.0;
             detectObjectNumParkingStationStage3 = 1; // 왼쪽에 있다는 것을 저장.
-        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 1800) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
+        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 2500) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = -90.0;
             detectObjectNumParkingStationStage3 = 2; // 오른쪽에 있다는 것을 저장.
         }
@@ -406,19 +449,21 @@ void MasterNode::runRobotStage3() {
 
 
     // 주차장에서 퇴출 준비가 완료된 상태일 때
-    if (isDonePidControlParkingStationOutStage3 && !isTurnLeftToGoToStage4) {
-        linear_vel_ = 0.3;
+    // (isDonePidControlParkingStationOutStage3 && !isTurnLeftToGoToStage4) && !isRunWithYellowLineParkingStationOutStage3
+    if ((isDonePidControlParkingStationOutStage3 && !isTurnLeftToGoToStage4)) {
+        linear_vel_ = 0.4;
 
         // 양 옆이 노란선일 때의 주행 처리
         if (isDetectYellowLine && !isDetectWhiteLine) {
             if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 89) { // 예외 처리: 근사항 직진 주행
                 // angular_vel_ = 0.075;
-                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * 1;
+                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 1500) * 1;
             } else if (89 < yellow_line_angle_ && yellow_line_angle_ < 91) {  // 좌회전 처리: (약 ~ 중)
                 angular_vel_ = 0.0;
+                // isRunWithYellowLineParkingStationOutStage3 = true;
             } else if (91 <= yellow_line_angle_) {
                 // angular_vel_ = -0.075;
-                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * -1;
+                angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 1500) * -1;
             }
             RCLCPP_INFO(node->get_logger(), "노랑 탈출");
         } else {
