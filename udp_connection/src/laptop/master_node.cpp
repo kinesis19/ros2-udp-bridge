@@ -315,23 +315,17 @@ void MasterNode::runRobotStage3() {
         if (isDetectYellowLine && !isDetectWhiteLine) {
             if (dist_yellow_line_ < -200) {
                 if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
-                    angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * 1;
+                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * 1;
                 } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
                     angular_vel_ = 0.0;
                 } else if (90 <= yellow_line_angle_) {
-                    angular_vel_ = ((320 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * -1.1;
                 }
                 RCLCPP_INFO(node->get_logger(), "노랑 진입 직진");
-            } else if (dist_yellow_line_ > -200) {
-                linear_vel_ = 0.0;
-                angular_vel_ = 0.05;
-                RCLCPP_INFO(node->get_logger(), "노랑 진입 직진을 위한 회전");
-            }
-            
+            } 
         }
-    } else if (((isStartPidTurnLeftThreeStreetStage3 && !playYawFlag) && (!isDetectYellowLine && isDetectWhiteLine)) && (detectObjectNumParkingStationStage3 == 0)) { // 주차장에서 점선 감지했을 때
+    } else if (!isDetectYellowLine && isDetectWhiteLine) { // 주차장에서 점선 감지했을 때w d
         // 주차장 입장 전까지 조건 : detectObjectNumParkingStationStage3
-        linear_vel_ = 0.3;
         angular_vel_ = 0.0;
         isDetectWhiteDottedLineStage3 = true; // 점선 감지 플래그 활성화
         RCLCPP_INFO(node->get_logger(), "흰색 점선");
@@ -349,10 +343,10 @@ void MasterNode::runRobotStage3() {
     if (((isDetectYellowLineAfterDetectWhiteDottedLineStage3 && !isDonePidControlParkingStationInStage3) && (psd_adc_left_ > 2500 || psd_adc_right_ > 2500)) && !playYawFlag) {
         float target_yaw_vel_; // 오브젝트 위치에 따른 PID제어의 타겟 값 
 
-        if (psd_adc_left_ > 2500 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
+        if (psd_adc_left_ > 1800 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = 90.0;
             detectObjectNumParkingStationStage3 = 1; // 왼쪽에 있다는 것을 저장.
-        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 2500) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
+        } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 1800) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = -90.0;
             detectObjectNumParkingStationStage3 = 2; // 오른쪽에 있다는 것을 저장.
         }
