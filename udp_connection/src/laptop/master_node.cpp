@@ -368,7 +368,7 @@ void MasterNode::runRobotStage3() {
         rclcpp::sleep_for(std::chrono::milliseconds(target_seconds_move_back_)); // 첫 번째 딜레이: 후진
 
         stopDxl();
-        rclcpp::sleep_for(std::chrono::milliseconds(1500)); // 두 번째 딜레이: 정지
+        rclcpp::sleep_for(std::chrono::milliseconds(1000)); // 두 번째 딜레이: 정지
 
         linear_vel_ = 0.2;
         angular_vel_ = 0.0;
@@ -384,7 +384,7 @@ void MasterNode::runRobotStage3() {
         rclcpp::sleep_for(std::chrono::milliseconds(target_seconds_move_front_)); // 세 번째 딜레이: 직진
 
         stopDxl();
-        rclcpp::sleep_for(std::chrono::milliseconds(1000)); // 네 번째 딜레이: 정지
+        // rclcpp::sleep_for(std::chrono::milliseconds(1000)); // 네 번째 딜레이: 정지
     }
     
 
@@ -394,9 +394,11 @@ void MasterNode::runRobotStage3() {
         linear_vel_ = 0.0;
 
         if (detectObjectNumParkingStationStage3 == 1) { // 진입 기준 왼쪽에 오브젝트가 있을 때
-            angular_vel_ = 0.08;
+            // angular_vel_ = 0.08;
+            angular_vel_ = 0.1;
         } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
-            angular_vel_ = -0.08;
+            // angular_vel_ = -0.08;
+            angular_vel_ = -0.1;
         }
 
         RCLCPP_INFO(node->get_logger(), "주차장 퇴출을 위한 회전 처리 중");
@@ -461,7 +463,8 @@ void MasterNode::runRobotStage3() {
     if ((isDetectLeftBlueSign && isDonePidControlParkingStationOutStage3) || isTurnLeftToGoToStage4) {
         // 아래 하위 조건이 감지 되기 전까지 계속 좌회전 하기
         linear_vel_ = 0.0;
-        angular_vel_ = 0.08;
+        // angular_vel_ = 0.08;
+        angular_vel_ = 0.1;
         isTurnLeftToGoToStage4 = true;
         RCLCPP_INFO(node->get_logger(), "회전한다");
 
