@@ -174,7 +174,7 @@ void MasterNode::runRobotStage2() {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
             angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+            angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
         } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
             if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
                 angular_vel_ = 0.35;
@@ -488,7 +488,7 @@ void MasterNode::runRobotStage4() {
             if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
                 angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
             } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = ((320 + dist_yellow_line_) / 1700) * -1;
+                angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
             } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
                 if ((((320 + dist_yellow_line_) / 800) * -1) < -0.4) {
                     angular_vel_ = -0.4;
@@ -498,14 +498,14 @@ void MasterNode::runRobotStage4() {
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
             if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-                angular_vel_ = ((320 - dist_white_line_) / 2500) * 1;
+                angular_vel_ = ((240 - dist_white_line_) / 3000) * 1;
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-                angular_vel_ = ((320 - dist_white_line_) / 2500) * 1;
+                angular_vel_ = ((240 - dist_white_line_) / 3000) * 1;
             } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-                if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+                if ((((240 - dist_white_line_) / 800) * 1) > 0.35) {
                     angular_vel_ = 0.35;
                 } else {
-                    angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+                    angular_vel_ = (((240 - dist_white_line_) / 800) * 1);
                 }
             }
         } else {
