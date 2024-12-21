@@ -232,6 +232,8 @@ private:
     void runRobotStage4();
     void runRobotStage5();
 
+    void runRobotStage6(); // reverse stage5
+
 
 };
 

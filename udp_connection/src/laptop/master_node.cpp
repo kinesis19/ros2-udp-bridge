@@ -87,6 +87,8 @@ void MasterNode::run()
             runRobotStage4();
         } else if (stage_number_ == 5) {
             runRobotStage5();
+        } else if (stage_number_ == 6) { // reverse stage5
+            runRobotStage6();
         }
 
         // 현재 상태를 유지하며 지속적으로 퍼블리시
@@ -580,8 +582,44 @@ void MasterNode::runRobotStage5() {
 
     if ((isDetectEndLineStage5 && !playYawFlag) && isDonePidControlEndLineStage5) {
         stopDxl();
+        stage_number_ = 6; // reverse stage5
     }
 }
+
+void MasterNode::runRobotStage6() {
+    linear_vel_ = 0.45;
+    if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
+        angular_vel_ = 0.0;
+    } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
+        if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
+            angular_vel_ = ((150 - dist_yellow_line_) / 2500) * 1;
+        } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
+            angular_vel_ = ((150 - dist_yellow_line_) / 1800) * 1;
+        } else if (100 <= yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
+            if ((((150 - dist_yellow_line_) / 800) * 1) > 0.4) {
+                angular_vel_ = 0.4;
+            } else {
+                angular_vel_ = (((150 - dist_yellow_line_) / 800) * 1);
+            }
+        }
+    } else if (!isDetectYellowLine && isDetectWhiteLine) {
+        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+            angular_vel_ = ((150 + dist_white_line_) / 2500) * -1;
+        } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+            angular_vel_ = ((150 + dist_white_line_) / 2500) * -1;
+        } else if (100 < white_line_angle_) {  
+            if ((((150 + dist_white_line_) / 800) * -1) < -0.35) {
+                angular_vel_ = -0.35;
+            } else {
+                angular_vel_ = (((150 + dist_white_line_) / 800) * -1);
+            }
+        }
+    } else {
+        // // 선이 감지되지 않을 경우
+        angular_vel_ = 0.0;
+    }
+}
+
 
 // ========== [Line Detect 서브스크라이브] ==========
 // 노랑 라인 감지 메서드
