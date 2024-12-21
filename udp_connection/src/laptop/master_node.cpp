@@ -527,7 +527,7 @@ void MasterNode::runRobotStage5() {
     
     if (isDetectBarrierStage5) {
         stopDxl();
-    } else if (!isDetectBarrierStage5 && !isDetectRedLine) {
+    } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && !isDonePidControlEndLineStage5) {
         linear_vel_ = 0.45;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
             angular_vel_ = 0.0;
@@ -561,11 +561,24 @@ void MasterNode::runRobotStage5() {
         }
     }
 
-    if (isDetectRedLine) {
+    if (isDetectRedLine && !isDonePidControlEndLineStage5) {
         isDetectEndLineStage5 = true;
     }
 
-    if (isDetectEndLineStage5) {
+    if (isDetectEndLineStage5 && !isDonePidControlEndLineStage5) {
+
+        // PID 180도 회전 처리하기
+        if (imu_yaw_ - 170.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 170.0); // 범위 보정
+        } else {
+            target_yaw_ = imu_yaw_ - 170.0;
+        }
+
+        playYawFlag = true;
+        isDonePidControlEndLineStage5 = true;
+    }
+
+    if ((isDetectEndLineStage5 && !playYawFlag) && isDonePidControlEndLineStage5) {
         stopDxl();
     }
 }
@@ -751,6 +764,7 @@ void MasterNode::resetValue() {
 
     isDetectBarrierStage5 = false;
     isDetectEndLineStage5 = false;
+    isDonePidControlEndLineStage5 = false;
 }
 
 void MasterNode::ctlDxlYaw(float target_yaw) {
