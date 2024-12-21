@@ -592,26 +592,26 @@ void MasterNode::runRobotStage6() {
         angular_vel_ = 0.0;
     } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-            angular_vel_ = ((150 - dist_yellow_line_) / 2500) * 1;
+            angular_vel_ = ((175 - dist_yellow_line_) / 2500) * 1;
         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-            angular_vel_ = ((150 - dist_yellow_line_) / 1800) * 1;
-        } else if (100 <= yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
-            if ((((150 - dist_yellow_line_) / 800) * 1) > 0.4) {
+            angular_vel_ = ((175 - dist_yellow_line_) / 2000) * 1;
+        } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
+            if ((((175 - dist_yellow_line_) / 800) * 1) > 0.4) {
                 angular_vel_ = 0.4;
             } else {
-                angular_vel_ = (((150 - dist_yellow_line_) / 800) * 1);
+                angular_vel_ = (((175 - dist_yellow_line_) / 800) * 1);
             }
         }
     } else if (!isDetectYellowLine && isDetectWhiteLine) {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-            angular_vel_ = ((150 + dist_white_line_) / 2500) * -1;
+            angular_vel_ = ((175 + dist_white_line_) / 2500) * -1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-            angular_vel_ = ((150 + dist_white_line_) / 2500) * -1;
+            angular_vel_ = ((175 + dist_white_line_) / 2200) * -1;
         } else if (100 < white_line_angle_) {  
-            if ((((150 + dist_white_line_) / 800) * -1) < -0.35) {
+            if ((((175 + dist_white_line_) / 800) * -1) < -0.35) {
                 angular_vel_ = -0.35;
             } else {
-                angular_vel_ = (((150 + dist_white_line_) / 800) * -1);
+                angular_vel_ = (((175 + dist_white_line_) / 800) * -1);
             }
         }
     } else {
