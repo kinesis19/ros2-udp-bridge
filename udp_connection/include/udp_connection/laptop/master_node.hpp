@@ -180,10 +180,18 @@ private:
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
 
+    bool tempIsEnableTurnStage4 = false;
+
     // ========== [Stage5 감지 플래그 변수] ==========
     bool isDetectBarrierStage5 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
     bool isDetectEndLineStage5 = false; // isDetectRedLine이 너무 빠르게 변해서 만든 플래그
     bool isDonePidControlEndLineStage5 = false; // End Line에서 PID 제어 180도 회전 했는지 여부를 나타내는 플래그
+
+    // ========== [Stage6 감지 플래그 변수] ==========
+    bool isDetectBarrierStage6 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
+
+    // ========== [Stage7 감지 플래그 변수] ==========
+    bool isDetectBarrierStage7 = false;
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
@@ -233,6 +241,7 @@ private:
     void runRobotStage5();
 
     void runRobotStage6(); // reverse stage5
+    void runRobotStage7(); // reverse stage4
 
 
 };
