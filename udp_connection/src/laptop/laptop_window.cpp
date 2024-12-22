@@ -1,6 +1,6 @@
 #include "../include/udp_connection/laptop/laptop_window.hpp"
 
-LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), masterNode_(masterNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), imuNode_(imuNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), isReceiveAddress_(false)
+LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_ptr<VisionNode> visionNode, std::shared_ptr<PsdManagerNode> psdManagerNode, std::shared_ptr<ImuNode> imuNode, std::shared_ptr<DxlLeftNode> dxlLeftNode, std::shared_ptr<DxlRightNode> dxlRightNode, QWidget* parent) : QMainWindow(parent), ui(new Ui::LaptopWindowDesign), masterNode_(masterNode), visionNode_(visionNode), psdManagerNode_(psdManagerNode), imuNode_(imuNode), dxlLeftNode_(dxlLeftNode), dxlRightNode_(dxlRightNode), isReceiveAddress_(false), isTimerRunning(false), elapsedTime(0)
 {
   ui->setupUi(this);
 
@@ -76,6 +76,12 @@ LaptopWindow::LaptopWindow(std::shared_ptr<MasterNode> masterNode, std::shared_p
   connect(masterNode_.get(), &MasterNode::updateCurrentStage, this, [this](const int &stageNum) {
     ui->labelCurrentStage->setText(QString("Stage: %1").arg(stageNum));
   });
+  
+  // ========== [Timer 슬롯 연결] ==========
+  // QTimer 초기화
+  timer = new QTimer(this);
+  connect(timer, &QTimer::timeout, this, &LaptopWindow::updateStopWatch);
+  ui->labelStopWatch->setText("00:00:00");
 
   QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
@@ -221,12 +227,19 @@ void LaptopWindow::checkDxlRightNodeInitializeCondition() {
 }
 
 void LaptopWindow::onStopButtonClicked() {
+
+  // 타이머 설정
+  isTimerRunning = false;
+  timer->stop(); // 타이머 중지
+
   if (ui->btnRobotStart->text() == "Robot Stop") {
     ui->btnRobotStart->setText("Robot Start");
   } else {
     ui->btnRobotStart->setText("Robot Stop");
   }
   masterNode_->resetValue();
+
+
 }
 
 void LaptopWindow::onDeployButtonClicked() {
@@ -294,6 +307,29 @@ void LaptopWindow::keyPressEvent(QKeyEvent* event) {
 
 // ========== [Debugging: Set Stage 처리 메서드] ==========
 void LaptopWindow::onSetStageButtonClicked() {
+  // 타이머 설정
+  if (!isTimerRunning) {
+      elapsedTime = std::chrono::milliseconds(0); // 초기화
+      ui->labelStopWatch->setText("00:00:00");
+  }
+  isTimerRunning = true;
+  timer->start(1000); // 1초 간격
+
   int target_stage_num_ = ui->spinBoxTargetStage->value();
   masterNode_->stage_number_ = target_stage_num_;
+}
+
+void LaptopWindow::updateStopWatch() {
+    if (!isTimerRunning) return;
+
+    elapsedTime += std::chrono::seconds(1); // 1초 증가
+
+    // 시간 계산
+    int hours = std::chrono::duration_cast<std::chrono::hours>(elapsedTime).count();
+    int minutes = std::chrono::duration_cast<std::chrono::minutes>(elapsedTime).count() % 60;
+    int seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsedTime).count() % 60;
+
+    // 시간 포맷팅
+    QString timeString = QString("%1:%2:%3").arg(hours, 2, 10, QChar('0')).arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
+    ui->labelStopWatch->setText(timeString);
 }

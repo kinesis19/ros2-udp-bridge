@@ -9,6 +9,8 @@
 #include <QDebug>
 #include <QImage>
 #include <QPixmap>
+#include <QTimer>
+#include <chrono>
 #include <QLCDNumber>
 #include <QKeyEvent>
 #include "QIcon"
@@ -51,6 +53,8 @@ private slots:
   // ========== [Debugging: Set Stage 처리 메서드] ==========
   void onSetStageButtonClicked();
 
+  void updateStopWatch();
+
 private:
   Ui::LaptopWindowDesign* ui;
 
@@ -60,6 +64,11 @@ private:
   std::shared_ptr<ImuNode> imuNode_;
   std::shared_ptr<DxlLeftNode> dxlLeftNode_;
   std::shared_ptr<DxlRightNode> dxlRightNode_;
+
+  // 타이머용
+  QTimer *timer;
+  std::chrono::milliseconds elapsedTime;
+  bool isTimerRunning;
 
   bool isReceiveAddress_;
 
