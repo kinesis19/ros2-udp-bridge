@@ -228,7 +228,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::inRange(hsv, lower_red_hsv2, upper_red_hsv2, red_mask2);
         cv::bitwise_or(red_mask, red_mask2, red_mask);
         cv::morphologyEx(red_mask, red_mask, cv::MORPH_OPEN, kernel);
-        cv::morphologyEx(red_mask, red_mask, cv::MORPH_CLOSE, kernel_large);
+        cv::morphologyEx(red_mask, red_mask, cv::MORPH_CLOSE, kernel_bar);
         std::vector<cv::Vec4i> red_lines;
         cv::HoughLinesP(red_mask, red_lines, 1, CV_PI / 180, 30, 20, 10);
         bool red_line_detected = !red_lines.empty();
@@ -597,7 +597,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::inRange(left_sign_hsv, lower_blue_hsv, upper_blue_hsv, left_blue_mask);
         // 노이즈 제거
         cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_OPEN, kernel);
-        cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_CLOSE, kernel_large);
+        cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_CLOSE, kernel_bar);
         // 파란색 영역 검출
         std::vector<std::vector<cv::Point>> left_blue_contours;
         cv::findContours(left_blue_mask, left_blue_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
@@ -643,7 +643,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 노이즈 제거
         cv::morphologyEx(blue_mask, blue_mask, cv::MORPH_OPEN, kernel);
-        cv::morphologyEx(blue_mask, blue_mask, cv::MORPH_CLOSE, kernel_large);
+        cv::morphologyEx(blue_mask, blue_mask, cv::MORPH_CLOSE, kernel_bar);
 
         // 파란색 영역 검출
         std::vector<std::vector<cv::Point>> blue_contours;
