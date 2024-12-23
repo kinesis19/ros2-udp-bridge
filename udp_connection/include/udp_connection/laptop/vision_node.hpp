@@ -62,6 +62,7 @@ private:
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_left_blue_sign_detected_; // 삼거리 탈출을 위한 파란 표지판 감지
 
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_straight_blue_sign_detected_; // reverse 주행 주행 중, 파란색 표지판 감지
 
 
     bool initialized_; // 초기화 상태 확인 변수
