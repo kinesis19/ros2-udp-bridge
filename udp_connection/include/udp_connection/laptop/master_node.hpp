@@ -193,6 +193,10 @@ private:
     // ========== [Stage7 감지 플래그 변수] ==========
     bool isDetectBarrierStage7 = false;
 
+    // ========== [Stage9 감지 플래그 변수] ==========
+    bool isDetectObject1andObject3Stage9 = false; // 스테이지9 진입 후, 오브젝트 3과 ar2 동시에 감지를 나타내는 변수.
+    bool isWorkedPIDControlToTurnRightStage9 = false;
+
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
@@ -242,6 +246,9 @@ private:
 
     void runRobotStage6(); // reverse stage5
     void runRobotStage7(); // reverse stage4
+    void runRobotStage8(); // reverse stage3 without parking
+    void runRobotStage9(); // reverse stage2
+    void runRobotStage10(); // reverse stage1
 
 
 };
