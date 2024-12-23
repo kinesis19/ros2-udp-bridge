@@ -187,10 +187,10 @@ void MasterNode::runRobotStage2() {
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
         } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-            if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+            if ((((310 - dist_white_line_) / 1200) * 1) > 0.35) {
                 angular_vel_ = 0.35;
             } else {
-                angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+                angular_vel_ = (((310 - dist_white_line_) / 1200) * 1);
             }
         }
     }
@@ -232,10 +232,10 @@ void MasterNode::runRobotStage2() {
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
         } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-            if ((((310 - dist_white_line_) / 800) * 1) > 0.35) {
+            if ((((310 - dist_white_line_) / 1200) * 1) > 0.35) {
                 angular_vel_ = 0.35;
             } else {
-                angular_vel_ = (((310 - dist_white_line_) / 800) * 1);
+                angular_vel_ = (((310 - dist_white_line_) / 1200) * 1);
             }
         }
     }
@@ -474,12 +474,12 @@ void MasterNode::runRobotStage3() {
     if ((isDetectLeftBlueSign && isDonePidControlParkingStationOutStage3) || isTurnLeftToGoToStage4) {
         // 아래 하위 조건이 감지 되기 전까지 계속 좌회전 하기
         linear_vel_ = 0.0;
-        angular_vel_ = 0.08;
+        angular_vel_ = 0.07;
         // angular_vel_ = 0.1;
         isTurnLeftToGoToStage4 = true;
         RCLCPP_INFO(node->get_logger(), "회전한다");
 
-        if (((isDetectYellowLine && isDetectWhiteLine) && dist_white_line_ > 200) && (89 <= white_line_angle_ && white_line_angle_ <= 91)) {
+        if ((isDetectYellowLine && !isDetectWhiteLine) && (89 <= yellow_line_angle_ && yellow_line_angle_ <= 91)) {
             // stopDxl();
             stage_number_ = 4;
             RCLCPP_INFO(node->get_logger(), "스테이지4 플래그 완료");
@@ -579,10 +579,10 @@ void MasterNode::runRobotStage5() {
     if (isDetectEndLineStage5 && !isDonePidControlEndLineStage5) {
 
         // PID 180도 회전 처리하기
-        if (imu_yaw_ - 160.0 < -180) {
-            target_yaw_ = 360 + (imu_yaw_ - 160.0); // 범위 보정
+        if (imu_yaw_ - 140.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 140.0); // 범위 보정
         } else {
-            target_yaw_ = imu_yaw_ - 160.0;
+            target_yaw_ = imu_yaw_ - 140.0;
         }
 
         playYawFlag = true;
@@ -795,10 +795,10 @@ void MasterNode::runRobotStage9() {
             isOkayResetIMUStage9 = true;
         } else {
             // PID 제어로 오른쪽으로 회전하기
-            if (imu_yaw_ + 45.0 > 180) {
-                target_yaw_ = 360 - (imu_yaw_ + 45.0); // 범위 보정
+            if (imu_yaw_ + 35.0 > 180) {
+                target_yaw_ = 360 - (imu_yaw_ + 35.0); // 범위 보정
             } else {
-                target_yaw_ = imu_yaw_ + 45.0;
+                target_yaw_ = imu_yaw_ + 35.0;
             }
             playYawFlag = true;
             
@@ -826,10 +826,10 @@ void MasterNode::runRobotStage9() {
 
     // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
     if (isDetectObject1andObject2Stage9 && ((isDetectYellowLine && !isDetectWhiteLine)) && dist_yellow_line_ < -170) { // 노란색 선만 감지됨
-        if (imu_yaw_ - 65.0 < -180) {
-            target_yaw_ = 360 + (imu_yaw_ - 65.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+        if (imu_yaw_ - 50.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
         } else {
-            target_yaw_ = imu_yaw_ - 65.0;
+            target_yaw_ = imu_yaw_ - 50.0;
         }
         playYawFlag = true;
     }

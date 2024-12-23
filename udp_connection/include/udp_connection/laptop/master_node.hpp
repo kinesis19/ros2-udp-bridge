@@ -143,7 +143,7 @@ private:
     const float kP = 0.005f;
     const float kI = 0.0f;
     const float kD = 0.0f;
-    const float yaw_ok = 10.0f;
+    const float yaw_ok = 1.0f;
     const float max_angular_vel = 0.4f;
     const float min_angular_vel = 0.05f;
     bool playYawFlag = false;
