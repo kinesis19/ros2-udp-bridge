@@ -47,6 +47,8 @@ VisionNode::VisionNode() :  yellow_line_detected(false), white_line_detected(fal
     pub_red_detected_ = node->create_publisher<std_msgs::msg::Bool>("/vision/red_line_detected", 10);
 
     pub_left_blue_sign_detected_ = node->create_publisher<std_msgs::msg::Bool>("/vision/left_blue_sign_detected", 10);
+
+    pub_straight_blue_sign_detected_ = node->create_publisher<std_msgs::msg::Bool>("/vision/straight_blue_sign_detected", 10);
 }
 
 VisionNode::~VisionNode()
@@ -107,11 +109,19 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::Point2f signs_vertices[4];
         cv::Point2f bar_vertices[4];
         cv::Point2f left_sign_vertices[4];
+        cv::Point2f straight_vertices[4];
+
+        // 돌아올 때 지그재그 이후 파란색 표지판 감지해서 속도 증가
+        straight_vertices[0] = cv::Point2f(width * 0.0f, height * 0.3f);
+        straight_vertices[1] = cv::Point2f(width * 0.05f, height * 0.3f);
+        straight_vertices[2] = cv::Point2f(width * 0.05f, height * 0.55f);
+        straight_vertices[3] = cv::Point2f(width * 0.0f, height * 0.55f);
+
         // 주차장 나오는 부분
-        left_sign_vertices[0] = cv::Point2f(width * 0.0f, height * 0.6f);
-        left_sign_vertices[1] = cv::Point2f(width * 1.0f, height * 0.6f);
-        left_sign_vertices[2] = cv::Point2f(width * 1.0f, height * 0.8f);
-        left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.8f);
+        left_sign_vertices[0] = cv::Point2f(width * 0.0f, height * 0.5f);
+        left_sign_vertices[1] = cv::Point2f(width * 1.0f, height * 0.5f);
+        left_sign_vertices[2] = cv::Point2f(width * 1.0f, height * 0.7f);
+        left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.7f);
         
         // 차단바
         bar_vertices[0] = cv::Point2f(width * 0.25f, height * 0.75f);
@@ -616,7 +626,46 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         left_blue_sign_msg.data = left_blue_sign_detected;
         pub_left_blue_sign_detected_->publish(left_blue_sign_msg);
         // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
+        // 직선 표지판 ROI 마스크 생성
+        cv::Mat straight_sign_roi_mask = cv::Mat::zeros(resized_frame.size(), CV_8UC1);
+        std::vector<cv::Point> straight_roi_points;
+        for (int i = 0; i < 4; i++)
+        {
+            straight_roi_points.push_back(cv::Point(straight_vertices[i].x, straight_vertices[i].y));
+        }
+        cv::fillConvexPoly(straight_sign_roi_mask, straight_roi_points, cv::Scalar(255));
+        // 왼쪽 ROI 영역만 추출
+        cv::Mat straight_roi_image;
+        resized_frame.copyTo(straight_roi_image, straight_sign_roi_mask);
+        // 왼쪽 ROI 영역에 대해서만 HSV 변환 수행
+        cv::Mat straight_sign_hsv;
+        cv::cvtColor(straight_roi_image, straight_sign_hsv, cv::COLOR_BGR2HSV);
+        // 파란색 마스크 생성 - HSV 값 조정 (기존과 동일한 값 사용)
+        cv::Mat straight_blue_mask;
+        cv::Scalar lower_straight_blue_hsv(100, 150, 30);
+        cv::Scalar upper_straight_blue_hsv(130, 255, 255);
+        cv::inRange(straight_sign_hsv, lower_straight_blue_hsv, upper_straight_blue_hsv, straight_blue_mask);
+        // 노이즈 제거
+        cv::morphologyEx(straight_blue_mask, straight_blue_mask, cv::MORPH_OPEN, kernel);
+        cv::morphologyEx(straight_blue_mask, straight_blue_mask, cv::MORPH_CLOSE, kernel_bar);
+        // 파란색 영역 검출
+        std::vector<std::vector<cv::Point>> straight_blue_contours;
+        cv::findContours(straight_blue_mask, straight_blue_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        bool straight_blue_sign_detected = false;
+        for (const auto &contour : straight_blue_contours)
+        {
+            double area = cv::contourArea(contour);
+            if (area > 100.0) // 동일한 임계값 사용
+            {
+                straight_blue_sign_detected = true;
+                break;
+            }
+        }
+        // 왼쪽 파란색 표지판 검출 결과 발행
+        auto straight_blue_sign_msg = std_msgs::msg::Bool();
+        straight_blue_sign_msg.data = straight_blue_sign_detected;
+        pub_straight_blue_sign_detected_->publish(straight_blue_sign_msg);
+        // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
         // 표지판 ROI 마스크 생성
         cv::Mat sign_roi_mask = cv::Mat::zeros(resized_frame.size(), CV_8UC1);
@@ -696,6 +745,12 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         {
             cv::line(resized_frame, left_sign_vertices[i], left_sign_vertices[(i + 1) % 4], cv::Scalar(0, 255, 0), 2);
         }
+
+        for (int i = 0; i < 4; i++)
+        {
+            cv::line(resized_frame, straight_vertices[i], straight_vertices[(i + 1) % 4], cv::Scalar(255, 0, 0), 2);
+        }
+
 
         yellow_line_valid = isLineValid(yellow_detection_array, yellow_line_detected);
         white_line_valid = isLineValid(white_detection_array, white_line_detected);
