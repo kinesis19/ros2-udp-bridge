@@ -194,7 +194,7 @@ private:
     bool isDetectBarrierStage7 = false;
 
     // ========== [Stage9 감지 플래그 변수] ==========
-    bool isDetectObject1andObject3Stage9 = false; // 스테이지9 진입 후, 오브젝트 3과 ar2 동시에 감지를 나타내는 변수.
+    bool isDetectObject1andObject2Stage9 = false; // 스테이지9 진입 후, 오브젝트 3과 ar2 동시에 감지를 나타내는 변수.
     bool isWorkedPIDControlToTurnRightStage9 = false;
 
     // ========== [Line Detect 메서드] ==========
