@@ -200,6 +200,8 @@ private:
     bool isOkayResetIMUStage9 = false;
     bool isDetectObject1andObject2Stage9 = false; // 스테이지9 진입 후, 오브젝트 3과 ar2 동시에 감지를 나타내는 변수.
     bool isWorkedPIDControlToTurnRightStage9 = false;
+    bool isTempDoneTurnRightRangeStage9 = false; // 스테이지9 진입 후, PID 제어 완료 했는지 여부를 나타내는 플래그
+    bool isTempDoneTurnLeftRangeStage9 = false; // 스테이지9 진입 후, PID 제어 완료 했는지 여부를 나타내는 플래그
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
