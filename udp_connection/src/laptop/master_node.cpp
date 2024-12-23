@@ -39,6 +39,7 @@ MasterNode::MasterNode()
     // ========== [주차 표지판 감지 서브스크라이브] ==========
     sub_blue_sign_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/blue_sign_detected", 10, std::bind(&MasterNode::detectBlueSign, this, std::placeholders::_1));
     sub_left_blue_sign_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/left_blue_sign_detected", 10, std::bind(&MasterNode::detectLeftBlueSign, this, std::placeholders::_1));
+    sub_straight_blue_sign_detected = node->create_subscription<std_msgs::msg::Bool>("/vision/straight_blue_sign_detected", 10, std::bind(&MasterNode::detectStraightBlueSign, this, std::placeholders::_1));
 
     // ========== [차단바 감지 서브스크라이브] ==========
     sub_barrier_detected_ = node->create_subscription<std_msgs::msg::Bool>("/vision/barrier_detected", 10, std::bind(&MasterNode::detectBarrier, this, std::placeholders::_1));
@@ -128,14 +129,14 @@ void MasterNode::runRobotStage1() {
 
     if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] < yellow_line_points_[0])) {
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-            angular_vel_ = ((320 + dist_yellow_line_) / 3000) * -1;
+            angular_vel_ = ((310 + dist_yellow_line_) / 3000) * -1;
         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-            angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
+            angular_vel_ = ((310 + dist_yellow_line_) / 2500) * -1;
         } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
-            if ((((320 + dist_yellow_line_) / 800) * -1) < -0.4) {
+            if ((((310 + dist_yellow_line_) / 1000) * -1) < -0.4) {
                 angular_vel_ = -0.4;
             } else {
-                angular_vel_ = (((320 + dist_yellow_line_) / 800) * -1);
+                angular_vel_ = (((310 + dist_yellow_line_) / 1000) * -1);
             }
         }
     } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
@@ -473,12 +474,12 @@ void MasterNode::runRobotStage3() {
     if ((isDetectLeftBlueSign && isDonePidControlParkingStationOutStage3) || isTurnLeftToGoToStage4) {
         // 아래 하위 조건이 감지 되기 전까지 계속 좌회전 하기
         linear_vel_ = 0.0;
-        // angular_vel_ = 0.08;
-        angular_vel_ = 0.1;
+        angular_vel_ = 0.08;
+        // angular_vel_ = 0.1;
         isTurnLeftToGoToStage4 = true;
         RCLCPP_INFO(node->get_logger(), "회전한다");
 
-        if ((isDetectYellowLine && dist_yellow_line_ < -200) && (90 <= yellow_line_angle_ && yellow_line_angle_ <= 91)) {
+        if (((isDetectYellowLine && isDetectWhiteLine) && dist_white_line_ > 200) && (89 <= white_line_angle_ && white_line_angle_ <= 91)) {
             // stopDxl();
             stage_number_ = 4;
             RCLCPP_INFO(node->get_logger(), "스테이지4 플래그 완료");
@@ -578,18 +579,25 @@ void MasterNode::runRobotStage5() {
     if (isDetectEndLineStage5 && !isDonePidControlEndLineStage5) {
 
         // PID 180도 회전 처리하기
-        if (imu_yaw_ - 170.0 < -180) {
-            target_yaw_ = 360 + (imu_yaw_ - 170.0); // 범위 보정
+        if (imu_yaw_ - 160.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 160.0); // 범위 보정
         } else {
-            target_yaw_ = imu_yaw_ - 170.0;
+            target_yaw_ = imu_yaw_ - 160.0;
         }
 
         playYawFlag = true;
         isDonePidControlEndLineStage5 = true;
+
+        // angular_vel_ = 0.1;
+
+        // if (((isDetectWhiteLine && dist_white_line_ < -270) && (90 <= white_line_angle_ && white_line_angle_ <= 91))) {
+        //     isDonePidControlEndLineStage5 = true;
+        //     RCLCPP_INFO(node->get_logger(), "제어 완료");
+        // }
     }
 
     if ((isDetectEndLineStage5 && !playYawFlag) && isDonePidControlEndLineStage5) {
-        stopDxl();
+        // stopDxl();
         stage_number_ = 6; // reverse stage5
     }
 }
@@ -613,11 +621,11 @@ void MasterNode::runRobotStage6() {
                 angular_vel_ = ((235 - dist_yellow_line_) / 2500) * 1;
                 RCLCPP_INFO(node->get_logger(), "S6 - 2");
             } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
-                if ((((235 - dist_yellow_line_) / 1000) * 1) > 0.4) {
+                if ((((235 - dist_yellow_line_) / 2000) * 1) > 0.4) {
                     angular_vel_ = 0.4;
                     RCLCPP_INFO(node->get_logger(), "S6 - 3");
                 } else {
-                    angular_vel_ = (((235 - dist_yellow_line_) / 1000) * 1);
+                    angular_vel_ = (((235 - dist_yellow_line_) / 2000) * 1);
                     RCLCPP_INFO(node->get_logger(), "S6 - 4");
                 }
             }
@@ -627,10 +635,10 @@ void MasterNode::runRobotStage6() {
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
                 angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+                if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+                    angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
                 }
             }
         } else {
@@ -659,10 +667,10 @@ void MasterNode::runRobotStage7() {
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
                 angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+                if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+                    angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
                 }
             }
         } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
@@ -673,10 +681,10 @@ void MasterNode::runRobotStage7() {
             } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
                 angular_vel_ = ((235 - dist_yellow_line_) / 2000) * 1;
             } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
-                if ((((235 - dist_yellow_line_) / 2000) * 1) > 0.4) {
+                if ((((235 - dist_yellow_line_) / 2200) * 1) > 0.4) {
                     angular_vel_ = 0.4;
                 } else {
-                    angular_vel_ = (((235 - dist_yellow_line_) / 2000) * 1);
+                    angular_vel_ = (((235 - dist_yellow_line_) / 2200) * 1);
                 }
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
@@ -685,10 +693,10 @@ void MasterNode::runRobotStage7() {
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
                 angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+                if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+                    angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
                 }
             }
         } else {
@@ -697,8 +705,12 @@ void MasterNode::runRobotStage7() {
         }
     }
 
-    if (isDetectLeftBlueSign) {
+    if ((isDetectStraightBlueSign && isDetectWhiteLine) && (90 <= white_line_angle_ && white_line_angle_ <= 91)) {
         stage_number_ = 8;
+    } else if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
+        if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
+            stage_number_ = 9;
+        }
     }
 }
 
@@ -777,15 +789,32 @@ void MasterNode::runRobotStage9() {
 
     // 스테이지9 진입 후, 오브젝트3과 오브젝트2를 동시에 감지했을 때
     if (!isDetectObject1andObject2Stage9 && (psd_adc_front_ > 1500)) {
-        // PID 제어로 오른쪽으로 회전하기
-        if (imu_yaw_ + 50.0 < -180) {
-            target_yaw_ = 360 + (imu_yaw_ + 50.0); // 범위 보정
+
+        if (!isOkayResetIMUStage9) {
+            // resetIMU();
+            isOkayResetIMUStage9 = true;
         } else {
-            target_yaw_ = imu_yaw_ + 50.0;
+            // PID 제어로 오른쪽으로 회전하기
+            if (imu_yaw_ + 45.0 > 180) {
+                target_yaw_ = 360 - (imu_yaw_ + 45.0); // 범위 보정
+            } else {
+                target_yaw_ = imu_yaw_ + 45.0;
+            }
+            playYawFlag = true;
+            
+            // linear_vel_ = 0.0;
+            // angular_vel_ = -0.1;
+            isDetectObject1andObject2Stage9 = true;
         }
-        playYawFlag = true;
-        isDetectObject1andObject2Stage9 = true;
     } else if ((isDetectObject1andObject2Stage9 && !playYawFlag) && !isWorkedPIDControlToTurnRightStage9){
+        
+        // stopDxl();
+        // if (45.0 <= imu_yaw_ && imu_yaw_ <= 50.0) {
+        //     stopDxl();
+        // } else if (50 < imu_yaw_) {
+        //     angular_vel_ = 0.1;
+        // }
+        
         // PID 제어로 왼쪽 회전 및 직진 처리하기: 노란색 선이 보이기 전까지
         linear_vel_ = 0.35;
         angular_vel_ = 0.0;
@@ -797,8 +826,8 @@ void MasterNode::runRobotStage9() {
 
     // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
     if (isDetectObject1andObject2Stage9 && ((isDetectYellowLine && !isDetectWhiteLine)) && dist_yellow_line_ < -170) { // 노란색 선만 감지됨
-        if (imu_yaw_ - 65.0 > 180) {
-            target_yaw_ = 360 - (imu_yaw_ - 65.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
+        if (imu_yaw_ - 65.0 < -180) {
+            target_yaw_ = 360 + (imu_yaw_ - 65.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
         } else {
             target_yaw_ = imu_yaw_ - 65.0;
         }
@@ -1153,6 +1182,15 @@ void MasterNode::detectLeftBlueSign(const std_msgs::msg::Bool::SharedPtr msg) {
         RCLCPP_INFO(node->get_logger(), "탈출 표지판 감지 완료!");
     } else {
         isDetectLeftBlueSign = false;
+    }
+}
+
+void MasterNode::detectStraightBlueSign(const std_msgs::msg::Bool::SharedPtr msg) {
+    if (msg->data == true) {
+        isDetectStraightBlueSign = true;
+        RCLCPP_INFO(node->get_logger(), "탈출 표지판 감지 완료!");
+    } else {
+        isDetectStraightBlueSign = false;
     }
 }
 

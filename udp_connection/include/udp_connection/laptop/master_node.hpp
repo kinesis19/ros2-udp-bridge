@@ -81,6 +81,7 @@ private:
     // ========== [주차 표지판 감지 메서드] ==========
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_blue_sign_detected_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_left_blue_sign_detected_; // 삼거리 탈출 표지판 감지
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_straight_blue_sign_detected; // 삼거리 탈출 표지판 감지
 
     // ========== [차단바 감지 서브스크라이브] ==========
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_barrier_detected_;
@@ -106,6 +107,7 @@ private:
     // 주차 표지판 감지 확인 변수
     bool isDetectBlueSign = false;
     bool isDetectLeftBlueSign = false;
+    bool isDetectStraightBlueSign = false;
 
     // 차단바 감지 확인 변수
     bool isDetectBarrier = false;
@@ -193,7 +195,9 @@ private:
     // ========== [Stage7 감지 플래그 변수] ==========
     bool isDetectBarrierStage7 = false;
 
+
     // ========== [Stage9 감지 플래그 변수] ==========
+    bool isOkayResetIMUStage9 = false;
     bool isDetectObject1andObject2Stage9 = false; // 스테이지9 진입 후, 오브젝트 3과 ar2 동시에 감지를 나타내는 변수.
     bool isWorkedPIDControlToTurnRightStage9 = false;
 
@@ -223,6 +227,7 @@ private:
     // ========== [주차 표지판 감지 메서드] ==========
     void detectBlueSign(const std_msgs::msg::Bool::SharedPtr msg);
     void detectLeftBlueSign(const std_msgs::msg::Bool::SharedPtr msg);
+    void detectStraightBlueSign(const std_msgs::msg::Bool::SharedPtr msg);
 
     // ========== [차단바 감지 메서드] ==========
     void detectBarrier(const std_msgs::msg::Bool::SharedPtr msg);
