@@ -420,7 +420,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 차단바 검출을 위한 노란색 마스크
         cv::Mat bar_yellow_roi;
-        cv::Scalar barrier_lower_yellow(15, 120, 120);
+        cv::Scalar barrier_lower_yellow(15, 100, 100);
         cv::Scalar barrier_upper_yellow(35, 255, 255);
         cv::inRange(bar_hsv, barrier_lower_yellow, barrier_upper_yellow, bar_yellow_roi);
 
@@ -592,9 +592,9 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         cv::cvtColor(left_roi_image, left_sign_hsv, cv::COLOR_BGR2HSV);
         // 파란색 마스크 생성 - HSV 값 조정 (기존과 동일한 값 사용)
         cv::Mat left_blue_mask;
-        cv::Scalar lower_blue_hsv(100, 70, 50);
-        cv::Scalar upper_blue_hsv(130, 255, 255);
-        cv::inRange(left_sign_hsv, lower_blue_hsv, upper_blue_hsv, left_blue_mask);
+        cv::Scalar lower_left_blue_hsv(100, 150, 30);
+        cv::Scalar upper_left_blue_hsv(130, 255, 255);
+        cv::inRange(left_sign_hsv, lower_left_blue_hsv, upper_left_blue_hsv, left_blue_mask);
         // 노이즈 제거
         cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_OPEN, kernel);
         cv::morphologyEx(left_blue_mask, left_blue_mask, cv::MORPH_CLOSE, kernel_bar);
@@ -637,8 +637,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 파란색 마스크 생성 - HSV 값 조정
         cv::Mat blue_mask;
-        // cv::Scalar lower_blue_hsv(100, 70, 50);
-        // cv::Scalar upper_blue_hsv(130, 255, 255);
+        cv::Scalar lower_blue_hsv(100, 70, 50);
+        cv::Scalar upper_blue_hsv(130, 255, 255);
         cv::inRange(sign_hsv, lower_blue_hsv, upper_blue_hsv, blue_mask);
 
         // 노이즈 제거
