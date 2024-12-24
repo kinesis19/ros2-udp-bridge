@@ -431,16 +431,6 @@ void MasterNode::runRobotStage3() {
                 RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
             }
         }
-
-        // // 노란선이 왼쪽에서 수직선으로 되어 있으며, psd 조건을 충족했을 때r
-        // if (((isDetectYellowLine && dist_yellow_line_ < -200) && (90 <= yellow_line_angle_ && yellow_line_angle_ <= 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
-        //     isDonePidControlParkingStationOutStage3 = true;
-        //     RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
-        // } else if (((isDetectWhiteLine && dist_white_line_ > 200) && (90 <= white_line_angle_ && white_line_angle_ <= 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
-        //     // 흰 선이 오른쪽에서 수직선으로 되어 있으며, psd 조건을 충족했을 때
-        //     isDonePidControlParkingStationOutStage3 = true;
-        //     RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
-        // }
     }
 
 
@@ -581,20 +571,6 @@ void MasterNode::runRobotStage5() {
     }
 
     if (isDetectEndLineStage5 && !isDonePidControlEndLineStage5) {
-        // if (170.0 <= imu_yaw_ && imu_yaw_ <= 180.0) {
-        //     isDonePidControlEndLineStage5 = true;
-        // } else if (imu_yaw_ < 170.0) {
-        //     angular_vel_ = -0.1;
-        // }
-        // // PID 180도 회전 처리하기
-        // if (imu_yaw_ - 180.0 < -180) {
-        //     target_yaw_ = 360 + (imu_yaw_ - 180.0); // 범위 보정
-        // } else {
-        //     target_yaw_ = imu_yaw_ - 180.0;
-        // }
-
-        // playYawFlag = true;
-        // isDonePidControlEndLineStage5 = true;
 
         linear_vel_ = 0.0;
         RCLCPP_INFO(node->get_logger(), "조건 진입");
