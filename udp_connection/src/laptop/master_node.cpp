@@ -204,15 +204,20 @@ void MasterNode::runRobotStage2() {
     }
 
     if (isDetectWhiteLine && ((320 < white_line_points_[0] && white_line_points_[0] < 630) && (75 < white_line_angle_ && white_line_angle_ <= 85))) {
-        if (nowModeStage2 == 0 && psd_adc_left_ > 2000) {
+        if (nowModeStage2 == 0 && psd_adc_left_ > 2000) { // 장애물이 왼쪽에 바로 있을 때
             nowModeStage2 = 1;
             RCLCPP_INFO(node->get_logger(), "1111");
             stopDxl();
-        } else if (nowModeStage2 == 0 && psd_adc_left_ < 2000) {
+        } else if (nowModeStage2 == 0 && psd_adc_left_ < 2000) { // 장애물이 왼쪽에 바로 없을 떄
             nowModeStage2 = 2;
             RCLCPP_INFO(node->get_logger(), "2222");
-            stopDxl();
+            angular_vel_ = 0.1;
         }
+        linear_vel_ = 0.0;
+    }
+
+    if (isDetectYellowLine) {
+        stopDxl();
     }
 
     // Stage3 진입 감지 처리: 주차 표지판을 감지했을 때 (직진 주행임과 동시에)
