@@ -166,10 +166,12 @@ private:
     bool isWorkedPIDControlToTurnRightStage2 = false; // 스테이지 2 진입후, 노란색 선 감지 후 PID 제어를 나타내는 변수.
     bool isMissYellowLineStage2 = false;
 
+    int nowModeStage2 = 0; // 스테이지2일 때 모드 판단
     bool isOkayTurnRightStage2 = false;
     bool isOkayTurnLeftStage2 = false;
+    bool isOkayTurnRightOutStage2 = false;
 
-    int nowModeStage2 = 0; // 스테이지2일 때 모드 판단
+    int areaNumberStage2 = 0; // Stage2 내에서 세부적인 area 넘버링을 나타내는 변수
     
     // ========== [Stage3 감지 플래그 변수] ==========
     bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 잊어버렸을 때를 위한 플래그
