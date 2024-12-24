@@ -76,7 +76,10 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f ", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_);
+        // RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f ", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_);
+
+
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || white_line_points_[0]: %.2f | white_line_x_: %0.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, white_line_points_[0], white_line_x_);
 
         if (stage_number_ == 1) {
             runRobotStage1();
@@ -143,7 +146,7 @@ void MasterNode::runRobotStage1() {
         angular_vel_ = 0.0;
     } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-            angular_vel_ = ((320 + dist_yellow_line_) / 3000) * -1;
+            angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
             angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
         } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
@@ -171,17 +174,22 @@ void MasterNode::runRobotStage1() {
     }
 
     // Stage2 진입 감지 처리
-    if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
-        if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
-            stage_number_ = 2;
-        }
+    if (!isDetectYellowLine) {
+        stage_number_ = 2;
     }
+    // if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
+    //     if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
+    //         stage_number_ = 2;
+    //     }
+    // }
 }
 
 void MasterNode::runRobotStage2() {
 
+    // stopDxl();
+
     // 주행 로직
-    if (!isDetectObject1andObject2 && (!isDetectYellowLine && isDetectWhiteLine)) {
+    if ( nowModeStage2 == 0 && (!isDetectYellowLine && isDetectWhiteLine)) {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
             angular_vel_ = ((240 - dist_white_line_) / 2500) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
@@ -195,48 +203,15 @@ void MasterNode::runRobotStage2() {
         }
     }
 
-    // 스테이지2 진입 후, 오브젝트1과 오브젝트2를 동시에 감지했을 때
-    if (!isDetectObject1andObject2 && (psd_adc_front_ > 1300)) {
-        // PID 제어로 왼쪽으로 회전하기
-        if (imu_yaw_ - 50.0 < -180) {
-            target_yaw_ = 360 + (imu_yaw_ - 50.0); // 범위 보정
-        } else {
-            target_yaw_ = imu_yaw_ - 50.0;
-        }
-        playYawFlag = true;
-        isDetectObject1andObject2 = true;
-    } else if ((isDetectObject1andObject2 && !playYawFlag) && !isWorkedPIDControlToTurnRightStage2){
-        // PID 제어로 왼쪽 회전 및 직진 처리하기: 노란색 선이 보이기 전까지
-        linear_vel_ = 0.35;
-        angular_vel_ = 0.0;
-
-        if (isDetectWhiteLine && !isDetectYellowLine) {
-            isWorkedPIDControlToTurnRightStage2 = true;
-        }
-    }
-
-    // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
-    if (isDetectObject1andObject2 && ((isDetectYellowLine && !isDetectWhiteLine)) && dist_yellow_line_ > 50) { // 노란색 선만 감지됨
-        if (imu_yaw_ + 65.0 > 180) {
-            target_yaw_ = 360 - (imu_yaw_ + 65.0); // 범위 보정 (양수에서 초과할 경우 음수로 변환)
-        } else {
-            target_yaw_ = imu_yaw_ + 65.0;
-        }
-        playYawFlag = true;
-    }
-
-    // PID 제어로 우회전 이후의 주행 로직
-    if (isWorkedPIDControlToTurnRightStage2 && !playYawFlag) {
-        if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-            angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
-        } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-            angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
-        } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-            if ((((310 - dist_white_line_) / 1200) * 1) > 0.35) {
-                angular_vel_ = 0.35;
-            } else {
-                angular_vel_ = (((310 - dist_white_line_) / 1200) * 1);
-            }
+    if (isDetectWhiteLine && ((320 < white_line_points_[0] && white_line_points_[0] < 630) && (75 < white_line_angle_ && white_line_angle_ <= 85))) {
+        if (nowModeStage2 == 0 && psd_adc_left_ > 2000) {
+            nowModeStage2 = 1;
+            RCLCPP_INFO(node->get_logger(), "1111");
+            stopDxl();
+        } else if (nowModeStage2 == 0 && psd_adc_left_ < 2000) {
+            nowModeStage2 = 2;
+            RCLCPP_INFO(node->get_logger(), "2222");
+            stopDxl();
         }
     }
 
