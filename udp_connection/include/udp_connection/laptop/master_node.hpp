@@ -165,6 +165,10 @@ private:
     bool isDetectObject1andObject2 = false; // 스테이지2 진입 후, 오브젝트 1과 2 동시에 감지를 나타내는 변수.
     bool isWorkedPIDControlToTurnRightStage2 = false; // 스테이지 2 진입후, 노란색 선 감지 후 PID 제어를 나타내는 변수.
     bool isMissYellowLineStage2 = false;
+
+    bool isOkayTurnRightStage2 = false;
+    bool isOkayTurnLeftStage2 = false;
+
     int nowModeStage2 = 0; // 스테이지2일 때 모드 판단
     
     // ========== [Stage3 감지 플래그 변수] ==========

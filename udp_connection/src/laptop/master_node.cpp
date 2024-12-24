@@ -203,11 +203,11 @@ void MasterNode::runRobotStage2() {
         }
     }
 
-    if (isDetectWhiteLine && ((320 < white_line_points_[0] && white_line_points_[0] < 630) && (75 < white_line_angle_ && white_line_angle_ <= 85))) {
-        if (nowModeStage2 == 0 && psd_adc_left_ > 2000) { // 장애물이 왼쪽에 바로 있을 때
+    if ((nowModeStage2 == 0 && isDetectWhiteLine) && ((320 < white_line_points_[0] && white_line_points_[0] < 630) && (75 < white_line_angle_ && white_line_angle_ <= 87))) {
+        if (psd_adc_left_ > 2000) { // 장애물이 왼쪽에 바로 있을 때
             nowModeStage2 = 1;
             RCLCPP_INFO(node->get_logger(), "1111");
-            stopDxl();
+            // stopDxl();
         } else if (nowModeStage2 == 0 && psd_adc_left_ < 2000) { // 장애물이 왼쪽에 바로 없을 떄
             nowModeStage2 = 2;
             RCLCPP_INFO(node->get_logger(), "2222");
@@ -216,9 +216,61 @@ void MasterNode::runRobotStage2() {
         linear_vel_ = 0.0;
     }
 
-    if (isDetectYellowLine) {
-        stopDxl();
+    if (nowModeStage2 == 2) { // Mode 2일 때의 주행 로직
+        if ((isDetectYellowLine && !isDetectWhiteLine) && !isOkayTurnRightStage2) { // 노란색 선만 감지됨
+            linear_vel_ = 0.25;
+            if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
+                angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
+            } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
+                angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
+            } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
+                if ((((320 + dist_yellow_line_) / 800) * -1) < -0.4) {
+                    angular_vel_ = -0.4;
+                } else {
+                    angular_vel_ = (((320 + dist_yellow_line_) / 800) * -1);
+                }
+            }
+            
+            if (psd_adc_front_ > 1800 || psd_adc_right_ > 2000) {
+                linear_vel_ = 0.25;
+                angular_vel_ = -0.08;
+                isOkayTurnRightStage2 = true;
+                RCLCPP_INFO(node->get_logger(), "3333");
+                // nowModeStage2 = 3;
+            }
+        } else if ((!isDetectYellowLine && isDetectWhiteLine) && isOkayTurnRightStage2) {
+            if (!isOkayTurnLeftStage2) {
+                // stopDxl();
+                if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                    angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+                } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                    angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+                } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+                    if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+                        angular_vel_ = 0.35;
+                    } else {
+                        angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+                    }
+                }
+            }
+
+            if (psd_adc_front_ > 1800 || psd_adc_left_ > 2000) {
+                linear_vel_ = 0.25;
+                angular_vel_ = 0.08;
+                isOkayTurnLeftStage2 = true;
+                RCLCPP_INFO(node->get_logger(), "3333");
+            }
+        }
     }
+
+    // if (isOkayTurnRightStage2 && !isOkayTurnLeftStage2) {
+    //     if (psd_adc_front_ > 1800 || psd_adc_left_ > 2000) {
+    //         linear_vel_ = 0.25;
+    //         angular_vel_ = 0.08;
+    //         isOkayTurnLeftStage2 = true;
+    //         RCLCPP_INFO(node->get_logger(), "3333");
+    //     }
+    // }
 
     // Stage3 진입 감지 처리: 주차 표지판을 감지했을 때 (직진 주행임과 동시에)
     if (isDetectBlueSign) {
