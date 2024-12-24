@@ -538,7 +538,7 @@ void MasterNode::runRobotStage5() {
     if (isDetectBarrierStage5) {
         stopDxl();
     } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && (!isDonePidControlEndLineStage5 && !isDetectEndLineStage5)) {
-        linear_vel_ = 0.35;
+        linear_vel_ = 0.45;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
@@ -812,7 +812,7 @@ void MasterNode::runRobotStage9() {
             if (35.0 <= imu_yaw_ && imu_yaw_ <= 40.0) {
                 stopDxl();
                 isTempDoneTurnRightRangeStage9 = true;
-                linear_vel_ = 0.35;
+                linear_vel_ = 0.45;
                 angular_vel_ = 0.0;
             } else if (0.0 <= imu_yaw_ && imu_yaw_ < 35.0) {
                 angular_vel_ = -0.1;
@@ -837,7 +837,7 @@ void MasterNode::runRobotStage9() {
             stopDxl();
             isTempDoneTurnLeftRangeStage9 = true;
             RCLCPP_INFO(node->get_logger(), "노랑에서 제어");
-            linear_vel_ = 0.35;
+            linear_vel_ = 0.45;
             angular_vel_ = 0.0;
             RCLCPP_INFO(node->get_logger(), "흰색을 향해");
         } else if (-15.0 < imu_yaw_) {
