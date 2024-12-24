@@ -619,8 +619,7 @@ void MasterNode::runRobotStage6() {
     if (isDetectBarrierStage6) {
         stage_number_ = 7;
     } else {
-        // linear_vel_ = 0.25;
-        linear_vel_ = 0.3;
+        linear_vel_ = 0.25;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
