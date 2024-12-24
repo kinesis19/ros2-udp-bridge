@@ -444,12 +444,12 @@ void MasterNode::runRobotStage3() {
                 // 양 옆이 노란색 라인일 때의 주행 처리
                 if (dist_yellow_line_ < -200) {
                     if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
-                        angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * 1;
+                        angular_vel_ = ((280 - fabs(dist_yellow_line_)) / 2000) * 1;
                     } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
                         // angular_vel_ = 0.0;
-                        angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2500) * 1;
+                        angular_vel_ = ((280 - fabs(dist_yellow_line_)) / 2500) * 1;
                     } else if (90 <= yellow_line_angle_) {
-                        angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+                        angular_vel_ = ((280 - fabs(dist_yellow_line_)) / 2000) * -1.1;
                     }
                     RCLCPP_INFO(node->get_logger(), "노랑 탈출");
                 }
@@ -579,7 +579,7 @@ void MasterNode::runRobotStage5() {
             isDonePidControlEndLineStage5 = true;
             RCLCPP_INFO(node->get_logger(), "플래그 처리");
         } else {
-            angular_vel_ = 0.1;
+            angular_vel_ = 0.15;
             RCLCPP_INFO(node->get_logger(), "회전중");
         }
     }
@@ -813,17 +813,17 @@ void MasterNode::runRobotStage9() {
         linear_vel_ = 0.0;
 
         RCLCPP_INFO(node->get_logger(), "아아아아아아아아아아아아");
-        if (-35.0 <= imu_yaw_ && imu_yaw_ <= -15.0) {
+        if (-20.0 <= imu_yaw_ && imu_yaw_ <= -10.0) {
             stopDxl();
             isTempDoneTurnLeftRangeStage9 = true;
             RCLCPP_INFO(node->get_logger(), "노랑에서 제어");
             linear_vel_ = 0.45;
             angular_vel_ = 0.0;
             RCLCPP_INFO(node->get_logger(), "흰색을 향해");
-        } else if (-15.0 < imu_yaw_) {
+        } else if (-10.0 < imu_yaw_) {
             angular_vel_ = 0.1;
             RCLCPP_INFO(node->get_logger(), "로그1");
-        } else if (imu_yaw_ < -35.0) {
+        } else if (imu_yaw_ < -20.0) {
             angular_vel_ = -0.1;
             RCLCPP_INFO(node->get_logger(), "로그2");
         } else {
