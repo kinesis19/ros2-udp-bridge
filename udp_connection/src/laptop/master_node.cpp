@@ -450,19 +450,23 @@ void MasterNode::runRobotStage3() {
 
         // 양 옆이 노란선일 때의 주행 처리
         if (isDetectYellowLine && !isDetectWhiteLine) {
-
-            // 양 옆이 노란색 라인일 때의 주행 처리
-            if (dist_yellow_line_ < -200) {
-                if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
-                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * 1;
-                } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
-                    // angular_vel_ = 0.0;
-                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2500) * 1;
-                } else if (90 <= yellow_line_angle_) {
-                    angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+            if (dist_yellow_line_ < 0) {
+                // 양 옆이 노란색 라인일 때의 주행 처리
+                if (dist_yellow_line_ < -200) {
+                    if (75 <= yellow_line_angle_ && yellow_line_angle_ <= 88) { // 예외 처리: 근사항 직진 주행
+                        angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * 1;
+                    } else if (88 < yellow_line_angle_ && yellow_line_angle_ < 90) {  // 좌회전 처리: (약 ~ 중)
+                        // angular_vel_ = 0.0;
+                        angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2500) * 1;
+                    } else if (90 <= yellow_line_angle_) {
+                        angular_vel_ = ((310 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+                    }
+                    RCLCPP_INFO(node->get_logger(), "노랑 탈출");
                 }
-                RCLCPP_INFO(node->get_logger(), "노랑 탈출");
+            } else if (0 <= dist_yellow_line_) {
+                angular_vel_ = 0.1;
             }
+            
         } else {
             angular_vel_ = 0.0;
             RCLCPP_INFO(node->get_logger(), "몰라1");
@@ -667,7 +671,7 @@ void MasterNode::runRobotStage7() {
     if (isDetectBarrierStage7) {
         stopDxl();
     } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && !isDetectBarrierStage7) {
-        linear_vel_ = 0.25;
+        linear_vel_ = 0.45;
 
         // reverse용 코드
         if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
@@ -690,10 +694,10 @@ void MasterNode::runRobotStage7() {
             } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
                 angular_vel_ = ((235 - dist_yellow_line_) / 2000) * 1;
             } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
-                if ((((235 - dist_yellow_line_) / 2200) * 1) > 0.4) {
+                if ((((235 - dist_yellow_line_) / 1800) * 1) > 0.4) {
                     angular_vel_ = 0.4;
                 } else {
-                    angular_vel_ = (((235 - dist_yellow_line_) / 2200) * 1);
+                    angular_vel_ = (((235 - dist_yellow_line_) / 1800) * 1);
                 }
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
@@ -702,10 +706,10 @@ void MasterNode::runRobotStage7() {
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
                 angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
+                if ((((235 + dist_white_line_) / 1500) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
+                    angular_vel_ = (((235 + dist_white_line_) / 1500) * -1);
                 }
             }
         } else {
@@ -788,10 +792,10 @@ void MasterNode::runRobotStage9() {
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
             angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
         } else if (100 < white_line_angle_) {  
-            if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+            if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
                 angular_vel_ = -0.35;
             } else {
-                angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+                angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
             }
         }
     }
