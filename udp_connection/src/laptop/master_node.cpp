@@ -800,24 +800,27 @@ void MasterNode::runRobotStage9() {
         }
     } else if ((isDetectObject1andObject2Stage9 && !playYawFlag) && (!isTempDoneTurnLeftRangeStage9 && !isTempDoneTurnRightRangeStage9)){
         if (!isTempDoneTurnRightRangeStage9) {
-            if (45.0 <= imu_yaw_ && imu_yaw_ <= 50.0) {
+            if (35.0 <= imu_yaw_ && imu_yaw_ <= 40.0) {
                 stopDxl();
                 isTempDoneTurnRightRangeStage9 = true;
                 linear_vel_ = 0.35;
                 angular_vel_ = 0.0;
-            } else if (0.0 <= imu_yaw_ && imu_yaw_ < 45.0) {
+            } else if (0.0 <= imu_yaw_ && imu_yaw_ < 35.0) {
                 angular_vel_ = -0.1;
-            } else if (50 < imu_yaw_) {
+            } else if (40.0 < imu_yaw_) {
                 angular_vel_ = 0.1;
-            } else if (imu_yaw_ < 0) {
+            } else if (imu_yaw_ < 0.0) {
                 angular_vel_ = -0.1;
             }
         }
     }
 
     // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
-    if (((isDetectObject1andObject2Stage9 && !isTempDoneTurnLeftRangeStage9) && (isDetectYellowLine && !isDetectWhiteLine)) && dist_yellow_line_ < -170) { // 노란색 선만 감지됨
+    if (((isDetectObject1andObject2Stage9 && !isTempDoneTurnLeftRangeStage9) && (isDetectYellowLine && !isDetectWhiteLine)) && (dist_yellow_line_ < -180 && !isReadyToPIDControlToTurnLeftStage9)) { // 노란색 선만 감지됨
+        isReadyToPIDControlToTurnLeftStage9 = true;
+    }
 
+    if (isReadyToPIDControlToTurnLeftStage9 && !isTempDoneTurnLeftRangeStage9) {
         linear_vel_ = 0.0;
 
         RCLCPP_INFO(node->get_logger(), "아아아아아아아아아아아아");
@@ -825,24 +828,20 @@ void MasterNode::runRobotStage9() {
             stopDxl();
             isTempDoneTurnLeftRangeStage9 = true;
             RCLCPP_INFO(node->get_logger(), "노랑에서 제어");
-            // linear_vel_ = 0.35;
-            // angular_vel_ = 0.0;
+            linear_vel_ = 0.35;
+            angular_vel_ = 0.0;
             RCLCPP_INFO(node->get_logger(), "흰색을 향해");
         } else if (-15.0 < imu_yaw_) {
             angular_vel_ = 0.1;
+            RCLCPP_INFO(node->get_logger(), "로그1");
         } else if (imu_yaw_ < -35.0) {
             angular_vel_ = -0.1;
+            RCLCPP_INFO(node->get_logger(), "로그2");
         } else {
             angular_vel_ = 0.1;
+            RCLCPP_INFO(node->get_logger(), "로그3");
         }
-
     }
-
-    if ((isTempDoneTurnLeftRangeStage9 && !playYawFlag) && !isWorkedPIDControlToTurnRightStage9) {
-        linear_vel_ = 0.1;
-        angular_vel_ = 0.0;
-    }
-
 
     if ((isDetectWhiteLine && !isDetectYellowLine) && isTempDoneTurnLeftRangeStage9) {
         isWorkedPIDControlToTurnRightStage9 = true;
@@ -850,7 +849,7 @@ void MasterNode::runRobotStage9() {
     }
 
     // PID 제어로 우회전 이후의 주행 로직
-    if (isWorkedPIDControlToTurnRightStage9 && !playYawFlag) {
+    if (isWorkedPIDControlToTurnRightStage9) {
         if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
             if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
                 angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;

@@ -203,6 +203,8 @@ private:
     bool isTempDoneTurnRightRangeStage9 = false; // 스테이지9 진입 후, PID 제어 완료 했는지 여부를 나타내는 플래그
     bool isTempDoneTurnLeftRangeStage9 = false; // 스테이지9 진입 후, PID 제어 완료 했는지 여부를 나타내는 플래그
 
+    bool isReadyToPIDControlToTurnLeftStage9 = false;
+
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
