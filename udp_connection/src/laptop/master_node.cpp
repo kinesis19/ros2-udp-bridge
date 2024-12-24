@@ -585,7 +585,6 @@ void MasterNode::runRobotStage5() {
     }
 
     if (isDetectEndLineStage5 && isDonePidControlEndLineStage5) {
-        // stopDxl();
         stage_number_ = 6; // reverse stage5
         RCLCPP_INFO(node->get_logger(), "스테이지 처리 완료");
     }
