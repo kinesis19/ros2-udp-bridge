@@ -242,7 +242,7 @@ void MasterNode::runRobotStage2() {
             angular_vel_ = -0.075;
             RCLCPP_INFO(node->get_logger(), "포물선");
 
-            if (psd_adc_left_ > 1100) {
+            if (psd_adc_left_ > 1600) {
                 // stopDxl();
                 isDetectWhite1Stage2 = true;
                 RCLCPP_INFO(node->get_logger(), "PSD 감지");
@@ -745,11 +745,13 @@ void MasterNode::runRobotStage7() {
 
     if ((isDetectStraightBlueSign && isDetectWhiteLine) && (90 <= white_line_angle_ && white_line_angle_ <= 91)) {
         stage_number_ = 8;
-    } else if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
-        if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
-            stage_number_ = 9;
-        }
-    }
+    } 
+    
+    // else if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
+    //     if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
+    //         stage_number_ = 9;
+    //     }
+    // }
 }
 
 void MasterNode::runRobotStage8() {
@@ -801,17 +803,22 @@ void MasterNode::runRobotStage8() {
     }
 
     // Stage9 진입 감지 처리
-    if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
-        if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
-            stage_number_ = 9;
-        }
+
+    if (!isDetectYellowLine) {
+        stage_number_ = 9;
     }
+
+    // if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
+    //     if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
+    //         stage_number_ = 9;
+    //     }
+    // }
 }
 
 void MasterNode::runRobotStage9() {
 
-    // 주행 로직
-    if (!isDetectObject1andObject2Stage9 && (!isDetectYellowLine && isDetectWhiteLine)) {
+    // 주행 로직    
+    if (nowModeStage9 == 0 && (!isDetectYellowLine && isDetectWhiteLine)) {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
             angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
@@ -825,69 +832,73 @@ void MasterNode::runRobotStage9() {
         }
     }
 
-    // 스테이지9 진입 후, 오브젝트3과 오브젝트2를 동시에 감지했을 때
-    if (!isDetectObject1andObject2Stage9 && (psd_adc_front_ > 1500)) {
+    if (((nowModeStage9 == 0 && isDetectWhiteLine) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (95 <= white_line_angle_ && white_line_angle_ <= 105)) {
 
-        if (!isOkayResetIMUStage9) {
+        if (psd_adc_right_ > 2000) {
+            nowModeStage9 = 1;
+            // stopDxl();
+            RCLCPP_INFO(node->get_logger(), "1111");
+        } else if (nowModeStage9 == 0 && psd_adc_right_ > 500) {
+            nowModeStage9 = 2;
+            // stopDxl();
             resetIMU();
-            isOkayResetIMUStage9 = true;
-        } else if (imu_yaw_ == 0.0) {            
-            linear_vel_ = 0.0;
-            angular_vel_ = -0.1;
-            isDetectObject1andObject2Stage9 = true;
-        }
-    } else if ((isDetectObject1andObject2Stage9 && !playYawFlag) && (!isTempDoneTurnLeftRangeStage9 && !isTempDoneTurnRightRangeStage9)){
-        if (!isTempDoneTurnRightRangeStage9) {
-            if (35.0 <= imu_yaw_ && imu_yaw_ <= 40.0) {
-                stopDxl();
-                isTempDoneTurnRightRangeStage9 = true;
-                linear_vel_ = 0.45;
-                angular_vel_ = 0.0;
-            } else if (0.0 <= imu_yaw_ && imu_yaw_ < 35.0) {
-                angular_vel_ = -0.1;
-            } else if (40.0 < imu_yaw_) {
-                angular_vel_ = 0.1;
-            } else if (imu_yaw_ < 0.0) {
-                angular_vel_ = -0.1;
-            }
+            RCLCPP_INFO(node->get_logger(), "2222");
         }
     }
 
-    // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
-    if (((isDetectObject1andObject2Stage9 && !isTempDoneTurnLeftRangeStage9) && (isDetectYellowLine && !isDetectWhiteLine)) && (dist_yellow_line_ < -160 && !isReadyToPIDControlToTurnLeftStage9)) { // 노란색 선만 감지됨
-        isReadyToPIDControlToTurnLeftStage9 = true;
-    }
-
-    if (isReadyToPIDControlToTurnLeftStage9 && !isTempDoneTurnLeftRangeStage9) {
-        linear_vel_ = 0.0;
-
-        RCLCPP_INFO(node->get_logger(), "아아아아아아아아아아아아");
-        if (-20.0 <= imu_yaw_ && imu_yaw_ <= -10.0) {
-            stopDxl();
-            isTempDoneTurnLeftRangeStage9 = true;
-            RCLCPP_INFO(node->get_logger(), "노랑에서 제어");
-            linear_vel_ = 0.45;
-            angular_vel_ = 0.0;
-            RCLCPP_INFO(node->get_logger(), "흰색을 향해");
-        } else if (-10.0 < imu_yaw_) {
-            angular_vel_ = 0.1;
-            RCLCPP_INFO(node->get_logger(), "로그1");
-        } else if (imu_yaw_ < -20.0) {
-            angular_vel_ = -0.1;
-            RCLCPP_INFO(node->get_logger(), "로그2");
-        } else {
-            angular_vel_ = 0.1;
-            RCLCPP_INFO(node->get_logger(), "로그3");
+    if (nowModeStage9 == 2) {
+        if (!isOkayPidControlRightStage9 && imu_yaw_ == 0) {
+            // PID 좌회전 처리하기
+            // if (imu_yaw_ + 89.0 < -180) {
+            //     target_yaw_ = 360 + (imu_yaw_ + 89.0); // 범위 보정
+            // } else {
+            //     target_yaw_ = imu_yaw_ + 89.0;
+            // }
+            target_yaw_ = 89;
+            playYawFlag = true;
+            isOkayPidControlRightStage9 = true;
         }
     }
 
-    if ((isDetectWhiteLine && !isDetectYellowLine) && isTempDoneTurnLeftRangeStage9) {
-        isWorkedPIDControlToTurnRightStage9 = true;
-        RCLCPP_INFO(node->get_logger(), "흰색 감지 완료");
+    if ((isOkayPidControlRightStage9 && !playYawFlag) && !isTurnLeftStage9) {
+        linear_vel_ = 0.45;
+        angular_vel_ = 0.0;
+
+        RCLCPP_INFO(node->get_logger(), "직진");
+        
+        if (psd_adc_front_ > 1100) {
+            isTurnLeftStage9 = true;
+            RCLCPP_INFO(node->get_logger(), "감지 완료");
+        }
+    } 
+
+    if (isTurnLeftStage9 && !isDetectWhite1Stage9) {
+        // linear_vel_ = 0.45;
+        // angular_vel_ = 0.075;
+        linear_vel_ = 0.4;
+        angular_vel_ = 0.075;
+        RCLCPP_INFO(node->get_logger(), "포물선");
+
+        if (psd_adc_right_ > 1000) {
+            // stopDxl();
+            isDetectWhite1Stage9 = true;
+            RCLCPP_INFO(node->get_logger(), "PSD 감지");
+        }
     }
 
-    // PID 제어로 우회전 이후의 주행 로직
-    if (isWorkedPIDControlToTurnRightStage9) {
+    if (isDetectWhite1Stage9 && !isDetectYellowLine1Stage9) {
+        linear_vel_ = 0.25;
+        angular_vel_ = -0.08;
+        RCLCPP_INFO(node->get_logger(), "왼쪽");
+
+        if (isDetectYellowLine && !isDetectWhiteLine) {
+            isDetectYellowLine1Stage9 = true;
+        }
+    }
+
+    if (isDetectYellowLine1Stage9) {
+        linear_vel_ = 0.35;
+
         if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
             if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
                 angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
@@ -932,7 +943,115 @@ void MasterNode::runRobotStage9() {
         }
     }
 
-    if (isDetectRedLine && isWorkedPIDControlToTurnRightStage9) {
+
+    // // 스테이지9 진입 후, 오브젝트3과 오브젝트2를 동시에 감지했을 때
+    // if (!isDetectObject1andObject2Stage9 && (psd_adc_front_ > 1500)) {
+
+    //     if (!isOkayResetIMUStage9) {
+    //         resetIMU();
+    //         isOkayResetIMUStage9 = true;
+    //     } else if (imu_yaw_ == 0.0) {            
+    //         linear_vel_ = 0.0;
+    //         angular_vel_ = -0.1;
+    //         isDetectObject1andObject2Stage9 = true;
+    //     }
+    // } else if ((isDetectObject1andObject2Stage9 && !playYawFlag) && (!isTempDoneTurnLeftRangeStage9 && !isTempDoneTurnRightRangeStage9)){
+    //     if (!isTempDoneTurnRightRangeStage9) {
+    //         if (35.0 <= imu_yaw_ && imu_yaw_ <= 40.0) {
+    //             stopDxl();
+    //             isTempDoneTurnRightRangeStage9 = true;
+    //             linear_vel_ = 0.45;
+    //             angular_vel_ = 0.0;
+    //         } else if (0.0 <= imu_yaw_ && imu_yaw_ < 35.0) {
+    //             angular_vel_ = -0.1;
+    //         } else if (40.0 < imu_yaw_) {
+    //             angular_vel_ = 0.1;
+    //         } else if (imu_yaw_ < 0.0) {
+    //             angular_vel_ = -0.1;
+    //         }
+    //     }
+    // }
+
+    // // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
+    // if (((isDetectObject1andObject2Stage9 && !isTempDoneTurnLeftRangeStage9) && (isDetectYellowLine && !isDetectWhiteLine)) && (dist_yellow_line_ < -160 && !isReadyToPIDControlToTurnLeftStage9)) { // 노란색 선만 감지됨
+    //     isReadyToPIDControlToTurnLeftStage9 = true;
+    // }
+
+    // if (isReadyToPIDControlToTurnLeftStage9 && !isTempDoneTurnLeftRangeStage9) {
+    //     linear_vel_ = 0.0;
+
+    //     RCLCPP_INFO(node->get_logger(), "아아아아아아아아아아아아");
+    //     if (-20.0 <= imu_yaw_ && imu_yaw_ <= -10.0) {
+    //         stopDxl();
+    //         isTempDoneTurnLeftRangeStage9 = true;
+    //         RCLCPP_INFO(node->get_logger(), "노랑에서 제어");
+    //         linear_vel_ = 0.45;
+    //         angular_vel_ = 0.0;
+    //         RCLCPP_INFO(node->get_logger(), "흰색을 향해");
+    //     } else if (-10.0 < imu_yaw_) {
+    //         angular_vel_ = 0.1;
+    //         RCLCPP_INFO(node->get_logger(), "로그1");
+    //     } else if (imu_yaw_ < -20.0) {
+    //         angular_vel_ = -0.1;
+    //         RCLCPP_INFO(node->get_logger(), "로그2");
+    //     } else {
+    //         angular_vel_ = 0.1;
+    //         RCLCPP_INFO(node->get_logger(), "로그3");
+    //     }
+    // }
+
+    // if ((isDetectWhiteLine && !isDetectYellowLine) && isTempDoneTurnLeftRangeStage9) {
+    //     isWorkedPIDControlToTurnRightStage9 = true;
+    //     RCLCPP_INFO(node->get_logger(), "흰색 감지 완료");
+    // }
+
+    // // PID 제어로 우회전 이후의 주행 로직
+    // if (isWorkedPIDControlToTurnRightStage9) {
+    //     if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
+    //         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+    //             angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
+    //         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+    //             angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
+    //         } else if (100 < white_line_angle_) {  
+    //             if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+    //                 angular_vel_ = -0.35;
+    //             } else {
+    //                 angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+    //             }
+    //         }
+    //     } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
+    //         angular_vel_ = 0.0;
+    //     } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
+    //         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
+    //             angular_vel_ = ((235 - dist_yellow_line_) / 2500) * 1;
+    //         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
+    //             angular_vel_ = ((235 - dist_yellow_line_) / 2000) * 1;
+    //         } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
+    //             if ((((235 - dist_yellow_line_) / 2000) * 1) > 0.4) {
+    //                 angular_vel_ = 0.4;
+    //             } else {
+    //                 angular_vel_ = (((235 - dist_yellow_line_) / 2000) * 1);
+    //             }
+    //         }
+    //     } else if (!isDetectYellowLine && isDetectWhiteLine) {
+    //         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+    //             angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
+    //         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+    //             angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
+    //         } else if (100 < white_line_angle_) {  
+    //             if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+    //                 angular_vel_ = -0.35;
+    //             } else {
+    //                 angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+    //             }
+    //         }
+    //     } else {
+    //         // // 선이 감지되지 않을 경우
+    //         angular_vel_ = 0.0;
+    //     }
+    // }
+
+    if (isDetectRedLine && isDetectYellowLine1Stage9) {
         stopDxl(); // 종료
     }
 }
