@@ -143,7 +143,7 @@ private:
     const float kP = 0.005f;
     const float kI = 0.0f;
     const float kD = 0.0f;
-    const float yaw_ok = 1.0f;
+    const float yaw_ok = 0.5f;
     const float max_angular_vel = 0.4f;
     const float min_angular_vel = 0.05f;
     bool playYawFlag = false;
@@ -167,9 +167,10 @@ private:
     bool isMissYellowLineStage2 = false;
 
     int nowModeStage2 = 0; // 스테이지2일 때 모드 판단
-    bool isOkayTurnRightStage2 = false;
-    bool isOkayTurnLeftStage2 = false;
-    bool isOkayTurnRightOutStage2 = false;
+    bool isOkayPidControlLeftStage2 = false; // Stage2에서 처음 PID 제어를 위한 플래그 변수
+    bool isTurnRightStage2 = false; // Stage2에서 오른쪽 회전했을 때 나타내는 변수
+    bool isDetectWhite1Stage2 = false;
+    bool isDetectYellowLine1Stage2 = false;
 
     int areaNumberStage2 = 0; // Stage2 내에서 세부적인 area 넘버링을 나타내는 변수
     
