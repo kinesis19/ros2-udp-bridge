@@ -805,7 +805,7 @@ void MasterNode::runRobotStage9() {
     }
 
     // PID 제어로 왼쪽 회전 및 직진 이후 노란색 선이 조건 범위 내에서 감지될 때
-    if (((isDetectObject1andObject2Stage9 && !isTempDoneTurnLeftRangeStage9) && (isDetectYellowLine && !isDetectWhiteLine)) && (dist_yellow_line_ < -180 && !isReadyToPIDControlToTurnLeftStage9)) { // 노란색 선만 감지됨
+    if (((isDetectObject1andObject2Stage9 && !isTempDoneTurnLeftRangeStage9) && (isDetectYellowLine && !isDetectWhiteLine)) && (dist_yellow_line_ < -160 && !isReadyToPIDControlToTurnLeftStage9)) { // 노란색 선만 감지됨
         isReadyToPIDControlToTurnLeftStage9 = true;
     }
 
