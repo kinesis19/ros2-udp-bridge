@@ -463,7 +463,6 @@ void MasterNode::runRobotStage3() {
                 }
                 RCLCPP_INFO(node->get_logger(), "노랑 탈출");
             }
-
         } else {
             angular_vel_ = 0.0;
             RCLCPP_INFO(node->get_logger(), "몰라1");
@@ -538,8 +537,8 @@ void MasterNode::runRobotStage5() {
     
     if (isDetectBarrierStage5) {
         stopDxl();
-    } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && !isDonePidControlEndLineStage5) {
-        linear_vel_ = 0.45;
+    } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && (!isDonePidControlEndLineStage5 && !isDetectEndLineStage5)) {
+        linear_vel_ = 0.35;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
@@ -572,33 +571,43 @@ void MasterNode::runRobotStage5() {
         }
     }
 
-    if (isDetectRedLine && !isDonePidControlEndLineStage5) {
+    if ((isDetectRedLine && !isDonePidControlEndLineStage5) && !isDetectEndLineStage5) {
+        resetIMU();
         isDetectEndLineStage5 = true;
     }
 
     if (isDetectEndLineStage5 && !isDonePidControlEndLineStage5) {
-
-        // PID 180도 회전 처리하기
-        if (imu_yaw_ - 180.0 < -180) {
-            target_yaw_ = 360 + (imu_yaw_ - 180.0); // 범위 보정
-        } else {
-            target_yaw_ = imu_yaw_ - 180.0;
-        }
-
-        playYawFlag = true;
-        isDonePidControlEndLineStage5 = true;
-
-        // angular_vel_ = 0.1;
-
-        // if (((isDetectWhiteLine && dist_white_line_ < -270) && (90 <= white_line_angle_ && white_line_angle_ <= 91))) {
+        // if (170.0 <= imu_yaw_ && imu_yaw_ <= 180.0) {
         //     isDonePidControlEndLineStage5 = true;
-        //     RCLCPP_INFO(node->get_logger(), "제어 완료");
+        // } else if (imu_yaw_ < 170.0) {
+        //     angular_vel_ = -0.1;
         // }
+        // // PID 180도 회전 처리하기
+        // if (imu_yaw_ - 180.0 < -180) {
+        //     target_yaw_ = 360 + (imu_yaw_ - 180.0); // 범위 보정
+        // } else {
+        //     target_yaw_ = imu_yaw_ - 180.0;
+        // }
+
+        // playYawFlag = true;
+        // isDonePidControlEndLineStage5 = true;
+
+        linear_vel_ = 0.0;
+        RCLCPP_INFO(node->get_logger(), "조건 진입");
+
+        if (isDetectWhiteLine && dist_white_line_ < -100) {
+            isDonePidControlEndLineStage5 = true;
+            RCLCPP_INFO(node->get_logger(), "플래그 처리");
+        } else {
+            angular_vel_ = 0.1;
+            RCLCPP_INFO(node->get_logger(), "회전중");
+        }
     }
 
-    if ((isDetectEndLineStage5 && !playYawFlag) && isDonePidControlEndLineStage5) {
+    if (isDetectEndLineStage5 && isDonePidControlEndLineStage5) {
         // stopDxl();
         stage_number_ = 6; // reverse stage5
+        RCLCPP_INFO(node->get_logger(), "스테이지 처리 완료");
     }
 }
 
@@ -610,7 +619,8 @@ void MasterNode::runRobotStage6() {
     if (isDetectBarrierStage6) {
         stage_number_ = 7;
     } else {
-        linear_vel_ = 0.25;
+        // linear_vel_ = 0.25;
+        linear_vel_ = 0.3;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
@@ -621,11 +631,11 @@ void MasterNode::runRobotStage6() {
                 angular_vel_ = ((235 - dist_yellow_line_) / 2500) * 1;
                 RCLCPP_INFO(node->get_logger(), "S6 - 2");
             } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
-                if ((((235 - dist_yellow_line_) / 2000) * 1) > 0.4) {
+                if ((((235 - dist_yellow_line_) / 1500) * 1) > 0.4) {
                     angular_vel_ = 0.4;
                     RCLCPP_INFO(node->get_logger(), "S6 - 3");
                 } else {
-                    angular_vel_ = (((235 - dist_yellow_line_) / 2000) * 1);
+                    angular_vel_ = (((235 - dist_yellow_line_) / 1500) * 1);
                     RCLCPP_INFO(node->get_logger(), "S6 - 4");
                 }
             }
