@@ -224,6 +224,10 @@ private:
     bool isTempDoneTurnRightRangeStage9 = false; // 스테이지9 진입 후, PID 제어 완료 했는지 여부를 나타내는 플래그
     float past_imu_yaw_ = 0.0;
 
+    bool isTurnRightMode1Stage9 = false; // 스테이지9 진입 후, mode1일 때 오른쪽 회전 했는지 여부를 나타내는 플래그
+    bool isDetectYellowLineMode1Stage9 = false; // 스테이지9 진입 후, mode1일 때 노란색 감지 여부를 나타내는 플래그
+    bool isDetectWhiteLine1Mode1Stage9 = false;
+
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
     void detectWhiteLine(const std_msgs::msg::Bool::SharedPtr msg);
