@@ -415,7 +415,7 @@ void MasterNode::runRobotStage3() {
     if (((isStartPidTurnLeftThreeStreetStage3 && !playYawFlag) && (isDetectYellowLine && !isDetectWhiteLine)) && !isDonePidControlParkingStationOutStage3) {
         RCLCPP_INFO(node->get_logger(), "PID 제어 이후의 주차장 진입");
 
-        linear_vel_ = 0.35;
+        linear_vel_ = 0.4;
 
         // 양 옆이 노란색 라인일 때의 주행 처리
         if (isDetectYellowLine && !isDetectWhiteLine) {

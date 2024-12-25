@@ -152,7 +152,6 @@ private:
     float target_yaw_ = 0.0f;
     float yaw_error = 0.0f;
     float pre_yaw_error = 0.0f;
-
     // Line Detect Center 변수
     float dist_yellow_line_ = 0.0;
     float dist_white_line_ = 0.0;
@@ -189,6 +188,8 @@ private:
     int detectObjectNumParkingStationStage3 = 0; // 주차장에서 오브젝트가 어느 위치에 위치해 있는지 저장하는 변수 (0: null, 1: 왼쪽, 2: 오른쪽)
     bool isTurnLeftToGoToStage4 = false; // 삼거리에서 Stage4로 가기 위해 좌회전 하고 있는지 여부를 나타내는 플래그
     bool isRunWithYellowLineParkingStationOutStage3 = false; // 주차 이후, 나갈 때
+    float past_imu_yaw_stage3_ = 0.0;
+    bool isDoneTurnToOutParkingStage3 = false; // 주차 이후, 주차장 탈출을 위해 제어가 완료됨을 나타내는 플래그
 
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
