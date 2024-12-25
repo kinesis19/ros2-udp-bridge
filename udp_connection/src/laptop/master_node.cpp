@@ -897,90 +897,92 @@ void MasterNode::runRobotStage9() {
             }
             
         }
-    }
 
-    if ((isOkayPidControlRightStage9 && !playYawFlag) && !isTurnLeftStage9) {
-        linear_vel_ = 0.45;
-        angular_vel_ = 0.0;
-
-        RCLCPP_INFO(node->get_logger(), "직진");
-        
-        if (psd_adc_front_ > 1100) {
-            isTurnLeftStage9 = true;
-            RCLCPP_INFO(node->get_logger(), "감지 완료");
-        }
-    } 
-
-    if (isTurnLeftStage9 && !isDetectWhite1Stage9) {
-        // linear_vel_ = 0.45;
-        // angular_vel_ = 0.075;
-        linear_vel_ = 0.4;
-        angular_vel_ = 0.075;
-        RCLCPP_INFO(node->get_logger(), "포물선");
-
-        if (psd_adc_right_ > 1000) {
-            // stopDxl();
-            isDetectWhite1Stage9 = true;
-            RCLCPP_INFO(node->get_logger(), "PSD 감지");
-        }
-    }
-
-    if (isDetectWhite1Stage9 && !isDetectYellowLine1Stage9) {
-        linear_vel_ = 0.25;
-        // angular_vel_ = -0.08;
-        angular_vel_ = -0.06;
-        RCLCPP_INFO(node->get_logger(), "왼쪽");
-
-        if (isDetectYellowLine && !isDetectWhiteLine) {
-            isDetectYellowLine1Stage9 = true;
-        }
-    }
-
-    if (isDetectYellowLine1Stage9) {
-        linear_vel_ = 0.35;
-
-        if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
-            if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-                angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
-            } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-                angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
-            } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
-                    angular_vel_ = -0.35;
-                } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
-                }
-            }
-        } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
+        if ((isOkayPidControlRightStage9 && !playYawFlag) && !isTurnLeftStage9) {
+            linear_vel_ = 0.45;
             angular_vel_ = 0.0;
-        } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
-            if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-                angular_vel_ = ((235 - dist_yellow_line_) / 2500) * 1;
-            } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = ((235 - dist_yellow_line_) / 2000) * 1;
-            } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
-                if ((((235 - dist_yellow_line_) / 2000) * 1) > 0.4) {
-                    angular_vel_ = 0.4;
-                } else {
-                    angular_vel_ = (((235 - dist_yellow_line_) / 2000) * 1);
-                }
+
+            RCLCPP_INFO(node->get_logger(), "직진");
+            
+            if (psd_adc_front_ > 1100) {
+                isTurnLeftStage9 = true;
+                RCLCPP_INFO(node->get_logger(), "감지 완료");
             }
-        } else if (!isDetectYellowLine && isDetectWhiteLine) {
-            if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-                angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
-            } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-                angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
-            } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
-                    angular_vel_ = -0.35;
-                } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
-                }
+        } 
+
+        if (isTurnLeftStage9 && !isDetectWhite1Stage9) {
+            // linear_vel_ = 0.45;
+            // angular_vel_ = 0.075;
+            linear_vel_ = 0.4;
+            angular_vel_ = 0.075;
+            RCLCPP_INFO(node->get_logger(), "포물선");
+
+            if (psd_adc_right_ > 1000) {
+                // stopDxl();
+                isDetectWhite1Stage9 = true;
+                RCLCPP_INFO(node->get_logger(), "PSD 감지");
             }
-        } else {
-            // // 선이 감지되지 않을 경우
-            angular_vel_ = 0.0;
         }
+
+        if (isDetectWhite1Stage9 && !isDetectYellowLine1Stage9) {
+            linear_vel_ = 0.25;
+            // angular_vel_ = -0.08;
+            angular_vel_ = -0.06;
+            RCLCPP_INFO(node->get_logger(), "왼쪽");
+
+            if (isDetectYellowLine && !isDetectWhiteLine) {
+                isDetectYellowLine1Stage9 = true;
+            }
+        }
+
+        if (isDetectYellowLine1Stage9) {
+            linear_vel_ = 0.35;
+
+            if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
+                if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                    angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
+                } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                    angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
+                } else if (100 < white_line_angle_) {  
+                    if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+                        angular_vel_ = -0.35;
+                    } else {
+                        angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+                    }
+                }
+            } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
+                angular_vel_ = 0.0;
+            } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
+                if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
+                    angular_vel_ = ((235 - dist_yellow_line_) / 2500) * 1;
+                } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
+                    angular_vel_ = ((235 - dist_yellow_line_) / 2000) * 1;
+                } else if (100 < yellow_line_angle_ || yellow_line_angle_ < 88) { // 좌회전 처리: (중 ~ 강)
+                    if ((((235 - dist_yellow_line_) / 2000) * 1) > 0.4) {
+                        angular_vel_ = 0.4;
+                    } else {
+                        angular_vel_ = (((235 - dist_yellow_line_) / 2000) * 1);
+                    }
+                }
+            } else if (!isDetectYellowLine && isDetectWhiteLine) {
+                if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                    angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
+                } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                    angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
+                } else if (100 < white_line_angle_) {  
+                    if ((((235 + dist_white_line_) / 800) * -1) < -0.35) {
+                        angular_vel_ = -0.35;
+                    } else {
+                        angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
+                    }
+                }
+            } else {
+                // // 선이 감지되지 않을 경우
+                angular_vel_ = 0.0;
+            }
+        }
+
+
     }
 
     if (isDetectRedLine && isDetectYellowLine1Stage9) {
