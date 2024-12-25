@@ -76,7 +76,7 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f ", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_);
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f | past_imu_yaw_: %.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_, past_imu_yaw_);
 
 
         // RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || white_line_points_[0]: %.2f | white_line_x_: %0.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, white_line_points_[0], white_line_x_);
@@ -377,7 +377,7 @@ void MasterNode::runRobotStage3() {
         float target_yaw_vel_; // 오브젝트 위치에 따른 PID제어의 타겟 값 
 
         if (psd_adc_left_ > 2500 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
-            target_yaw_vel_ = 90.0;
+            target_yaw_vel_ = 88.0;
             detectObjectNumParkingStationStage3 = 1; // 왼쪽에 있다는 것을 저장.
         } else if (psd_adc_left_ < 1800 && psd_adc_right_ > 2500) { // 주차장 오른쪽에 오브젝트가 위치해 있을 때,
             target_yaw_vel_ = -90.0;
@@ -456,11 +456,11 @@ void MasterNode::runRobotStage3() {
         linear_vel_ = 0.0;
 
         if (detectObjectNumParkingStationStage3 == 1) { // 진입 기준 왼쪽에 오브젝트가 있을 때
-            // angular_vel_ = 0.08;
-            angular_vel_ = 0.1;
+            angular_vel_ = 0.08;
+            // angular_vel_ = 0.1;
         } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
-            // angular_vel_ = -0.08;
-            angular_vel_ = -0.1;
+            angular_vel_ = -0.08;
+            // angular_vel_ = -0.1;
         }
 
         RCLCPP_INFO(node->get_logger(), "주차장 퇴출을 위한 회전 처리 중");
@@ -539,8 +539,22 @@ void MasterNode::runRobotStage4() {
     if (isDetectBarrierStage4) {
         stage_number_ = 5;
     } else {
-        linear_vel_ = 0.25;
-        if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
+        // linear_vel_ = 0.25;
+        linear_vel_ = 0.35;
+
+        if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
+            if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
+            } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
+            } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+                if ((((310 - dist_white_line_) / 2000) * 1) > 0.35) {
+                    angular_vel_ = 0.35;
+                } else {
+                    angular_vel_ = (((310 - dist_white_line_) / 2000) * 1);
+                }
+            }
+        } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
             if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
@@ -661,7 +675,8 @@ void MasterNode::runRobotStage6() {
     if (isDetectBarrierStage6) {
         stage_number_ = 7;
     } else {
-        linear_vel_ = 0.25;
+        // linear_vel_ = 0.25;
+        linear_vel_ = 0.35;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
@@ -834,13 +849,14 @@ void MasterNode::runRobotStage9() {
         }
     }
 
-    if (((nowModeStage9 == 0 && isDetectWhiteLine) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (95 <= white_line_angle_ && white_line_angle_ <= 105)) {
+    if (((nowModeStage9 == 0 && isDetectWhiteLine) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (94 <= white_line_angle_ && white_line_angle_ <= 105)) {
 
         if (psd_adc_right_ > 2000) {
             nowModeStage9 = 1;
             RCLCPP_INFO(node->get_logger(), "1111");
         } else if (nowModeStage9 == 0 && psd_adc_right_ > 500) {
             nowModeStage9 = 2;
+            past_imu_yaw_ = imu_yaw_;
             RCLCPP_INFO(node->get_logger(), "2222");
         }
     }
@@ -869,18 +885,27 @@ void MasterNode::runRobotStage9() {
             //     angular_vel_ = 0.1;
             // }
 
-            if (80.0 <= imu_yaw_ && imu_yaw_ <= 85.0) {
+            // if (80.0 <= imu_yaw_ && imu_yaw_ <= 85.0) {
+            //     stopDxl();
+            //     isOkayPidControlRightStage9 = true;
+            // } else if (imu_yaw_ < 80.0) {
+            //     angular_vel_ = -0.1;
+            // } else if (85.0 < imu_yaw_) {
+            //     angular_vel_ = 0.1;
+            // }
+
+            if (past_imu_yaw_ + 80.0 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_ + 85.0) {
                 stopDxl();
                 isOkayPidControlRightStage9 = true;
-            } else if (imu_yaw_ < 80.0) {
+            } else if (imu_yaw_ < past_imu_yaw_ + 80.0) {
                 angular_vel_ = -0.1;
-            } else if (85.0 < imu_yaw_) {
+            } else if (past_imu_yaw_ + 85.0 < imu_yaw_) {
                 angular_vel_ = 0.1;
             }
             
         }
 
-        if ((isOkayPidControlRightStage9 && !playYawFlag) && !isTurnLeftStage9) {
+        if (isOkayPidControlRightStage9 && !isTurnLeftStage9) {
             linear_vel_ = 0.45;
             angular_vel_ = 0.0;
 
@@ -893,13 +918,12 @@ void MasterNode::runRobotStage9() {
         } 
 
         if (isTurnLeftStage9 && !isDetectWhite1Stage9) {
-            // linear_vel_ = 0.45;
-            // angular_vel_ = 0.075;
             linear_vel_ = 0.4;
-            angular_vel_ = 0.075;
+            // angular_vel_ = 0.08;
+            angular_vel_ = 0.085;
             RCLCPP_INFO(node->get_logger(), "포물선");
 
-            if (psd_adc_right_ > 1000) {
+            if (psd_adc_right_ > 1600) {
                 // stopDxl();
                 isDetectWhite1Stage9 = true;
                 RCLCPP_INFO(node->get_logger(), "PSD 감지");
@@ -909,7 +933,7 @@ void MasterNode::runRobotStage9() {
         if (isDetectWhite1Stage9 && !isDetectYellowLine1Stage9) {
             linear_vel_ = 0.25;
             // angular_vel_ = -0.08;
-            angular_vel_ = -0.06;
+            angular_vel_ = -0.075;
             RCLCPP_INFO(node->get_logger(), "왼쪽");
 
             if (isDetectYellowLine && !isDetectWhiteLine) {
