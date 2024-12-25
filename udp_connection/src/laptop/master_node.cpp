@@ -758,13 +758,7 @@ void MasterNode::runRobotStage7() {
 
     if ((isDetectStraightBlueSign && isDetectWhiteLine) && (90 <= white_line_angle_ && white_line_angle_ <= 91)) {
         stage_number_ = 8;
-    } 
-    
-    // else if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
-    //     if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
-    //         stage_number_ = 9;
-    //     }
-    // }
+    }
 }
 
 void MasterNode::runRobotStage8() {
@@ -821,12 +815,6 @@ void MasterNode::runRobotStage8() {
         resetIMU();
         stage_number_ = 9;
     }
-
-    // if (((psd_adc_right_ >= 2000) && (0 < white_line_points_[0] && white_line_points_[0] < 320)) && (90 <= white_line_angle_ && white_line_angle_ <= 105)) {
-    //     if (-0.62 < white_line_x_ && white_line_x_ < 0.45) {
-    //         stage_number_ = 9;
-    //     }
-    // }
 }
 
 void MasterNode::runRobotStage9() {
@@ -850,12 +838,9 @@ void MasterNode::runRobotStage9() {
 
         if (psd_adc_right_ > 2000) {
             nowModeStage9 = 1;
-            // stopDxl();
             RCLCPP_INFO(node->get_logger(), "1111");
         } else if (nowModeStage9 == 0 && psd_adc_right_ > 500) {
             nowModeStage9 = 2;
-            // stopDxl();
-            // resetIMU();
             RCLCPP_INFO(node->get_logger(), "2222");
         }
     }
@@ -886,10 +871,7 @@ void MasterNode::runRobotStage9() {
 
             if (80.0 <= imu_yaw_ && imu_yaw_ <= 85.0) {
                 stopDxl();
-                // isTempDoneTurnRightRangeStage9 = true;
                 isOkayPidControlRightStage9 = true;
-                // linear_vel_ = 0.35;
-                // angular_vel_ = 0.0;
             } else if (imu_yaw_ < 80.0) {
                 angular_vel_ = -0.1;
             } else if (85.0 < imu_yaw_) {
