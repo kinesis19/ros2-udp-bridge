@@ -124,8 +124,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.7f);
         
         // 차단바
-        bar_vertices[0] = cv::Point2f(width * 0.25f, height * 0.55f);
-        bar_vertices[1] = cv::Point2f(width * 0.75f, height * 0.55f);
+        bar_vertices[0] = cv::Point2f(width * 0.35f, height * 0.55f);
+        bar_vertices[1] = cv::Point2f(width * 0.65f, height * 0.55f);
         bar_vertices[2] = cv::Point2f(width * 0.75f, height * 0.95f);
         bar_vertices[3] = cv::Point2f(width * 0.25f, height * 0.95f);
 
@@ -506,7 +506,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
                 float x_diff = std::abs(curr_x - prev_x);
 
                 // 인접한 차단바 사이의 간격 체크 (20-100 픽셀)
-                if (x_diff > 10.0 && x_diff < 200.0)
+                if (x_diff > 10.0 && x_diff < 1000.0)
                 {
                     // y 좌표 차이도 체크 (높이가 비슷해야 함)
                     float y_diff = std::abs(candidate_rects[i].center.y - candidate_rects[i - 1].center.y);
@@ -536,8 +536,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
             float avg_height = total_height / aligned_count;
 
             // 차단바 감지 조건 수정
-            if (aligned_count >= 4 && is_valid_sequence &&
-                avg_height > 30.0 && avg_width > 10.0) // 최소 크기 조건
+            if (aligned_count >= 3 && is_valid_sequence) // 최소 크기 조건
             {
                 barrier_detected = true;
 
@@ -661,7 +660,7 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
                 break;
             }
         }
-        // 왼쪽 파란색 표지판 검출 결과 발행
+        // 직선 파란색 표지판 검출 결과 발행
         auto straight_blue_sign_msg = std_msgs::msg::Bool();
         straight_blue_sign_msg.data = straight_blue_sign_detected;
         pub_straight_blue_sign_detected_->publish(straight_blue_sign_msg);
