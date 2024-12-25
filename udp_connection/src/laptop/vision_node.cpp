@@ -113,8 +113,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 
         // 돌아올 때 지그재그 이후 파란색 표지판 감지해서 속도 증가
         straight_vertices[0] = cv::Point2f(width * 0.0f, height * 0.3f);
-        straight_vertices[1] = cv::Point2f(width * 0.05f, height * 0.3f);
-        straight_vertices[2] = cv::Point2f(width * 0.05f, height * 0.55f);
+        straight_vertices[1] = cv::Point2f(width * 0.15f, height * 0.3f);
+        straight_vertices[2] = cv::Point2f(width * 0.15f, height * 0.55f);
         straight_vertices[3] = cv::Point2f(width * 0.0f, height * 0.55f);
 
         // 주차장 나오는 부분
@@ -124,10 +124,10 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.7f);
         
         // 차단바
-        bar_vertices[0] = cv::Point2f(width * 0.35f, height * 0.55f);
-        bar_vertices[1] = cv::Point2f(width * 0.65f, height * 0.55f);
-        bar_vertices[2] = cv::Point2f(width * 0.75f, height * 0.95f);
-        bar_vertices[3] = cv::Point2f(width * 0.25f, height * 0.95f);
+        bar_vertices[0] = cv::Point2f(width * 0.4f, height * 0.65f);
+        bar_vertices[1] = cv::Point2f(width * 0.6f, height * 0.65f);
+        bar_vertices[2] = cv::Point2f(width * 0.7f, height * 1.0f);
+        bar_vertices[3] = cv::Point2f(width * 0.3f, height * 1.0f);
 
         // 표지판
         signs_vertices[0] = cv::Point2f(width * 0.95f, height * 0.3f);
