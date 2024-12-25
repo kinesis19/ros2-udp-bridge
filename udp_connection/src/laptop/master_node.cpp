@@ -128,7 +128,8 @@ void MasterNode::runRobotStage1() {
 
     // 기본 주행 모드
     float center_x = 320.0; // 카메라 화면 중심 (예: 640x480 해상도의 중심 x좌표)
-    linear_vel_ = 0.45;
+    // linear_vel_ = 0.45;
+    linear_vel_ = 0.4;
 
     if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] < yellow_line_points_[0])) {
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
@@ -136,36 +137,36 @@ void MasterNode::runRobotStage1() {
         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
             angular_vel_ = ((310 + dist_yellow_line_) / 2500) * -1;
         } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
-            if ((((310 + dist_yellow_line_) / 1000) * -1) < -0.4) {
+            if ((((310 + dist_yellow_line_) / 1200) * -1) < -0.4) {
                 angular_vel_ = -0.4;
             } else {
-                angular_vel_ = (((310 + dist_yellow_line_) / 1000) * -1);
+                angular_vel_ = (((310 + dist_yellow_line_) / 1200) * -1);
             }
         }
     } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
         angular_vel_ = 0.0;
     } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
         if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-            angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
+            angular_vel_ = ((310 + dist_yellow_line_) / 2500) * -1;
         } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-            angular_vel_ = ((320 + dist_yellow_line_) / 2500) * -1;
+            angular_vel_ = ((310 + dist_yellow_line_) / 2500) * -1;
         } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
-            if ((((320 + dist_yellow_line_) / 800) * -1) < -0.4) {
+            if ((((310 + dist_yellow_line_) / 1200) * -1) < -0.4) {
                 angular_vel_ = -0.4;
             } else {
-                angular_vel_ = (((320 + dist_yellow_line_) / 800) * -1);
+                angular_vel_ = (((310 + dist_yellow_line_) / 1200) * -1);
             }
         }
     } else if (!isDetectYellowLine && isDetectWhiteLine) {
         if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+            angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
         } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-            angular_vel_ = ((320 - dist_white_line_) / 3000) * 1;
+            angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
         } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
-            if ((((320 - dist_white_line_) / 800) * 1) > 0.35) {
+            if ((((310 - dist_white_line_) / 1200) * 1) > 0.35) {
                 angular_vel_ = 0.35;
             } else {
-                angular_vel_ = (((320 - dist_white_line_) / 800) * 1);
+                angular_vel_ = (((310 - dist_white_line_) / 1200) * 1);
             }
         }
     } else {
@@ -212,7 +213,80 @@ void MasterNode::runRobotStage2() {
         }
     }
 
-    if (nowModeStage2 == 2) { // Mode 2일 때의 주행 로직
+    if (nowModeStage2 == 1) {
+        if (!isTurnLeftMode1Stage2) {
+            if (!isDetectYellowLine && isDetectWhiteLine) {
+                if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                    angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
+                } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                    angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
+                } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+                    if ((((310 - dist_white_line_) / 1200) * 1) > 0.35) {
+                        angular_vel_ = 0.35;
+                    } else {
+                        angular_vel_ = (((310 - dist_white_line_) / 1200) * 1);
+                    }
+                }
+            }
+
+            if (psd_adc_front_ > 1100) {
+                isTurnLeftMode1Stage2 = true;
+            }
+        }
+        
+        if (isTurnLeftMode1Stage2 && !isDetectYellowLineMode1Stage2) {
+            linear_vel_ = 0.45;
+            // angular_vel_ = 0.075;
+            // angular_vel_ = 0.085;
+            // angular_vel_ = 0.1;
+            angular_vel_ = 0.14;
+            RCLCPP_INFO(node->get_logger(), "포물선");
+
+            if (psd_adc_right_ > 1600) {
+                isDetectYellowLineMode1Stage2 = true;
+                RCLCPP_INFO(node->get_logger(), "PSD 감지");
+            }
+        }
+
+        if (isDetectYellowLineMode1Stage2 && !isDetectWhiteLineMode1Stage2) {
+            linear_vel_ = 0.25;
+            // angular_vel_ = -0.08;
+            angular_vel_ = -0.12;
+
+            if (!isDetectYellowLine && isDetectWhiteLine) {
+                isDetectWhiteLineMode1Stage2 = true;
+            }
+        }
+
+        if (isDetectWhiteLineMode1Stage2) {
+            if (isDetectYellowLine && !isDetectWhiteLine) {
+                if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
+                    angular_vel_ = ((300 + dist_yellow_line_) / 2500) * -1;
+                } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
+                    angular_vel_ = ((300 + dist_yellow_line_) / 2500) * -1;
+                } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
+                    if ((((300 + dist_yellow_line_) / 800) * -1) < -0.4) {
+                        angular_vel_ = -0.4;
+                    } else {
+                        angular_vel_ = (((300 + dist_yellow_line_) / 800) * -1);
+                    }
+                }
+            } else if (!isDetectYellowLine && isDetectWhiteLine) {
+                if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
+                    angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
+                } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
+                    angular_vel_ = ((310 - dist_white_line_) / 3000) * 1;
+                } else if (100 < white_line_angle_ || white_line_angle_ < 88) {  
+                    if ((((310 - dist_white_line_) / 1200) * 1) > 0.35) {
+                        angular_vel_ = 0.35;
+                    } else {
+                        angular_vel_ = (((310 - dist_white_line_) / 1200) * 1);
+                    }
+                }
+            }
+        }
+
+    } else  if (nowModeStage2 == 2) { // Mode 2일 때의 주행 로직
     
         if (!isOkayPidControlLeftStage2) {
             // PID 좌회전 처리하기

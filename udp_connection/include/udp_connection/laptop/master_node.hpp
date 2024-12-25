@@ -172,6 +172,10 @@ private:
     bool isDetectWhite1Stage2 = false;
     bool isDetectYellowLine1Stage2 = false;
     int areaNumberStage2 = 0; // Stage2 내에서 세부적인 area 넘버링을 나타내는 변수
+
+    bool isTurnLeftMode1Stage2 = false; // Stage2에서, mode1일 때 왼쪽 회전 여부를 나타내는 플래그 변수
+    bool isDetectYellowLineMode1Stage2 = false; // Stage2에서, mode1일 때 노란색 라인 감지 여부를 나타내는 플래그
+    bool isDetectWhiteLineMode1Stage2 = false; // Stage2에서, mode1일 때, 탈출을 위한 흰색 라인을 감지 여부를 나타내는 플래그 
     
     // ========== [Stage3 감지 플래그 변수] ==========
     bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 잊어버렸을 때를 위한 플래그
