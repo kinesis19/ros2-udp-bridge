@@ -124,8 +124,8 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.7f);
         
         // 차단바
-        bar_vertices[0] = cv::Point2f(width * 0.25f, height * 0.75f);
-        bar_vertices[1] = cv::Point2f(width * 0.75f, height * 0.75f);
+        bar_vertices[0] = cv::Point2f(width * 0.25f, height * 0.55f);
+        bar_vertices[1] = cv::Point2f(width * 0.75f, height * 0.55f);
         bar_vertices[2] = cv::Point2f(width * 0.75f, height * 0.95f);
         bar_vertices[3] = cv::Point2f(width * 0.25f, height * 0.95f);
 
