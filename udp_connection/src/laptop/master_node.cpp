@@ -618,20 +618,32 @@ void MasterNode::runRobotStage5() {
 
     if ((isDetectRedLine && !isDonePidControlEndLineStage5) && !isDetectEndLineStage5) {
         resetIMU();
+        linear_vel_ = 0.0;
         isDetectEndLineStage5 = true;
     }
 
     if (isDetectEndLineStage5 && !isDonePidControlEndLineStage5) {
 
-        linear_vel_ = 0.0;
         RCLCPP_INFO(node->get_logger(), "조건 진입");
 
-        if (isDetectWhiteLine && dist_white_line_ < -100) {
+        // if (170.0 <= imu_yaw_ && imu_yaw_ <= 175.0) {
+        //     stopDxl();
+        //     isDonePidControlEndLineStage5 = true;
+        //     RCLCPP_INFO(node->get_logger(), "플래그 처리");
+        // } else if (imu_yaw_ < 170.0) {
+        //     angular_vel_ = -0.1;
+        // } else if (175.0 < imu_yaw_) {
+        //     angular_vel_ = 0.1;
+        // }
+
+        if (160.0 <= imu_yaw_ && imu_yaw_ <= 165.0) {
+            stopDxl();
             isDonePidControlEndLineStage5 = true;
             RCLCPP_INFO(node->get_logger(), "플래그 처리");
-        } else {
+        } else if (imu_yaw_ < 160.0) {
+            angular_vel_ = -0.15;
+        } else if (165.0 < imu_yaw_) {
             angular_vel_ = 0.15;
-            RCLCPP_INFO(node->get_logger(), "회전중");
         }
     }
 
@@ -674,10 +686,10 @@ void MasterNode::runRobotStage6() {
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
                 angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
+                if ((((235 + dist_white_line_) / 1800) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
+                    angular_vel_ = (((235 + dist_white_line_) / 1800) * -1);
                 }
             }
         } else {
@@ -872,15 +884,15 @@ void MasterNode::runRobotStage9() {
             //     angular_vel_ = 0.1;
             // }
 
-            if (75.0 <= imu_yaw_ && imu_yaw_ <= 80.0) {
+            if (80.0 <= imu_yaw_ && imu_yaw_ <= 85.0) {
                 stopDxl();
                 // isTempDoneTurnRightRangeStage9 = true;
                 isOkayPidControlRightStage9 = true;
                 // linear_vel_ = 0.35;
                 // angular_vel_ = 0.0;
-            } else if (imu_yaw_ < 75.0) {
+            } else if (imu_yaw_ < 80.0) {
                 angular_vel_ = -0.1;
-            } else if (80.0 < imu_yaw_) {
+            } else if (85.0 < imu_yaw_) {
                 angular_vel_ = 0.1;
             }
             
