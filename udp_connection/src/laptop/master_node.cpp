@@ -1026,17 +1026,22 @@ void MasterNode::runRobotStage9() {
     if (nowModeStage9 == 1) {
 
         if (checkNowModeStage9 && !isReadyToUsingNowMode1Stage9) {
-            if (!isDetectWhiteLine) {
-                angular_vel_ = 0.08;
-            }
+            // if (!isDetectWhiteLine) {
+            //     angular_vel_ = 0.08;
+            // }
+
+            linear_vel_ = 0.0;
+            angular_vel_ = 0.08;
             
+            RCLCPP_INFO(node->get_logger(), "좌회전 회오리");
+
             if (!isDetectYellowLine && isDetectWhiteLine) {
                 isReadyToUsingNowMode1Stage9 = true;
                 linear_vel_ = 0.4;
             }
         }
 
-        if (!isTurnRightMode1Stage9 || isReadyToUsingNowMode1Stage9) {
+        if ((!isTurnRightMode1Stage9 && !checkNowModeStage9) || isReadyToUsingNowMode1Stage9) {
             if (!isDetectYellowLine && isDetectWhiteLine) {
                 if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
                     angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
