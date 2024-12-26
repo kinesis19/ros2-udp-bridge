@@ -177,6 +177,8 @@ private:
     bool isDetectWhiteLineMode1Stage2 = false; // Stage2에서, mode1일 때, 탈출을 위한 흰색 라인을 감지 여부를 나타내는 플래그 
     bool checkNowModeStage2 = false;
     bool isReadyToUsingNowMode1Stage2 = false;
+    bool isCheckObject1AfterDetectYellowLineNowMode1Stage2 = false;
+    bool isCheckObject3AfterDetectYellowLineNowMode1Stage2 = false;
     
     // ========== [Stage3 감지 플래그 변수] ==========
     bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 잊어버렸을 때를 위한 플래그
@@ -236,6 +238,9 @@ private:
     bool isTurnRightMode1Stage9 = false; // 스테이지9 진입 후, mode1일 때 오른쪽 회전 했는지 여부를 나타내는 플래그
     bool isDetectYellowLineMode1Stage9 = false; // 스테이지9 진입 후, mode1일 때 노란색 감지 여부를 나타내는 플래그
     bool isDetectWhiteLine1Mode1Stage9 = false;
+
+
+    bool isCheckObject1AfterDetectYellowLineNowMode1Stage9 = false;
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
