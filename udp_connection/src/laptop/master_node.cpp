@@ -214,7 +214,20 @@ void MasterNode::runRobotStage2() {
     }
 
     if (nowModeStage2 == 1) {
-        if (!isTurnLeftMode1Stage2) {
+
+        if (checkNowModeStage2 && !isReadyToUsingNowMode1Stage2) {
+            if (!isDetectWhiteLine) {
+                angular_vel_ = -0.08;
+            }
+            
+            if (!isDetectYellowLine && isDetectWhiteLine) {
+                isReadyToUsingNowMode1Stage2 = true;
+                linear_vel_ = 0.4;
+            }
+        }
+
+
+        if (!isTurnLeftMode1Stage2 || isReadyToUsingNowMode1Stage2) {
             if (!isDetectYellowLine && isDetectWhiteLine) {
                 if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
                     angular_vel_ = ((310 - dist_white_line_) / 2500) * 1;
@@ -240,11 +253,11 @@ void MasterNode::runRobotStage2() {
             // angular_vel_ = 0.085;
             // angular_vel_ = 0.1;
             angular_vel_ = 0.14;
-            RCLCPP_INFO(node->get_logger(), "포물선");
+            RCLCPP_INFO(node->get_logger(), "포물선-1");
 
             if (psd_adc_right_ > 1600) {
                 isDetectYellowLineMode1Stage2 = true;
-                RCLCPP_INFO(node->get_logger(), "PSD 감지");
+                RCLCPP_INFO(node->get_logger(), "PSD 감지-1");
             }
         }
 
@@ -302,37 +315,41 @@ void MasterNode::runRobotStage2() {
 
         
         if ((isOkayPidControlLeftStage2 && !playYawFlag) && !isTurnRightStage2) {
-
             
+            if (!checkNowModeStage2) {
+                if (psd_adc_front_ > 2500) {
+                    nowModeStage2 = 1;
+                }
+                checkNowModeStage2 = true;
+            } else {
+                linear_vel_ = 0.45;
+                angular_vel_ = 0.0;
 
-
-            linear_vel_ = 0.45;
-            angular_vel_ = 0.0;
-
-            RCLCPP_INFO(node->get_logger(), "직진");
-            
-            if (psd_adc_front_ > 1100) {
-                isTurnRightStage2 = true;
-                RCLCPP_INFO(node->get_logger(), "감지 완료");
+                RCLCPP_INFO(node->get_logger(), "직진-2");
+                
+                if (psd_adc_front_ > 1100) {
+                    isTurnRightStage2 = true;
+                    RCLCPP_INFO(node->get_logger(), "감지 완료-2");
+                }
             }
         } 
         
         if (isTurnRightStage2 && !isDetectWhite1Stage2) {
             linear_vel_ = 0.45;
             angular_vel_ = -0.075;
-            RCLCPP_INFO(node->get_logger(), "포물선");
+            RCLCPP_INFO(node->get_logger(), "포물선-2");
 
             if (psd_adc_left_ > 1600) {
                 // stopDxl();
                 isDetectWhite1Stage2 = true;
-                RCLCPP_INFO(node->get_logger(), "PSD 감지");
+                RCLCPP_INFO(node->get_logger(), "PSD 감지-2");
             }
         }
 
         if (isDetectWhite1Stage2 && !isDetectYellowLine1Stage2) {
             linear_vel_ = 0.25;
             angular_vel_ = 0.08;
-            RCLCPP_INFO(node->get_logger(), "왼쪽");
+            RCLCPP_INFO(node->get_logger(), "왼쪽-2");
 
             if (isDetectYellowLine && !isDetectWhiteLine) {
                 isDetectYellowLine1Stage2 = true;
@@ -572,24 +589,24 @@ void MasterNode::runRobotStage3() {
             RCLCPP_INFO(node->get_logger(), "Stage3 회전중");
         
         } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
-            if (past_imu_yaw_stage3_ + 60 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
+            if (past_imu_yaw_stage3_ + 55 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
                 angular_vel_ = 0.0;
                 stopDxl();
 
-                if (past_imu_yaw_stage3_ + 60 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
+                if (past_imu_yaw_stage3_ + 55 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
                     angular_vel_ = 0.0;
                     stopDxl();
                     tempOkayToOut = true;
                     isDonePidControlParkingStationOutStage3 = true;
                 } else if (past_imu_yaw_stage3_ + 90 < imu_yaw_) {    
                     angular_vel_ = 0.08;
-                } else if (imu_yaw_ < past_imu_yaw_stage3_ + 60) {
+                } else if (imu_yaw_ < past_imu_yaw_stage3_ + 55) {
                     angular_vel_ = -0.08;
                 }
 
             } else if (past_imu_yaw_stage3_ + 90 < imu_yaw_) {    
                 angular_vel_ = 0.08;
-            } else if (imu_yaw_ < past_imu_yaw_stage3_ + 60) {
+            } else if (imu_yaw_ < past_imu_yaw_stage3_ + 55) {
                 angular_vel_ = -0.08;
             }
 
