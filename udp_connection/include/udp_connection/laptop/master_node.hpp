@@ -190,6 +190,9 @@ private:
     bool isRunWithYellowLineParkingStationOutStage3 = false; // 주차 이후, 나갈 때
     float past_imu_yaw_stage3_ = 0.0;
     bool isDoneTurnToOutParkingStage3 = false; // 주차 이후, 주차장 탈출을 위해 제어가 완료됨을 나타내는 플래그
+    bool isIMUResetStage3 = false;
+
+    bool tempOkayToOut = false;
 
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그

@@ -76,7 +76,7 @@ void MasterNode::run()
         */
 
         emit updateCurrentStage(stage_number_);
-        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f | past_imu_yaw_: %.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_, past_imu_yaw_);
+        RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f | past_imu_yaw_stage3_: %.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_, past_imu_yaw_stage3_);
 
 
         // RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || white_line_points_[0]: %.2f | white_line_x_: %0.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, white_line_points_[0], white_line_x_);
@@ -412,7 +412,7 @@ void MasterNode::runRobotStage3() {
     }
     
     // 좌회전 PID 제어 이후, 노란색 라인만을 감지했을 때
-    if (((isStartPidTurnLeftThreeStreetStage3 && !playYawFlag) && (isDetectYellowLine && !isDetectWhiteLine)) && !isDonePidControlParkingStationOutStage3) {
+    if (((isStartPidTurnLeftThreeStreetStage3 && detectObjectNumParkingStationStage3 == 0) && (isDetectYellowLine && !isDetectWhiteLine)) && (!isDonePidControlParkingStationOutStage3 && !playYawFlag)) {
         RCLCPP_INFO(node->get_logger(), "PID 제어 이후의 주차장 진입");
 
         linear_vel_ = 0.4;
@@ -430,7 +430,7 @@ void MasterNode::runRobotStage3() {
                 RCLCPP_INFO(node->get_logger(), "노랑 진입 직진");
             }
         }
-    } else if (!isDetectYellowLine && isDetectWhiteLine) { // 주차장에서 점선 감지했을 때w d
+    } else if ((!isDetectYellowLine && isDetectWhiteLine) && detectObjectNumParkingStationStage3 == 0) { // 주차장에서 점선 감지했을 때w d
         // 주차장 입장 전까지 조건 : detectObjectNumParkingStationStage3
         // linear_vel_ = 0.35;
         angular_vel_ = 0.0;
@@ -520,46 +520,78 @@ void MasterNode::runRobotStage3() {
         rclcpp::sleep_for(std::chrono::milliseconds(target_seconds_move_front_)); // 세 번째 딜레이: 직진
 
         stopDxl();
+
+        resetIMU(); // 초기화
         // rclcpp::sleep_for(std::chrono::milliseconds(1000)); // 네 번째 딜레이: 정지
     }
     
 
-    // 주차 이후, 주차장에서 나오지 않았을 때
-    if (isReadyToParking && !isDonePidControlParkingStationOutStage3) {
+    if ((fabs(imu_yaw_) <= 10 && !isDonePidControlParkingStationOutStage3) && !isIMUResetStage3) {
+
+        RCLCPP_INFO(node->get_logger(), "IMU 초기화 완료");
+        isIMUResetStage3 = true;
+
+        past_imu_yaw_stage3_ = imu_yaw_;
+    
+    }
+
+    if (isIMUResetStage3 && !tempOkayToOut) {
 
         linear_vel_ = 0.0;
 
         if (detectObjectNumParkingStationStage3 == 1) { // 진입 기준 왼쪽에 오브젝트가 있을 때
-            angular_vel_ = 0.08;
-            // angular_vel_ = 0.1;
+            if (past_imu_yaw_stage3_ - 90 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ - 75) {
+                angular_vel_ = 0.0;
+                stopDxl();
+
+                if (past_imu_yaw_stage3_ - 90 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ - 75) {
+                    angular_vel_ = 0.0;
+                    stopDxl();
+                    tempOkayToOut = true;
+                    isDonePidControlParkingStationOutStage3 = true;
+                } else if (imu_yaw_ < past_imu_yaw_stage3_ - 90) {    
+                    angular_vel_ = -0.08;
+                } else if (past_imu_yaw_stage3_ - 75 < imu_yaw_) {
+                    angular_vel_ = 0.08;
+                }
+
+
+            } else if (imu_yaw_ < past_imu_yaw_stage3_ - 90) {    
+                angular_vel_ = -0.08;
+            } else if (past_imu_yaw_stage3_ - 75 < imu_yaw_) {
+                angular_vel_ = 0.08;
+            }
+
+            RCLCPP_INFO(node->get_logger(), "Stage3 회전중");
+        
         } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
-            angular_vel_ = -0.08;
-            // angular_vel_ = -0.1;
-        }
+            if (past_imu_yaw_stage3_ + 75 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
+                angular_vel_ = 0.0;
+                stopDxl();
 
-        RCLCPP_INFO(node->get_logger(), "주차장 퇴출을 위한 회전 처리 중");
+                if (past_imu_yaw_stage3_ + 75 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
+                    angular_vel_ = 0.0;
+                    stopDxl();
+                    tempOkayToOut = true;
+                    isDonePidControlParkingStationOutStage3 = true;
+                } else if (past_imu_yaw_stage3_ + 90 < imu_yaw_) {    
+                    angular_vel_ = 0.08;
+                } else if (imu_yaw_ < past_imu_yaw_stage3_ + 75) {
+                    angular_vel_ = -0.08;
+                }
 
-        if (isDetectYellowLine && isDetectWhiteLine) {
-            if (((isDetectYellowLine && dist_yellow_line_ < -200) && (90 <= yellow_line_angle_ && yellow_line_angle_ <= 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
-                isDonePidControlParkingStationOutStage3 = true;
-                RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
+            } else if (past_imu_yaw_stage3_ + 90 < imu_yaw_) {    
+                angular_vel_ = 0.08;
+            } else if (imu_yaw_ < past_imu_yaw_stage3_ + 75) {
+                angular_vel_ = -0.08;
             }
-        } else if (isDetectYellowLine && !isDetectWhiteLine) {
-            if (((isDetectYellowLine && dist_yellow_line_ < -200) && (90 <= yellow_line_angle_ && yellow_line_angle_ <= 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
-                isDonePidControlParkingStationOutStage3 = true;
-                RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
-            }
-        } else if (!isDetectYellowLine && isDetectWhiteLine) {
-            if (((isDetectWhiteLine && dist_white_line_ > 200) && (90 <= white_line_angle_ && white_line_angle_ <= 91)) && (psd_adc_front_ < 1200 && (psd_adc_left_ > 2000 || psd_adc_right_ > 2000))) {
-                // 흰 선이 오른쪽에서 수직선으로 되어 있으며, psd 조건을 충족했을 때
-                isDonePidControlParkingStationOutStage3 = true;
-                RCLCPP_INFO(node->get_logger(), "주차장 퇴출 준비 완료");
-            }
+
+            RCLCPP_INFO(node->get_logger(), "Stage3 회전중");
         }
     }
+    
 
-
-    // 주차장에서 퇴출 준비가 완료된 상태일 때
+    // // 주차장에서 퇴출 준비가 완료된 상태일 때
     if ((isDonePidControlParkingStationOutStage3 && !isTurnLeftToGoToStage4)) {
         linear_vel_ = 0.4;
 
@@ -724,13 +756,13 @@ void MasterNode::runRobotStage5() {
         //     angular_vel_ = 0.1;
         // }
 
-        if (160.0 <= imu_yaw_ && imu_yaw_ <= 165.0) {
+        if (150.0 <= imu_yaw_ && imu_yaw_ <= 160.0) {
             stopDxl();
             isDonePidControlEndLineStage5 = true;
             RCLCPP_INFO(node->get_logger(), "플래그 처리");
-        } else if (imu_yaw_ < 160.0) {
+        } else if (imu_yaw_ < 150.0) {
             angular_vel_ = -0.15;
-        } else if (165.0 < imu_yaw_) {
+        } else if (160.0 < imu_yaw_) {
             angular_vel_ = 0.15;
         }
     }
