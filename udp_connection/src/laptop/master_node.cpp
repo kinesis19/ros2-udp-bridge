@@ -70,11 +70,6 @@ void MasterNode::run()
     {
         // rclcpp::spin_some(node);
 
-        /* 주행 로직
-        * 각 line별 detected랑 position X값 사용해서 주행 로직 구현하기
-        * 노란색 처리 우선(빛 반사 적음)
-        */
-
         emit updateCurrentStage(stage_number_);
         RCLCPP_INFO(node->get_logger(), "Y Angle: %.2f | W Angle: %.2f || pixel_gap: %.2f || dist_yellow_line_: %.2f | dist_white_line_: %.2f || angular_vel_: %.2f || imu_yaw_: %.2f | past_imu_yaw_stage3_: %.2f", yellow_line_angle_, white_line_angle_, pixel_gap, dist_yellow_line_, dist_white_line_, angular_vel_, imu_yaw_, past_imu_yaw_stage3_);
 
@@ -178,11 +173,6 @@ void MasterNode::runRobotStage1() {
     if (!isDetectYellowLine) {
         stage_number_ = 2;
     }
-    // if (((psd_adc_left_ >= 2000) && (320 < white_line_points_[0] && white_line_points_[0] < 630)) && (75 < white_line_angle_ && white_line_angle_ <= 90)) {
-    //     if (0.45 < white_line_x_ && white_line_x_ < 0.62) {
-    //         stage_number_ = 2;
-    //     }
-    // }
 }
 
 void MasterNode::runRobotStage2() {
@@ -217,9 +207,6 @@ void MasterNode::runRobotStage2() {
 
         if (checkNowModeStage2 && !isReadyToUsingNowMode1Stage2) {
             RCLCPP_INFO(node->get_logger(), "야 이건실행 되어야 하는 조건이다");
-            // if (!isDetectWhiteLine) {
-            //     angular_vel_ = -0.08;
-            // }
             
             linear_vel_ = 0.0;
             angular_vel_ = -0.08;
@@ -269,9 +256,6 @@ void MasterNode::runRobotStage2() {
         
         if (isTurnLeftMode1Stage2 && !isDetectYellowLineMode1Stage2) {
             linear_vel_ = 0.45;
-            // angular_vel_ = 0.075;
-            // angular_vel_ = 0.085;
-            // angular_vel_ = 0.1;
             angular_vel_ = 0.14;
             RCLCPP_INFO(node->get_logger(), "포물선-1");
 
@@ -283,7 +267,6 @@ void MasterNode::runRobotStage2() {
 
         if (isDetectYellowLineMode1Stage2 && !isDetectWhiteLineMode1Stage2) {
             linear_vel_ = 0.25;
-            // angular_vel_ = -0.08;
             angular_vel_ = -0.12;
 
             if (psd_adc_front_ > 1100) {
@@ -483,8 +466,6 @@ void MasterNode::runRobotStage3() {
             }
         }
     } else if ((!isDetectYellowLine && isDetectWhiteLine) && (detectObjectNumParkingStationStage3 == 0 && (isStartPidTurnLeftThreeStreetStage3 && !playYawFlag))) { // 주차장에서 점선 감지했을 때w d
-        // 주차장 입장 전까지 조건 : detectObjectNumParkingStationStage3
-        // linear_vel_ = 0.35;
         angular_vel_ = 0.0;
         isDetectWhiteDottedLineStage3 = true; // 점선 감지 플래그 활성화
         RCLCPP_INFO(node->get_logger(), "흰색 점선");
@@ -492,10 +473,6 @@ void MasterNode::runRobotStage3() {
 
     // 흰색 점선이 감지된 이후의 상태일 때
     if ((isDetectWhiteDottedLineStage3 && !isDetectObjectInParkingStationStage3) && (isStartPidTurnLeftThreeStreetStage3 && !playYawFlag)) { 
-        // // 건너편에 있는 노란색 선을 감지했을 때
-        // if (isDetectYellowLine && !isDetectWhiteLine) {
-        //     isDetectObjectInParkingStationStage3 = true;
-        // }
 
         // 주차장에서 주차되어 있는 오브젝트를 감지했을 경우
         if (psd_adc_left_ > 2500 || psd_adc_right_ > 2500) {
