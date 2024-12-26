@@ -245,7 +245,7 @@ void MasterNode::runRobotStage2() {
         }
 
 
-        if ((!isTurnLeftMode1Stage2 && !checkNowModeStage2) || isReadyToUsingNowMode1Stage2) {
+        if ((!isTurnLeftMode1Stage2 && !checkNowModeStage2) || (!isTurnLeftMode1Stage2 && isReadyToUsingNowMode1Stage2)) {
 
             RCLCPP_INFO(node->get_logger(), "대충 아무렇게나 알 수 있을 정도로");
             if (!isDetectYellowLine && isDetectWhiteLine) {
@@ -491,15 +491,22 @@ void MasterNode::runRobotStage3() {
     }
 
     // 흰색 점선이 감지된 이후의 상태일 때
-    if (isDetectWhiteDottedLineStage3 && !isDetectYellowLineAfterDetectWhiteDottedLineStage3) { 
+    if ((isDetectWhiteDottedLineStage3 && !isDetectYellowLineAfterDetectWhiteDottedLineStage3) && (isStartPidTurnLeftThreeStreetStage3 && !playYawFlag)) { 
+        // // 건너편에 있는 노란색 선을 감지했을 때
+        // if (isDetectYellowLine && !isDetectWhiteLine) {
+        //     isDetectYellowLineAfterDetectWhiteDottedLineStage3 = true;
+        // }
+        RCLCPP_INFO(node->get_logger(), "건너편 노란색 감지 이전");
         // 건너편에 있는 노란색 선을 감지했을 때
-        if (isDetectYellowLine && !isDetectWhiteLine) {
+        if (psd_adc_left_ > 2500 || psd_adc_right_ > 2500) {
+            // stopDxl();
             isDetectYellowLineAfterDetectWhiteDottedLineStage3 = true;
+            RCLCPP_INFO(node->get_logger(), "건너편 노란색 감지");
         }
     }
 
     // 흰색 점선 이후에 노란색 라인을 감지함과 동시에 왼쪽 혹은 오른쪽에 오브젝트가 위치해 있을 때의 처리
-    if (((isDetectYellowLineAfterDetectWhiteDottedLineStage3 && !isDonePidControlParkingStationInStage3) && (psd_adc_left_ > 2500 || psd_adc_right_ > 2500)) && !playYawFlag) {
+    if ((isDetectYellowLineAfterDetectWhiteDottedLineStage3 && !isDonePidControlParkingStationInStage3)) {
         float target_yaw_vel_; // 오브젝트 위치에 따른 PID제어의 타겟 값 
 
         if (psd_adc_left_ > 2500 && psd_adc_right_ < 1800) { // 주차장 왼쪽에 오브젝트가 위치해 있을 때,
@@ -617,24 +624,24 @@ void MasterNode::runRobotStage3() {
             RCLCPP_INFO(node->get_logger(), "Stage3 회전중");
         
         } else if (detectObjectNumParkingStationStage3 == 2) { // 진입 기준 오른쪽에 오브젝트가 있을 때
-            if (past_imu_yaw_stage3_ + 55 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
+            if (past_imu_yaw_stage3_ + 65 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
                 angular_vel_ = 0.0;
                 stopDxl();
 
-                if (past_imu_yaw_stage3_ + 55 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
+                if (past_imu_yaw_stage3_ + 65 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_stage3_ + 90) {
                     angular_vel_ = 0.0;
                     stopDxl();
                     tempOkayToOut = true;
                     isDonePidControlParkingStationOutStage3 = true;
                 } else if (past_imu_yaw_stage3_ + 90 < imu_yaw_) {    
                     angular_vel_ = 0.08;
-                } else if (imu_yaw_ < past_imu_yaw_stage3_ + 55) {
+                } else if (imu_yaw_ < past_imu_yaw_stage3_ + 65) {
                     angular_vel_ = -0.08;
                 }
 
             } else if (past_imu_yaw_stage3_ + 90 < imu_yaw_) {    
                 angular_vel_ = 0.08;
-            } else if (imu_yaw_ < past_imu_yaw_stage3_ + 55) {
+            } else if (imu_yaw_ < past_imu_yaw_stage3_ + 65) {
                 angular_vel_ = -0.08;
             }
 
