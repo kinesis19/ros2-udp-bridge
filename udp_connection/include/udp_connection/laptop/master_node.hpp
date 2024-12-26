@@ -205,8 +205,6 @@ private:
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
 
-    bool tempIsEnableTurnStage4 = false;
-
     // ========== [Stage5 감지 플래그 변수] ==========
     bool isDetectBarrierStage5 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
     bool isDetectEndLineStage5 = false; // isDetectRedLine이 너무 빠르게 변해서 만든 플래그
