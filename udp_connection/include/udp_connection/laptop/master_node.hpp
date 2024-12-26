@@ -180,23 +180,30 @@ private:
     bool isDetectYellowLine1Stage2 = false;
     
     // ========== [Stage3 감지 플래그 변수] ==========
+    // 삼거리에서 PID 제어 전까지의 변수
     bool isMissYellowLineStage3 = false; // Stage3 진입 후, 노란색 라인 재감지를 위한 플래그
     bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 놓쳤을 때를 위한 플래그
-    
-    bool isDetectYellowLineinThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 노란색을 재 감지 여부를 나타내는 플래그
-    bool isStartPidTurnLeftThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 왼쪽 PID 제어 감지 여부를 나태내는 플래그
+    bool isDetectYellowLineInThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 노란색을 재 감지 여부를 나타내는 플래그 -> PID 제어가 가능하다는 의미
+
+    // 삼거리에서 PID 제어 이후부터 ~ 주차 전까지의 변수
+    bool isStartPidTurnLeftThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 왼쪽 PID 제어 감지 여부를 나태내는 플래그 -> 삼거리에서 PID 제어가 완료되면 true
     bool isDetectWhiteDottedLineStage3 = false; // Stage3 진입 후, 흰 색 점선 감지 여부를 나타내는 플래그
-    bool isDetectYellowLineAfterDetectWhiteDottedLineStage3 = false; // Stage3 진입 후, 흰 색 점선 감지 이후 노란색 선 감지 여부를 나타내는 플래그
+    bool isDetectObjectInParkingStationStage3 = false; // Stage3 진입 후, 주차장에서 주차 되어 있는 오브젝트 감지 여부를 나타내를 플래그 -> 주차장에 상대 오브젝트가 주차되어 있을 경우 true
+
+
+    // 주차 관련 변수    
+    int detectObjectNumParkingStationStage3 = 0; // 주차장에서 오브젝트가 어느 위치에 위치해 있는지 저장하는 변수 (0: null, 1: 왼쪽, 2: 오른쪽)
     bool isDonePidControlParkingStationInStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 진입 완료 여부를 나타내는 플래그
     bool isDonePidControlParkingStationOutStage3 = false; // 주차장에서 오브젝트가 없는 방향으로 이동하기 위한 PID 제어 아웃 완료 여부를 나타내는 플래그
-    bool isReadyToParking = false; // 주차장에서 오브젝트가 있는 방향으로 바라보고, 주차 준비가 된 상태일 때 여부를 나타내는 플래그
-    int detectObjectNumParkingStationStage3 = 0; // 주차장에서 오브젝트가 어느 위치에 위치해 있는지 저장하는 변수 (0: null, 1: 왼쪽, 2: 오른쪽)
+    bool isReadyToInParkingStation = false; // 주차장에서 오브젝트가 있는 방향으로 바라보고, 주차 준비가 된 상태일 때 여부를 나타내는 플래그
+    
+    // 주차 이후, Stage4로 이동 전까지의 변수
+    bool isIMUResetStage3 = false;
+    float past_imu_yaw_stage3_ = 0.0; // Stage3에서 imu_yaw_의 과거값 저장
     bool isTurnLeftToGoToStage4 = false; // 삼거리에서 Stage4로 가기 위해 좌회전 하고 있는지 여부를 나타내는 플래그
     
     
-    float past_imu_yaw_stage3_ = 0.0; // Stage3에서 imu_yaw_의 과거값 저장
-    bool isIMUResetStage3 = false;
-    bool tempOkayToOut = false;
+    bool isReadyToOutParkingStation = false;
 
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
