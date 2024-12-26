@@ -571,6 +571,7 @@ void MasterNode::runRobotStage3() {
     
     }
 
+    // 주차장 탈출을 위해 탈출 방향으로 PID 제어하는 기능
     if (isIMUResetStage3 && !isReadyToOutParkingStation) {
 
         linear_vel_ = 0.0;
