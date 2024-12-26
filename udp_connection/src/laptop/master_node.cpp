@@ -987,7 +987,7 @@ void MasterNode::runRobotStage9() {
         if (psd_adc_right_ > 2000) {
             nowModeStage9 = 1;
             RCLCPP_INFO(node->get_logger(), "1111");
-        } else if (nowModeStage9 == 0 && psd_adc_right_ > 1000) {
+        } else if (nowModeStage9 == 0 && (2000 > psd_adc_right_ && psd_adc_right_ > 500)) {
             nowModeStage9 = 2;
             past_imu_yaw_ = imu_yaw_;
             RCLCPP_INFO(node->get_logger(), "2222");
@@ -995,7 +995,19 @@ void MasterNode::runRobotStage9() {
     }
 
     if (nowModeStage9 == 1) {
-        if (!isTurnRightMode1Stage9) {
+
+        if (checkNowModeStage9 && !isReadyToUsingNowMode1Stage9) {
+            if (!isDetectWhiteLine) {
+                angular_vel_ = 0.08;
+            }
+            
+            if (!isDetectYellowLine && isDetectWhiteLine) {
+                isReadyToUsingNowMode1Stage9 = true;
+                linear_vel_ = 0.4;
+            }
+        }
+
+        if (!isTurnRightMode1Stage9 || isReadyToUsingNowMode1Stage9) {
             if (!isDetectYellowLine && isDetectWhiteLine) {
                 if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
                     angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
@@ -1085,39 +1097,12 @@ void MasterNode::runRobotStage9() {
                 angular_vel_ = 0.0;
             }
         }
-
+    
     } else if (nowModeStage9 == 2) {
         if (!isOkayPidControlRightStage9) {
-            linear_vel_ = 0.0;
-            // PID 좌회전 처리하기
-            // if (imu_yaw_ + 89.0 < -180) {
-            //     target_yaw_ = 360 + (imu_yaw_ + 89.0); // 범위 보정
-            // } else {
-            //     target_yaw_ = imu_yaw_ + 89.0;
-            // }
-            // target_yaw_ = 89;
-            // playYawFlag = true;
-            
-            // if (85.0 <= imu_yaw_ && imu_yaw_ <= 90.0) {
-            //     stopDxl();
-            //     // isTempDoneTurnRightRangeStage9 = true;
-            //     isOkayPidControlRightStage9 = true;
-            //     // linear_vel_ = 0.35;
-            //     // angular_vel_ = 0.0;
-            // } else if (imu_yaw_ < 85.0) {
-            //     angular_vel_ = -0.1;
-            // } else if (90.0 < imu_yaw_) {
-            //     angular_vel_ = 0.1;
-            // }
 
-            // if (80.0 <= imu_yaw_ && imu_yaw_ <= 85.0) {
-            //     stopDxl();
-            //     isOkayPidControlRightStage9 = true;
-            // } else if (imu_yaw_ < 80.0) {
-            //     angular_vel_ = -0.1;
-            // } else if (85.0 < imu_yaw_) {
-            //     angular_vel_ = 0.1;
-            // }
+            RCLCPP_INFO(node->get_logger(), "nowMode2");
+            linear_vel_ = 0.0;
 
             if (past_imu_yaw_ + 80.0 <= imu_yaw_ && imu_yaw_ <= past_imu_yaw_ + 85.0) {
                 stopDxl();
@@ -1131,14 +1116,22 @@ void MasterNode::runRobotStage9() {
         }
 
         if (isOkayPidControlRightStage9 && !isTurnLeftStage9) {
-            linear_vel_ = 0.45;
-            angular_vel_ = 0.0;
 
-            RCLCPP_INFO(node->get_logger(), "직진");
-            
-            if (psd_adc_front_ > 1100) {
-                isTurnLeftStage9 = true;
-                RCLCPP_INFO(node->get_logger(), "감지 완료");
+            if (!checkNowModeStage9) {
+                if (psd_adc_front_ > 2500) {
+                    nowModeStage9 = 1;
+                }
+                checkNowModeStage9 = true;
+            } else {
+                linear_vel_ = 0.45;
+                angular_vel_ = 0.0;
+
+                RCLCPP_INFO(node->get_logger(), "직진");
+                
+                if (psd_adc_front_ > 1100) {
+                    isTurnLeftStage9 = true;
+                    RCLCPP_INFO(node->get_logger(), "감지 완료");
+                }
             }
         } 
 

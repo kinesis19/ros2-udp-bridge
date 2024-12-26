@@ -221,6 +221,9 @@ private:
 
     bool isReadyToPIDControlToTurnLeftStage9 = false;
 
+    bool checkNowModeStage9 = false;
+    bool isReadyToUsingNowMode1Stage9 = false;
+
 
     int nowModeStage9 = 0; // 스테이지9일 때 모드 판단
     bool isOkayPidControlRightStage9 = false;
