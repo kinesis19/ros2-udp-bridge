@@ -118,10 +118,10 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         straight_vertices[3] = cv::Point2f(width * 0.0f, height * 0.55f);
 
         // 주차장 나오는 부분
-        left_sign_vertices[0] = cv::Point2f(width * 0.0f, height * 0.5f);
-        left_sign_vertices[1] = cv::Point2f(width * 1.0f, height * 0.5f);
-        left_sign_vertices[2] = cv::Point2f(width * 1.0f, height * 0.7f);
-        left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.7f);
+        left_sign_vertices[0] = cv::Point2f(width * 0.0f, height * 0.6f);
+        left_sign_vertices[1] = cv::Point2f(width * 1.0f, height * 0.6f);
+        left_sign_vertices[2] = cv::Point2f(width * 1.0f, height * 0.8f);
+        left_sign_vertices[3] = cv::Point2f(width * 0.0f, height * 0.8f);
         
         // 차단바
         bar_vertices[0] = cv::Point2f(width * 0.4f, height * 0.65f);
@@ -130,10 +130,10 @@ void VisionNode::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
         bar_vertices[3] = cv::Point2f(width * 0.3f, height * 1.0f);
 
         // 표지판
-        signs_vertices[0] = cv::Point2f(width * 0.95f, height * 0.3f);
+        signs_vertices[0] = cv::Point2f(width * 0.85f, height * 0.3f);
         signs_vertices[1] = cv::Point2f(width * 1.0f, height * 0.3f);
         signs_vertices[2] = cv::Point2f(width * 1.0f, height * 0.55f);
-        signs_vertices[3] = cv::Point2f(width * 0.95f, height * 0.55f);
+        signs_vertices[3] = cv::Point2f(width * 0.85f, height * 0.55f);
 
         // 라인트레이싱
         src_vertices[0] = cv::Point2f(width * 0.1f, height * 0.9f);
