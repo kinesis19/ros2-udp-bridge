@@ -783,16 +783,6 @@ void MasterNode::runRobotStage5() {
 
         RCLCPP_INFO(node->get_logger(), "조건 진입");
 
-        // if (170.0 <= imu_yaw_ && imu_yaw_ <= 175.0) {
-        //     stopDxl();
-        //     isDonePidControlEndLineStage5 = true;
-        //     RCLCPP_INFO(node->get_logger(), "플래그 처리");
-        // } else if (imu_yaw_ < 170.0) {
-        //     angular_vel_ = -0.1;
-        // } else if (175.0 < imu_yaw_) {
-        //     angular_vel_ = 0.1;
-        // }
-
         if (150.0 <= imu_yaw_ && imu_yaw_ <= 160.0) {
             stopDxl();
             isDonePidControlEndLineStage5 = true;
@@ -1011,9 +1001,6 @@ void MasterNode::runRobotStage9() {
     if (nowModeStage9 == 1) {
 
         if (checkNowModeStage9 && !isReadyToUsingNowMode1Stage9) {
-            // if (!isDetectWhiteLine) {
-            //     angular_vel_ = 0.08;
-            // }
 
             linear_vel_ = 0.0;
             angular_vel_ = 0.08;
