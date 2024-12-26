@@ -157,30 +157,30 @@ private:
     float dist_white_line_ = 0.0;
     float pixel_gap = 0.0; // 중앙선 기준 오차
 
-    // ========== [Stage1 감지 플래그 변수] ==========
-    bool isDetectObject1Stage1 = false; // 스테이지2 진입 전, 오브젝트1과 흰색 코너 감지를 나타내는 변수.
-
     // ========== [Stage2 감지 플래그 변수] ==========
-    bool isDetectObject1andObject2 = false; // 스테이지2 진입 후, 오브젝트 1과 2 동시에 감지를 나타내는 변수.
-    bool isWorkedPIDControlToTurnRightStage2 = false; // 스테이지 2 진입후, 노란색 선 감지 후 PID 제어를 나타내는 변수.
-    bool isMissYellowLineStage2 = false;
+    // Mode 관련 플래그
+    int nowModeStage2 = 0; // 스테이지2일 때 모드 판단 (장애물 위치에 따른 모드 저장: 1, 2)
 
-    int nowModeStage2 = 0; // 스테이지2일 때 모드 판단
-    bool isOkayPidControlLeftStage2 = false; // Stage2에서 처음 PID 제어를 위한 플래그 변수
-    bool isTurnRightStage2 = false; // Stage2에서 오른쪽 회전했을 때 나타내는 변수
-    bool isDetectWhite1Stage2 = false;
-    bool isDetectYellowLine1Stage2 = false;
-    int areaNumberStage2 = 0; // Stage2 내에서 세부적인 area 넘버링을 나타내는 변수
 
+    // Mode1 관련 플래그 - 기본
     bool isTurnLeftMode1Stage2 = false; // Stage2에서, mode1일 때 왼쪽 회전 여부를 나타내는 플래그 변수
     bool isDetectYellowLineMode1Stage2 = false; // Stage2에서, mode1일 때 노란색 라인 감지 여부를 나타내는 플래그
     bool isDetectWhiteLineMode1Stage2 = false; // Stage2에서, mode1일 때, 탈출을 위한 흰색 라인을 감지 여부를 나타내는 플래그 
+    // Mode1 관련 플래그 - 예외처리(재감지)
     bool checkNowModeStage2 = false;
     bool isReadyToUsingNowMode1Stage2 = false;
-    bool isCheckObject1AfterDetectYellowLineNowMode1Stage2 = false;
+
+    // bool isCheckObject1AfterDetectYellowLineNowMode1Stage2 = false; // 지금은 안 사용하는 플래그(필요에 따라 활성화)
     bool isCheckObject3AfterDetectYellowLineNowMode1Stage2 = false;
+
+    // Mode2 관련 플래그 - 기본
+    bool isOkayPidControlLeftStage2 = false; // Stage2-Mode2에서 처음 PID 제어를 위한 플래그 변수
+    bool isTurnRightStage2 = false; // Stage2에서 오른쪽 회전했을 때 나타내는 변수
+    bool isDetectWhite1Stage2 = false;
+    bool isDetectYellowLine1Stage2 = false;
     
     // ========== [Stage3 감지 플래그 변수] ==========
+    bool isMissYellowLineStage3 = false;
     bool isMissBlueSignStage3 = false; // Stage3 진입 후, 파란색 표지판 잊어버렸을 때를 위한 플래그
     bool isDetectYellowLineinThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 노란색을 재 감지 여부를 나타내는 플래그
     bool isStartPidTurnLeftThreeStreetStage3 = false; // Stage3 진입 후, 삼거리에서 왼쪽 PID 제어 감지 여부를 나태내는 플래그

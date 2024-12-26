@@ -441,11 +441,11 @@ void MasterNode::runRobotStage3() {
     }
 
     if (!isDetectYellowLine) {
-        isMissYellowLineStage2 = true;
+        isMissYellowLineStage3 = true;
     }
 
     // 파란색 표지판을 놓치고, 노란색 라인을 재감지 했을 때
-    if ((isMissBlueSignStage3 && isMissYellowLineStage2) && isDetectYellowLine) {
+    if ((isMissBlueSignStage3 && isMissYellowLineStage3) && isDetectYellowLine) {
         isDetectYellowLineinThreeStreetStage3 = true; // 삼거리 감지 플래그 처리 (현재 위치: 삼거리 중앙, 서쪽 방향)
     }
 
@@ -1431,14 +1431,6 @@ void MasterNode::resetValue() {
 
     pub_dxl_linear_vel_->publish(msg_linear_);
     pub_dxl_angular_vel_->publish(msg_angular_);
-
-    isDetectObject1andObject2 = false;
-    isWorkedPIDControlToTurnRightStage2 = false;
-
-    isDetectObject1Stage1 = false;
-
-    isDetectObject1andObject2 = false;
-    isWorkedPIDControlToTurnRightStage2 = false;
     
     isMissBlueSignStage3 = false;
     isDetectYellowLineinThreeStreetStage3 = false;
