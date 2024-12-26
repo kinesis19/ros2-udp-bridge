@@ -144,7 +144,7 @@ private:
     const float kI = 0.0f;
     const float kD = 0.0f;
     const float yaw_ok = 0.5f;
-    const float max_angular_vel = 0.4f;
+    const float max_angular_vel = 0.3f;
     const float min_angular_vel = 0.05f;
     bool playYawFlag = false;
     float intergral = 0.0f;
