@@ -201,6 +201,9 @@ private:
     float past_imu_yaw_stage3_ = 0.0; // Stage3에서 imu_yaw_의 과거값 저장
     bool isTurnLeftToGoToStage4 = false; // 삼거리에서 Stage4로 가기 위해 좌회전 하고 있는지 여부를 나타내는 플래그    
     bool isReadyToOutParkingStation = false; // Stage3에서, 탈출하기 위해 PID 제어를 위한 플래그
+    float past_imu_yaw_out_stage3_ = 0.0;
+
+    bool isResetIMUToGoStage4InStage3 = false;
 
     // ========== [Stage4 감지 플래그 변수] ==========
     bool isDetectBarrierStage4 = false; // isDetectBarrier가 너무 빠르게 변해서 만든 플래그
