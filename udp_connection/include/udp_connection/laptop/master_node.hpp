@@ -232,6 +232,7 @@ private:
     int nowModeStage9 = 0; // 스테이지9일 때 모드 판단
     bool isOkayPidControlRightStage9 = false;
     bool isTurnLeftStage9 = false;
+
     bool isDetectWhite1Stage9 = false;
     bool isDetectYellowLine1Stage9 = false;
     bool isTempDoneTurnRightRangeStage9 = false; // 스테이지9 진입 후, PID 제어 완료 했는지 여부를 나타내는 플래그
@@ -243,6 +244,10 @@ private:
 
 
     bool isCheckObject1AfterDetectYellowLineNowMode1Stage9 = false;
+
+    bool isCheckObject3AfterDetectYellowLineNowMode1Stage9 = false;
+
+    bool isCheckObject1AfterDetectWhiteLineNowMode2Stage9 = false;
 
     // ========== [Line Detect 메서드] ==========
     void detectYellowLine(const std_msgs::msg::Bool::SharedPtr msg);
