@@ -267,7 +267,8 @@ void MasterNode::runRobotStage2() {
 
         if (isDetectYellowLineMode1Stage2 && !isDetectWhiteLineMode1Stage2) {
             linear_vel_ = 0.25;
-            angular_vel_ = -0.12;
+            // angular_vel_ = -0.12;
+            angular_vel_ = -0.1;
 
             if (psd_adc_front_ > 1100) {
                 isCheckObject3AfterDetectYellowLineNowMode1Stage2 = true;
@@ -769,21 +770,21 @@ void MasterNode::runRobotStage5() {
     if (isDetectBarrierStage5) {
         stopDxl();
     } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && (!isDonePidControlEndLineStage5 && !isDetectEndLineStage5)) {
-        // linear_vel_ = 0.45;
-        linear_vel_ = 0.5;
+        linear_vel_ = 0.45;
+        // linear_vel_ = 0.5;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
             if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-                angular_vel_ = ((310 + dist_yellow_line_) / 2700) * -1;
+                angular_vel_ = ((315 + dist_yellow_line_) / 2700) * -1;
             } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = ((310 + dist_yellow_line_) / 2500) * -1;
+                angular_vel_ = ((315 + dist_yellow_line_) / 2500) * -1;
             } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
-                if ((((310 + dist_yellow_line_) / 800) * -1) < -0.45) {
+                if ((((315 + dist_yellow_line_) / 700) * -1) < -0.45) {
                     // angular_vel_ = -0.4;
                     angular_vel_ = -0.45;
                 } else {
-                    angular_vel_ = (((310 + dist_yellow_line_) / 800) * -1);
+                    angular_vel_ = (((315 + dist_yellow_line_) / 700) * -1);
                 }
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
