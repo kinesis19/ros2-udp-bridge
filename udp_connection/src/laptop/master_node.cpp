@@ -643,7 +643,7 @@ void MasterNode::runRobotStage3() {
                         // angular_vel_ = 0.0;
                         angular_vel_ = ((280 - fabs(dist_yellow_line_)) / 2500) * 1;
                     } else if (90 <= yellow_line_angle_) {
-                        angular_vel_ = ((280 - fabs(dist_yellow_line_)) / 2000) * -1.1;
+                        angular_vel_ = ((300 - fabs(dist_yellow_line_)) / 2000) * -1.1;
                     }
                     RCLCPP_INFO(node->get_logger(), "노랑 탈출");
                 }
@@ -1014,6 +1014,8 @@ void MasterNode::runRobotStage9() {
         }
 
         if ((!isTurnRightMode1Stage9 && !checkNowModeStage9) || isReadyToUsingNowMode1Stage9) {
+            RCLCPP_INFO(node->get_logger(), "무슨 로직 진입");
+
             if (!isDetectYellowLine && isDetectWhiteLine) {
                 if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
                     angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
@@ -1026,6 +1028,7 @@ void MasterNode::runRobotStage9() {
                         angular_vel_ = (((235 + dist_white_line_) / 800) * -1);
                     }
                 }
+                RCLCPP_INFO(node->get_logger(), "PSD FRONT 검자 전까지의 주행 로직");
             }
 
             if (psd_adc_front_ > 1100) {
