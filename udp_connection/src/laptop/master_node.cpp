@@ -769,19 +769,21 @@ void MasterNode::runRobotStage5() {
     if (isDetectBarrierStage5) {
         stopDxl();
     } else if ((!isDetectBarrierStage5 && !isDetectRedLine) && (!isDonePidControlEndLineStage5 && !isDetectEndLineStage5)) {
-        linear_vel_ = 0.45;
+        // linear_vel_ = 0.45;
+        linear_vel_ = 0.5;
         if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ < dist_white_line_) {
             angular_vel_ = 0.0;
         } else if ((isDetectYellowLine && !isDetectWhiteLine)) { // 노란색 선만 감지됨
             if (88 <= yellow_line_angle_ && yellow_line_angle_ <= 95) { // 예외 처리: 근사항 직진 주행
-                angular_vel_ = ((315 + dist_yellow_line_) / 2700) * -1;
+                angular_vel_ = ((310 + dist_yellow_line_) / 2700) * -1;
             } else if (95 <= yellow_line_angle_ && yellow_line_angle_ <= 100) {  // 좌회전 처리: (약 ~ 중)
-                angular_vel_ = ((315 + dist_yellow_line_) / 2000) * -1;
+                angular_vel_ = ((310 + dist_yellow_line_) / 2500) * -1;
             } else if (100 <= yellow_line_angle_) { // 좌회전 처리: (중 ~ 강)
-                if ((((315 + dist_yellow_line_) / 800) * -1) < -0.4) {
-                    angular_vel_ = -0.4;
+                if ((((310 + dist_yellow_line_) / 800) * -1) < -0.45) {
+                    // angular_vel_ = -0.4;
+                    angular_vel_ = -0.45;
                 } else {
-                    angular_vel_ = (((315 + dist_yellow_line_) / 800) * -1);
+                    angular_vel_ = (((310 + dist_yellow_line_) / 800) * -1);
                 }
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
@@ -891,14 +893,14 @@ void MasterNode::runRobotStage7() {
         // reverse용 코드
         if ((isDetectYellowLine && isDetectWhiteLine) && (white_line_points_[0] > yellow_line_points_[0])) {
             if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-                angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
+                angular_vel_ = ((240 + dist_white_line_) / 2500) * -1;
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-                angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
+                angular_vel_ = ((240 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 1200) * -1) < -0.35) {
+                if ((((240 + dist_white_line_) / 1200) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 1200) * -1);
+                    angular_vel_ = (((240 + dist_white_line_) / 1200) * -1);
                 }
             }
         } else if ((isDetectYellowLine && isDetectWhiteLine) && dist_yellow_line_ > dist_white_line_) {
@@ -917,14 +919,14 @@ void MasterNode::runRobotStage7() {
             }
         } else if (!isDetectYellowLine && isDetectWhiteLine) {
             if (88 <= white_line_angle_ && white_line_angle_ <= 93) {
-                angular_vel_ = ((235 + dist_white_line_) / 2500) * -1;
+                angular_vel_ = ((240 + dist_white_line_) / 2500) * -1;
             } else if (93 < white_line_angle_ && white_line_angle_ <= 100) {
-                angular_vel_ = ((235 + dist_white_line_) / 2200) * -1;
+                angular_vel_ = ((240 + dist_white_line_) / 2200) * -1;
             } else if (100 < white_line_angle_) {  
-                if ((((235 + dist_white_line_) / 1500) * -1) < -0.35) {
+                if ((((240 + dist_white_line_) / 1500) * -1) < -0.35) {
                     angular_vel_ = -0.35;
                 } else {
-                    angular_vel_ = (((235 + dist_white_line_) / 1500) * -1);
+                    angular_vel_ = (((240 + dist_white_line_) / 1500) * -1);
                 }
             }
         } else {
@@ -1233,7 +1235,8 @@ void MasterNode::runRobotStage9() {
         if ((isDetectWhite1Stage9 && !isDetectYellowLine1Stage9) && isCheckObject1AfterDetectWhiteLineNowMode2Stage9) {
             linear_vel_ = 0.25;
             // angular_vel_ = -0.085;
-            angular_vel_ = -0.07;
+            // angular_vel_ = -0.07;
+            angular_vel_ = -0.09;
             // angular_vel_ = -0.075;
             RCLCPP_INFO(node->get_logger(), "왼쪽");
 
